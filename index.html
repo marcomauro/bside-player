@@ -410,6 +410,14 @@
     audioPlayer.addEventListener('loadedmetadata', () => {
       durationEl.textContent = formatTime(audioPlayer.duration);
       progressSlider.max = 100;
+      
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.setPositionState({
+          duration: audioPlayer.duration,
+          playbackRate: 1,
+          position: 0
+        });
+      }
     });
     
     progressSlider.addEventListener('input', () => {
@@ -426,7 +434,10 @@
       isDragging = false;
     });
     
-    datePicker.addEventListener('change', updatePlayer);
+    datePicker.addEventListener('change', () => {
+      updatePlayer();
+      updateMediaSessionMetadata();
+    });
     skipBack.addEventListener('click', () => audioPlayer.currentTime -= 30);
     skipForward.addEventListener('click', () => audioPlayer.currentTime += 30);
     
@@ -483,8 +494,80 @@
       installPrompt.classList.remove('show');
     });
     
+    // Media Session API per background playback
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: 'B-SIDE',
+        artist: 'Alessio Bertallot',
+        album: 'Radio Capital',
+        artwork: [
+          { src: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect fill="%23333" width="512" height="512" rx="64"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-size="200" fill="white" font-family="Arial" font-weight="bold">B</text></svg>', sizes: '512x512', type: 'image/svg+xml' }
+        ]
+      });
+      
+      navigator.mediaSession.setActionHandler('play', () => {
+        audioPlayer.play();
+        playBtn.textContent = '❚❚';
+        isPlaying = true;
+      });
+      
+      navigator.mediaSession.setActionHandler('pause', () => {
+        audioPlayer.pause();
+        playBtn.textContent = '▶';
+        isPlaying = false;
+      });
+      
+      navigator.mediaSession.setActionHandler('seekbackward', () => {
+        audioPlayer.currentTime -= 30;
+      });
+      
+      navigator.mediaSession.setActionHandler('seekforward', () => {
+        audioPlayer.currentTime += 30;
+      });
+      
+      navigator.mediaSession.setActionHandler('seekto', (details) => {
+        if (details.seekTime) {
+          audioPlayer.currentTime = details.seekTime;
+        }
+      });
+    }
+    
+    // Aggiorna metadata quando cambia la data
+    function updateMediaSessionMetadata() {
+      if ('mediaSession' in navigator) {
+        const dateValue = datePicker.value;
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: `Puntata del ${formatDate(dateValue)}`,
+          artist: 'Alessio Bertallot',
+          album: 'B-SIDE - Radio Capital',
+          artwork: [
+            { src: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect fill="%23333" width="512" height="512" rx="64"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-size="200" fill="white" font-family="Arial" font-weight="bold">B</text></svg>', sizes: '512x512', type: 'image/svg+xml' }
+          ]
+        });
+      }
+    }
+    
+    // Aggiorna posizione per la barra di avanzamento nel lockscreen
+    audioPlayer.addEventListener('timeupdate', () => {
+      if (!isDragging) {
+        const pct = (audioPlayer.currentTime / audioPlayer.duration) * 100 || 0;
+        progressSlider.value = pct;
+        updateProgressBackground(pct);
+        currentTimeEl.textContent = formatTime(audioPlayer.currentTime);
+        
+        if ('mediaSession' in navigator && audioPlayer.duration) {
+          navigator.mediaSession.setPositionState({
+            duration: audioPlayer.duration,
+            playbackRate: audioPlayer.playbackRate,
+            position: audioPlayer.currentTime
+          });
+        }
+      }
+    });
+    
     updateVolumeIcon();
     updatePlayer();
+    updateMediaSessionMetadata();
   </script>
 </body>
 </html>
