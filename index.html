@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#ffffff">
+  <meta name="theme-color" content="#ffffff" id="themeColor">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="B-SIDE">
@@ -31,45 +31,101 @@
       box-sizing: border-box;
     }
     
+    :root {
+      --bg-main: #fafafa;
+      --bg-card: #fff;
+      --bg-player: #f5f5f5;
+      --text-primary: #1a1a1a;
+      --text-secondary: #666;
+      --text-tertiary: #999;
+      --border-color: #e0e0e0;
+      --slider-bg: #ddd;
+      --slider-fill: #1a1a1a;
+      --shadow: rgba(0,0,0,0.08);
+    }
+    
+    [data-theme="dark"] {
+      --bg-main: #121212;
+      --bg-card: #1e1e1e;
+      --bg-player: #2a2a2a;
+      --text-primary: #ffffff;
+      --text-secondary: #aaa;
+      --text-tertiary: #777;
+      --border-color: #444;
+      --slider-bg: #444;
+      --slider-fill: #fff;
+      --shadow: rgba(0,0,0,0.3);
+    }
+    
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #fafafa;
+      background: var(--bg-main);
       min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
       padding: 20px;
+      transition: background 0.3s;
     }
     
     .container {
-      background: #fff;
+      background: var(--bg-card);
       border-radius: 12px;
       padding: 32px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      box-shadow: 0 2px 12px var(--shadow);
       width: 100%;
       max-width: 400px;
+      transition: background 0.3s, box-shadow 0.3s;
     }
     
     h1 {
       font-size: 1.5rem;
       font-weight: 600;
-      color: #1a1a1a;
+      color: var(--text-primary);
       margin-bottom: 4px;
       text-align: center;
     }
     
     .subtitle {
       font-size: 0.9rem;
-      color: #666;
+      color: var(--text-secondary);
       text-align: center;
       margin-bottom: 4px;
     }
     
     .episode {
       font-size: 0.8rem;
-      color: #999;
+      color: var(--text-tertiary);
       text-align: center;
       margin-bottom: 24px;
+    }
+    
+    .date-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    
+    .date-row input[type="date"] {
+      flex: 1;
+    }
+    
+    .theme-toggle {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      width: 48px;
+      height: 48px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      transition: all 0.3s;
+    }
+    
+    .theme-toggle:hover {
+      background: var(--bg-player);
     }
     
     .controls {
@@ -81,8 +137,8 @@
     }
     
     .skip-btn {
-      background: #fff;
-      border: 1px solid #e0e0e0;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
       border-radius: 50%;
       width: 44px;
       height: 44px;
@@ -91,18 +147,18 @@
       align-items: center;
       justify-content: center;
       font-size: 0.7rem;
-      color: #333;
+      color: var(--text-primary);
       transition: all 0.2s;
     }
     
     .skip-btn:hover {
-      background: #f0f0f0;
-      border-color: #ccc;
+      background: var(--bg-player);
+      border-color: var(--text-tertiary);
     }
     
     .play-btn {
       background: transparent;
-      border: 1px solid #e0e0e0;
+      border: 1px solid var(--border-color);
       border-radius: 50%;
       width: 64px;
       height: 64px;
@@ -111,13 +167,13 @@
       align-items: center;
       justify-content: center;
       font-size: 1.2rem;
-      color: #333;
+      color: var(--text-primary);
       transition: all 0.2s;
     }
     
     .play-btn:hover {
-      background: #f0f0f0;
-      border-color: #ccc;
+      background: var(--bg-player);
+      border-color: var(--text-tertiary);
       transform: scale(1.05);
     }
     
@@ -128,35 +184,36 @@
     label {
       display: block;
       font-size: 0.875rem;
-      color: #666;
+      color: var(--text-secondary);
       margin-bottom: 8px;
     }
     
     input[type="date"] {
       width: 100%;
       padding: 12px 16px;
-      border: 1px solid #e0e0e0;
+      border: 1px solid var(--border-color);
       border-radius: 8px;
       font-size: 1rem;
-      color: #1a1a1a;
-      background: #fff;
+      color: var(--text-primary);
+      background: var(--bg-card);
       cursor: pointer;
       transition: border-color 0.2s;
     }
     
     input[type="date"]:hover {
-      border-color: #999;
+      border-color: var(--text-tertiary);
     }
     
     input[type="date"]:focus {
       outline: none;
-      border-color: #333;
+      border-color: var(--text-primary);
     }
     
     .player-section {
-      background: #f5f5f5;
+      background: var(--bg-player);
       border-radius: 8px;
       padding: 20px;
+      transition: background 0.3s;
     }
     
     .progress-container {
@@ -169,7 +226,7 @@
       height: 4px;
       -webkit-appearance: none;
       appearance: none;
-      background: linear-gradient(to right, #1a1a1a 0%, #ddd 0%);
+      background: linear-gradient(to right, var(--slider-fill) 0%, var(--slider-bg) 0%);
       border-radius: 2px;
       cursor: pointer;
     }
@@ -178,7 +235,7 @@
       -webkit-appearance: none;
       width: 12px;
       height: 12px;
-      background: #1a1a1a;
+      background: var(--slider-fill);
       border-radius: 50%;
       cursor: pointer;
     }
@@ -186,7 +243,7 @@
     #progressSlider::-moz-range-thumb {
       width: 12px;
       height: 12px;
-      background: #1a1a1a;
+      background: var(--slider-fill);
       border-radius: 50%;
       cursor: pointer;
       border: none;
@@ -196,7 +253,7 @@
       display: flex;
       justify-content: space-between;
       font-size: 0.75rem;
-      color: #666;
+      color: var(--text-secondary);
       margin-bottom: 12px;
     }
     
@@ -211,6 +268,7 @@
       cursor: pointer;
       user-select: none;
       line-height: 1;
+      color: var(--text-primary);
     }
     
     #volumeSlider {
@@ -218,7 +276,7 @@
       height: 4px;
       -webkit-appearance: none;
       appearance: none;
-      background: #ddd;
+      background: var(--slider-bg);
       border-radius: 2px;
       cursor: pointer;
     }
@@ -227,7 +285,7 @@
       -webkit-appearance: none;
       width: 12px;
       height: 12px;
-      background: #1a1a1a;
+      background: var(--slider-fill);
       border-radius: 50%;
       cursor: pointer;
     }
@@ -235,7 +293,7 @@
     #volumeSlider::-moz-range-thumb {
       width: 12px;
       height: 12px;
-      background: #1a1a1a;
+      background: var(--slider-fill);
       border-radius: 50%;
       cursor: pointer;
       border: none;
@@ -243,6 +301,25 @@
     
     audio {
       display: none;
+    }
+    
+    .error-message {
+      background: #ff4444;
+      color: #fff;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      margin-bottom: 16px;
+      display: none;
+      text-align: center;
+    }
+    
+    .error-message.show {
+      display: block;
+    }
+    
+    [data-theme="dark"] .error-message {
+      background: #cc3333;
     }
     
     .install-prompt {
@@ -299,7 +376,14 @@
     
     <div class="date-section">
       <label for="datePicker">Seleziona data</label>
-      <input type="date" id="datePicker">
+      <div class="date-row">
+        <input type="date" id="datePicker">
+        <button class="theme-toggle" id="themeToggle">🌙</button>
+      </div>
+    </div>
+    
+    <div class="error-message" id="errorMessage">
+      Puntata non disponibile per questa data
     </div>
     
     <div class="player-section">
@@ -343,10 +427,37 @@
     const durationEl = document.getElementById('duration');
     const volumeSlider = document.getElementById('volumeSlider');
     const volumeIcon = document.getElementById('volumeIcon');
+    const errorMessage = document.getElementById('errorMessage');
+    const themeToggle = document.getElementById('themeToggle');
+    const themeColorMeta = document.getElementById('themeColor');
     
     let isPlaying = false;
     let lastVolume = 1;
     let isDragging = false;
+    
+    // Theme management
+    const savedTheme = localStorage.getItem('bside-theme') || 'light';
+    if (savedTheme === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      themeToggle.textContent = '☀️';
+      themeColorMeta.setAttribute('content', '#121212');
+    }
+    
+    themeToggle.addEventListener('click', () => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      if (isDark) {
+        document.documentElement.removeAttribute('data-theme');
+        themeToggle.textContent = '🌙';
+        themeColorMeta.setAttribute('content', '#ffffff');
+        localStorage.setItem('bside-theme', 'light');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        themeToggle.textContent = '☀️';
+        themeColorMeta.setAttribute('content', '#121212');
+        localStorage.setItem('bside-theme', 'dark');
+      }
+      updateProgressBackground(progressSlider.value);
+    });
     
     const today = new Date();
     datePicker.value = today.toISOString().split('T')[0];
@@ -380,12 +491,27 @@
         updateProgressBackground(0);
         currentTimeEl.textContent = '0:00';
         durationEl.textContent = '0:00';
+        errorMessage.classList.remove('show');
       }
     }
     
     function updateProgressBackground(pct) {
-      progressSlider.style.background = `linear-gradient(to right, #1a1a1a ${pct}%, #ddd ${pct}%)`;
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const fillColor = isDark ? '#fff' : '#1a1a1a';
+      const bgColor = isDark ? '#444' : '#ddd';
+      progressSlider.style.background = `linear-gradient(to right, ${fillColor} ${pct}%, ${bgColor} ${pct}%)`;
     }
+    
+    // Error handling
+    audioPlayer.addEventListener('error', () => {
+      errorMessage.classList.add('show');
+      playBtn.textContent = '▶';
+      isPlaying = false;
+    });
+    
+    audioPlayer.addEventListener('loadeddata', () => {
+      errorMessage.classList.remove('show');
+    });
     
     playBtn.addEventListener('click', () => {
       if (isPlaying) {
