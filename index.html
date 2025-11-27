@@ -9,27 +9,12 @@
   <meta name="apple-mobile-web-app-title" content="B-SIDE">
   <title>B-SIDE</title>
   
-  <link rel="manifest" href="data:application/json,{
-    %22name%22:%22B-SIDE%20-%20Alessio%20Bertallot%22,
-    %22short_name%22:%22B-SIDE%22,
-    %22description%22:%22Player%20podcast%20B-SIDE%20di%20Alessio%20Bertallot%22,
-    %22start_url%22:%22.%22,
-    %22display%22:%22standalone%22,
-    %22background_color%22:%22%23ffffff%22,
-    %22theme_color%22:%22%23ffffff%22,
-    %22icons%22:[{
-      %22src%22:%22data:image/svg+xml,%253Csvg%2520xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%2520viewBox%3D%270%25200%2520192%2520192%27%253E%253Crect%2520fill%3D%27%2523333%27%2520width%3D%27192%27%2520height%3D%27192%27%2520rx%3D%252732%27%2F%253E%253Ctext%2520x%3D%272796%27%2520y%3D%27140%27%2520font-size%3D%2780%27%2520fill%3D%27white%27%2520font-family%3D%27Arial%27%2520font-weight%3D%27bold%27%253EB%253C%2Ftext%253E%253C%2Fsvg%253E%22,
-      %22sizes%22:%22192x192%22,
-      %22type%22:%22image/svg+xml%22
-    }]
-  }">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
   
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     
     :root {
       --bg-main: #fafafa;
@@ -78,37 +63,29 @@
       transition: background 0.3s, box-shadow 0.3s;
     }
     
-    h1 {
-      font-size: 1.5rem;
-      font-weight: 600;
+    h1 { font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; text-align: center; }
+    .subtitle { font-size: 0.9rem; color: var(--text-secondary); text-align: center; margin-bottom: 4px; }
+    .episode { font-size: 0.8rem; color: var(--text-tertiary); text-align: center; margin-bottom: 24px; }
+    
+    .date-section { margin-bottom: 24px; }
+    .date-row { display: flex; gap: 12px; align-items: center; }
+    .date-row input[type="date"] { flex: 1; }
+    
+    label { display: block; font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 8px; }
+    
+    input[type="date"] {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 1rem;
       color: var(--text-primary);
-      margin-bottom: 4px;
-      text-align: center;
+      background: var(--bg-card);
+      cursor: pointer;
+      transition: border-color 0.2s;
     }
-    
-    .subtitle {
-      font-size: 0.9rem;
-      color: var(--text-secondary);
-      text-align: center;
-      margin-bottom: 4px;
-    }
-    
-    .episode {
-      font-size: 0.8rem;
-      color: var(--text-tertiary);
-      text-align: center;
-      margin-bottom: 24px;
-    }
-    
-    .date-row {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-    }
-    
-    .date-row input[type="date"] {
-      flex: 1;
-    }
+    input[type="date"]:hover { border-color: var(--text-tertiary); }
+    input[type="date"]:focus { outline: none; border-color: var(--text-primary); }
     
     .theme-toggle {
       background: var(--bg-card);
@@ -123,18 +100,10 @@
       font-size: 1.2rem;
       transition: all 0.3s;
     }
+    .theme-toggle:hover { background: var(--bg-player); }
     
-    .theme-toggle:hover {
-      background: var(--bg-player);
-    }
-    
-    .controls {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 20px;
-      margin-bottom: 16px;
-    }
+    .player-section { background: var(--bg-player); border-radius: 8px; padding: 20px; transition: background 0.3s; }
+    .controls { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 16px; }
     
     .skip-btn {
       background: var(--bg-card);
@@ -150,11 +119,7 @@
       color: var(--text-primary);
       transition: all 0.2s;
     }
-    
-    .skip-btn:hover {
-      background: var(--bg-player);
-      border-color: var(--text-tertiary);
-    }
+    .skip-btn:hover { background: var(--bg-player); border-color: var(--text-tertiary); }
     
     .play-btn {
       background: transparent;
@@ -170,56 +135,9 @@
       color: var(--text-primary);
       transition: all 0.2s;
     }
+    .play-btn:hover { background: var(--bg-player); border-color: var(--text-tertiary); transform: scale(1.05); }
     
-    .play-btn:hover {
-      background: var(--bg-player);
-      border-color: var(--text-tertiary);
-      transform: scale(1.05);
-    }
-    
-    .date-section {
-      margin-bottom: 24px;
-    }
-    
-    label {
-      display: block;
-      font-size: 0.875rem;
-      color: var(--text-secondary);
-      margin-bottom: 8px;
-    }
-    
-    input[type="date"] {
-      width: 100%;
-      padding: 12px 16px;
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      font-size: 1rem;
-      color: var(--text-primary);
-      background: var(--bg-card);
-      cursor: pointer;
-      transition: border-color 0.2s;
-    }
-    
-    input[type="date"]:hover {
-      border-color: var(--text-tertiary);
-    }
-    
-    input[type="date"]:focus {
-      outline: none;
-      border-color: var(--text-primary);
-    }
-    
-    .player-section {
-      background: var(--bg-player);
-      border-radius: 8px;
-      padding: 20px;
-      transition: background 0.3s;
-    }
-    
-    .progress-container {
-      width: 100%;
-      margin-bottom: 8px;
-    }
+    .progress-container { width: 100%; margin-bottom: 8px; }
     
     #progressSlider {
       width: 100%;
@@ -230,46 +148,12 @@
       border-radius: 2px;
       cursor: pointer;
     }
+    #progressSlider::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; background: var(--slider-fill); border-radius: 50%; cursor: pointer; }
+    #progressSlider::-moz-range-thumb { width: 12px; height: 12px; background: var(--slider-fill); border-radius: 50%; cursor: pointer; border: none; }
     
-    #progressSlider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 12px;
-      height: 12px;
-      background: var(--slider-fill);
-      border-radius: 50%;
-      cursor: pointer;
-    }
-    
-    #progressSlider::-moz-range-thumb {
-      width: 12px;
-      height: 12px;
-      background: var(--slider-fill);
-      border-radius: 50%;
-      cursor: pointer;
-      border: none;
-    }
-    
-    .time-display {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-      margin-bottom: 12px;
-    }
-    
-    .volume-control {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .volume-icon {
-      font-size: 1.1rem;
-      cursor: pointer;
-      user-select: none;
-      line-height: 1;
-      color: var(--text-primary);
-    }
+    .time-display { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 12px; }
+    .volume-control { display: flex; align-items: center; gap: 8px; }
+    .volume-icon { font-size: 1.1rem; cursor: pointer; user-select: none; line-height: 1; color: var(--text-primary); }
     
     #volumeSlider {
       flex: 1;
@@ -280,92 +164,20 @@
       border-radius: 2px;
       cursor: pointer;
     }
+    #volumeSlider::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; background: var(--slider-fill); border-radius: 50%; cursor: pointer; }
+    #volumeSlider::-moz-range-thumb { width: 12px; height: 12px; background: var(--slider-fill); border-radius: 50%; cursor: pointer; border: none; }
     
-    #volumeSlider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 12px;
-      height: 12px;
-      background: var(--slider-fill);
-      border-radius: 50%;
-      cursor: pointer;
-    }
+    audio { display: none; }
     
-    #volumeSlider::-moz-range-thumb {
-      width: 12px;
-      height: 12px;
-      background: var(--slider-fill);
-      border-radius: 50%;
-      cursor: pointer;
-      border: none;
-    }
+    .error-message { background: #ff4444; color: #fff; padding: 12px 16px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 16px; display: none; text-align: center; }
+    .error-message.show { display: block; }
+    [data-theme="dark"] .error-message { background: #cc3333; }
     
-    audio {
-      display: none;
-    }
-    
-    .error-message {
-      background: #ff4444;
-      color: #fff;
-      padding: 12px 16px;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      margin-bottom: 16px;
-      display: none;
-      text-align: center;
-    }
-    
-    .error-message.show {
-      display: block;
-    }
-    
-    [data-theme="dark"] .error-message {
-      background: #cc3333;
-    }
-    
-    .install-prompt {
-      display: none;
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      right: 20px;
-      background: #333;
-      color: #fff;
-      padding: 16px;
-      border-radius: 12px;
-      text-align: center;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-      z-index: 1000;
-    }
-    
-    .install-prompt.show {
-      display: block;
-    }
-    
-    .install-prompt p {
-      margin-bottom: 12px;
-      font-size: 0.9rem;
-    }
-    
-    .install-btn {
-      background: #fff;
-      color: #333;
-      border: none;
-      padding: 10px 24px;
-      border-radius: 8px;
-      font-size: 0.9rem;
-      cursor: pointer;
-      margin-right: 8px;
-    }
-    
-    .install-close {
-      background: transparent;
-      color: #999;
-      border: 1px solid #666;
-      padding: 10px 16px;
-      border-radius: 8px;
-      font-size: 0.9rem;
-      cursor: pointer;
-    }
+    .install-prompt { display: none; position: fixed; bottom: 20px; left: 20px; right: 20px; background: #333; color: #fff; padding: 16px; border-radius: 12px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.2); z-index: 1000; }
+    .install-prompt.show { display: block; }
+    .install-prompt p { margin-bottom: 12px; font-size: 0.9rem; }
+    .install-btn { background: #fff; color: #333; border: none; padding: 10px 24px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; margin-right: 8px; }
+    .install-close { background: transparent; color: #999; border: 1px solid #666; padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -382,9 +194,7 @@
       </div>
     </div>
     
-    <div class="error-message" id="errorMessage">
-      Puntata non disponibile per questa data
-    </div>
+    <div class="error-message" id="errorMessage">Puntata non disponibile per questa data</div>
     
     <div class="player-section">
       <div class="controls">
@@ -392,9 +202,7 @@
         <button class="play-btn" id="playBtn">▶</button>
         <button class="skip-btn" id="skipForward">+30s</button>
       </div>
-      <audio id="audioPlayer">
-        Il tuo browser non supporta l'elemento audio.
-      </audio>
+      <audio id="audioPlayer"></audio>
       <div class="progress-container">
         <input type="range" id="progressSlider" min="0" max="100" step="0.1" value="0">
       </div>
@@ -404,7 +212,7 @@
       </div>
       <div class="volume-control">
         <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="1">
-        <span class="volume-icon" id="volumeIcon">🔊</span>
+        <span class="volume-icon" id="volumeIcon"></span>
       </div>
     </div>
   </div>
@@ -431,11 +239,9 @@
     const themeToggle = document.getElementById('themeToggle');
     const themeColorMeta = document.getElementById('themeColor');
     
-    let isPlaying = false;
-    let lastVolume = 1;
-    let isDragging = false;
+    let isPlaying = false, lastVolume = 1, isDragging = false;
     
-    // Theme management
+    // Theme
     const savedTheme = localStorage.getItem('bside-theme') || 'light';
     if (savedTheme === 'dark') {
       document.documentElement.setAttribute('data-theme', 'dark');
@@ -502,25 +308,12 @@
       progressSlider.style.background = `linear-gradient(to right, ${fillColor} ${pct}%, ${bgColor} ${pct}%)`;
     }
     
-    // Error handling
-    audioPlayer.addEventListener('error', () => {
-      errorMessage.classList.add('show');
-      playBtn.textContent = '▶';
-      isPlaying = false;
-    });
-    
-    audioPlayer.addEventListener('loadeddata', () => {
-      errorMessage.classList.remove('show');
-    });
+    audioPlayer.addEventListener('error', () => { errorMessage.classList.add('show'); playBtn.textContent = '▶'; isPlaying = false; });
+    audioPlayer.addEventListener('loadeddata', () => { errorMessage.classList.remove('show'); });
     
     playBtn.addEventListener('click', () => {
-      if (isPlaying) {
-        audioPlayer.pause();
-        playBtn.textContent = '▶';
-      } else {
-        audioPlayer.play();
-        playBtn.textContent = '❚❚';
-      }
+      if (isPlaying) { audioPlayer.pause(); playBtn.textContent = '▶'; }
+      else { audioPlayer.play(); playBtn.textContent = '❚❚'; }
       isPlaying = !isPlaying;
     });
     
@@ -530,19 +323,17 @@
         progressSlider.value = pct;
         updateProgressBackground(pct);
         currentTimeEl.textContent = formatTime(audioPlayer.currentTime);
+        if ('mediaSession' in navigator && audioPlayer.duration) {
+          navigator.mediaSession.setPositionState({ duration: audioPlayer.duration, playbackRate: audioPlayer.playbackRate, position: audioPlayer.currentTime });
+        }
       }
     });
     
     audioPlayer.addEventListener('loadedmetadata', () => {
       durationEl.textContent = formatTime(audioPlayer.duration);
       progressSlider.max = 100;
-      
       if ('mediaSession' in navigator) {
-        navigator.mediaSession.setPositionState({
-          duration: audioPlayer.duration,
-          playbackRate: 1,
-          position: 0
-        });
+        navigator.mediaSession.setPositionState({ duration: audioPlayer.duration, playbackRate: 1, position: 0 });
       }
     });
     
@@ -550,37 +341,23 @@
       isDragging = true;
       const pct = progressSlider.value;
       updateProgressBackground(pct);
-      const time = (pct / 100) * audioPlayer.duration;
-      currentTimeEl.textContent = formatTime(time);
+      currentTimeEl.textContent = formatTime((pct / 100) * audioPlayer.duration);
     });
     
     progressSlider.addEventListener('change', () => {
-      const pct = progressSlider.value;
-      audioPlayer.currentTime = (pct / 100) * audioPlayer.duration;
+      audioPlayer.currentTime = (progressSlider.value / 100) * audioPlayer.duration;
       isDragging = false;
     });
     
-    datePicker.addEventListener('change', () => {
-      updatePlayer();
-      updateMediaSessionMetadata();
-    });
+    datePicker.addEventListener('change', () => { updatePlayer(); updateMediaSessionMetadata(); });
     skipBack.addEventListener('click', () => audioPlayer.currentTime -= 30);
     skipForward.addEventListener('click', () => audioPlayer.currentTime += 30);
     
-    volumeSlider.addEventListener('input', () => {
-      audioPlayer.volume = volumeSlider.value;
-      updateVolumeIcon();
-    });
+    volumeSlider.addEventListener('input', () => { audioPlayer.volume = volumeSlider.value; updateVolumeIcon(); });
     
     volumeIcon.addEventListener('click', () => {
-      if (audioPlayer.volume > 0) {
-        lastVolume = audioPlayer.volume;
-        audioPlayer.volume = 0;
-        volumeSlider.value = 0;
-      } else {
-        audioPlayer.volume = lastVolume;
-        volumeSlider.value = lastVolume;
-      }
+      if (audioPlayer.volume > 0) { lastVolume = audioPlayer.volume; audioPlayer.volume = 0; volumeSlider.value = 0; }
+      else { audioPlayer.volume = lastVolume; volumeSlider.value = lastVolume; }
       updateVolumeIcon();
     });
     
@@ -597,99 +374,43 @@
     const installBtn = document.getElementById('installBtn');
     const installClose = document.getElementById('installClose');
     
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      installPrompt.classList.add('show');
-    });
+    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; installPrompt.classList.add('show'); });
+    installBtn.addEventListener('click', async () => { if (deferredPrompt) { deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; installPrompt.classList.remove('show'); } });
+    installClose.addEventListener('click', () => { installPrompt.classList.remove('show'); });
+    window.addEventListener('appinstalled', () => { installPrompt.classList.remove('show'); });
     
-    installBtn.addEventListener('click', async () => {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        deferredPrompt = null;
-        installPrompt.classList.remove('show');
-      }
-    });
-    
-    installClose.addEventListener('click', () => {
-      installPrompt.classList.remove('show');
-    });
-    
-    window.addEventListener('appinstalled', () => {
-      installPrompt.classList.remove('show');
-    });
-    
-    // Media Session API per background playback
+    // Media Session API
     if ('mediaSession' in navigator) {
       navigator.mediaSession.metadata = new MediaMetadata({
         title: 'B-SIDE',
         artist: 'Alessio Bertallot',
         album: 'Radio Capital',
         artwork: [
-          { src: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect fill="%23333" width="512" height="512" rx="64"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-size="200" fill="white" font-family="Arial" font-weight="bold">B</text></svg>', sizes: '512x512', type: 'image/svg+xml' }
+          { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'icon-512.png', sizes: '512x512', type: 'image/png' }
         ]
       });
       
-      navigator.mediaSession.setActionHandler('play', () => {
-        audioPlayer.play();
-        playBtn.textContent = '❚❚';
-        isPlaying = true;
-      });
-      
-      navigator.mediaSession.setActionHandler('pause', () => {
-        audioPlayer.pause();
-        playBtn.textContent = '▶';
-        isPlaying = false;
-      });
-      
-      navigator.mediaSession.setActionHandler('seekbackward', () => {
-        audioPlayer.currentTime -= 30;
-      });
-      
-      navigator.mediaSession.setActionHandler('seekforward', () => {
-        audioPlayer.currentTime += 30;
-      });
-      
-      navigator.mediaSession.setActionHandler('seekto', (details) => {
-        if (details.seekTime) {
-          audioPlayer.currentTime = details.seekTime;
-        }
-      });
+      navigator.mediaSession.setActionHandler('play', () => { audioPlayer.play(); playBtn.textContent = '❚❚'; isPlaying = true; });
+      navigator.mediaSession.setActionHandler('pause', () => { audioPlayer.pause(); playBtn.textContent = '▶'; isPlaying = false; });
+      navigator.mediaSession.setActionHandler('seekbackward', () => { audioPlayer.currentTime -= 30; });
+      navigator.mediaSession.setActionHandler('seekforward', () => { audioPlayer.currentTime += 30; });
+      navigator.mediaSession.setActionHandler('seekto', (d) => { if (d.seekTime) audioPlayer.currentTime = d.seekTime; });
     }
     
-    // Aggiorna metadata quando cambia la data
     function updateMediaSessionMetadata() {
       if ('mediaSession' in navigator) {
-        const dateValue = datePicker.value;
         navigator.mediaSession.metadata = new MediaMetadata({
-          title: `Puntata del ${formatDate(dateValue)}`,
+          title: `Puntata del ${formatDate(datePicker.value)}`,
           artist: 'Alessio Bertallot',
           album: 'B-SIDE - Radio Capital',
           artwork: [
-            { src: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect fill="%23333" width="512" height="512" rx="64"/><text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-size="200" fill="white" font-family="Arial" font-weight="bold">B</text></svg>', sizes: '512x512', type: 'image/svg+xml' }
+            { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
+            { src: 'icon-512.png', sizes: '512x512', type: 'image/png' }
           ]
         });
       }
     }
-    
-    // Aggiorna posizione per la barra di avanzamento nel lockscreen
-    audioPlayer.addEventListener('timeupdate', () => {
-      if (!isDragging) {
-        const pct = (audioPlayer.currentTime / audioPlayer.duration) * 100 || 0;
-        progressSlider.value = pct;
-        updateProgressBackground(pct);
-        currentTimeEl.textContent = formatTime(audioPlayer.currentTime);
-        
-        if ('mediaSession' in navigator && audioPlayer.duration) {
-          navigator.mediaSession.setPositionState({
-            duration: audioPlayer.duration,
-            playbackRate: audioPlayer.playbackRate,
-            position: audioPlayer.currentTime
-          });
-        }
-      }
-    });
     
     updateVolumeIcon();
     updatePlayer();
