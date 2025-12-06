@@ -82,11 +82,20 @@
       gap: 10px;
       cursor: pointer;
       transition: all 0.2s;
+      position: relative;
     }
     .date-picker-btn:hover { background: var(--bg-elevated); }
     .date-picker-btn span { font-size: 0.95rem; font-weight: 500; color: var(--text-primary); }
     .date-picker-btn svg { width: 16px; height: 16px; color: var(--text-tertiary); }
-    .date-picker-btn input { position: absolute; opacity: 0; width: 0; height: 0; }
+    .date-picker-btn input {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
     
     /* Error & Connection */
     .error-message { background: #FF453A; color: #fff; padding: 12px 20px; border-radius: 12px; font-size: 0.85rem; font-weight: 500; text-align: center; display: none; }
@@ -265,11 +274,11 @@
     </header>
     
     <div class="date-picker-wrapper">
-      <label class="date-picker-btn">
+      <div class="date-picker-btn" id="datePickerBtn">
         <span id="dateDisplay">Seleziona Data</span>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
         <input type="date" id="datePicker">
-      </label>
+      </div>
     </div>
     
     <div class="error-message" id="errorMessage">Puntata non disponibile per questa data</div>
@@ -359,6 +368,7 @@
 
   <script>
     const datePicker = document.getElementById('datePicker');
+    const datePickerBtn = document.getElementById('datePickerBtn');
     const dateDisplay = document.getElementById('dateDisplay');
     const audioPlayer = document.getElementById('audioPlayer');
     const episodeDate = document.getElementById('episodeDate');
@@ -419,6 +429,10 @@
     const today = new Date();
     datePicker.value = today.toISOString().split('T')[0];
     datePicker.max = today.toISOString().split('T')[0];
+    
+    datePickerBtn.addEventListener('click', () => {
+      datePicker.showPicker();
+    });
     
     datePicker.addEventListener('change', () => {
       updatePlayer();
@@ -512,16 +526,46 @@
       sleepMenu.classList.remove('show');
     });
     
-    volumeSliderContainer.addEventListener('click', (e) => {
-      e.stopPropagation();
+    let volumeDragging = false;
+    
+    function updateVolumeFromEvent(e) {
       const rect = volumeSliderContainer.getBoundingClientRect();
-      const y = e.clientY - rect.top;
+      let clientY;
+      if (e.touches) {
+        clientY = e.touches[0].clientY;
+      } else {
+        clientY = e.clientY;
+      }
+      const y = clientY - rect.top;
       const pct = 1 - (y / rect.height);
       const vol = Math.max(0, Math.min(1, pct));
       audioPlayer.volume = vol;
       lastVolume = vol > 0 ? vol : lastVolume;
       updateVolumeUI();
+    }
+    
+    volumeSliderContainer.addEventListener('mousedown', (e) => {
+      e.stopPropagation();
+      volumeDragging = true;
+      updateVolumeFromEvent(e);
     });
+    
+    volumeSliderContainer.addEventListener('touchstart', (e) => {
+      e.stopPropagation();
+      volumeDragging = true;
+      updateVolumeFromEvent(e);
+    });
+    
+    document.addEventListener('mousemove', (e) => {
+      if (volumeDragging) updateVolumeFromEvent(e);
+    });
+    
+    document.addEventListener('touchmove', (e) => {
+      if (volumeDragging) updateVolumeFromEvent(e);
+    });
+    
+    document.addEventListener('mouseup', () => { volumeDragging = false; });
+    document.addEventListener('touchend', () => { volumeDragging = false; });
     
     function updateVolumeUI() {
       const v = audioPlayer.volume;
