@@ -214,6 +214,37 @@
     .error-message.show { display: block; }
     [data-theme="dark"] .error-message { background: #cc3333; }
     
+    .connection-status { 
+      background: #ff9800; 
+      color: #fff; 
+      padding: 10px 16px; 
+      border-radius: 8px; 
+      font-size: 0.8rem; 
+      margin-bottom: 16px; 
+      display: none; 
+      text-align: center;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .connection-status.show { display: flex; }
+    .connection-status.offline { background: #f44336; }
+    .connection-status.reconnecting { background: #ff9800; }
+    .connection-status.online { background: #4caf50; }
+    [data-theme="dark"] .connection-status.offline { background: #c62828; }
+    [data-theme="dark"] .connection-status.reconnecting { background: #e65100; }
+    [data-theme="dark"] .connection-status.online { background: #2e7d32; }
+    
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    
     .install-prompt { display: none; position: fixed; bottom: 20px; left: 20px; right: 20px; background: #333; color: #fff; padding: 16px; border-radius: 12px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.2); z-index: 1000; }
     .install-prompt.show { display: block; }
     .install-prompt p { margin-bottom: 12px; font-size: 0.9rem; }
@@ -235,6 +266,11 @@
     </div>
     
     <div class="error-message" id="errorMessage">Puntata non disponibile per questa data</div>
+    
+    <div class="connection-status" id="connectionStatus">
+      <div class="spinner"></div>
+      <span id="connectionText">Riconnessione...</span>
+    </div>
     
     <div class="player-section">
       <div class="controls">
@@ -305,9 +341,12 @@
     const sleepMenu = document.getElementById('sleepMenu');
     const sleepLabel = document.getElementById('sleepLabel');
     const sleepOptions = document.querySelectorAll('.sleep-option');
+    const connectionStatus = document.getElementById('connectionStatus');
+    const connectionText = document.getElementById('connectionText');
     
     let isPlaying = false, lastVolume = 1, isDragging = false;
     let sleepTimer = null, sleepEndTime = null, sleepCountdown = null;
+    let retryCount = 0, retryTimer = null, lastPlaybackTime = 0, wasPlayingBeforeError = false;
     
     // Theme
     const savedTheme = localStorage.getItem('bside-theme') || 'light';
@@ -442,8 +481,157 @@
       progressSlider.style.background = `linear-gradient(to right, ${fillColor} ${pct}%, ${bgColor} ${pct}%)`;
     }
     
-    audioPlayer.addEventListener('error', () => { errorMessage.classList.add('show'); playBtn.textContent = '▶'; isPlaying = false; });
-    audioPlayer.addEventListener('loadeddata', () => { errorMessage.classList.remove('show'); });
+    audioPlayer.addEventListener('error', () => { 
+      handlePlaybackError();
+    });
+    audioPlayer.addEventListener('loadeddata', () => { 
+      errorMessage.classList.remove('show');
+      hideConnectionStatus();
+      retryCount = 0;
+    });
+    
+    // Stalled/waiting - buffering lento
+    audioPlayer.addEventListener('waiting', () => {
+      if (isPlaying) {
+        showConnectionStatus('reconnecting', 'Buffering...');
+      }
+    });
+    
+    audioPlayer.addEventListener('playing', () => {
+      hideConnectionStatus();
+      retryCount = 0;
+    });
+    
+    // Network status detection
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    function handlePlaybackError() {
+      const wasPlaying = isPlaying;
+      lastPlaybackTime = audioPlayer.currentTime || 0;
+      wasPlayingBeforeError = wasPlaying;
+      
+      playBtn.textContent = '▶';
+      isPlaying = false;
+      
+      // Pausa sleep timer durante errore
+      pauseSleepTimer();
+      
+      if (!navigator.onLine) {
+        handleOffline();
+        return;
+      }
+      
+      // Verifica se è errore 404 (puntata non esiste) o errore di rete
+      fetch(audioPlayer.src, { method: 'HEAD' })
+        .then(response => {
+          if (response.status === 404) {
+            errorMessage.classList.add('show');
+            hideConnectionStatus();
+          } else {
+            attemptReconnect();
+          }
+        })
+        .catch(() => {
+          attemptReconnect();
+        });
+    }
+    
+    function attemptReconnect() {
+      if (retryCount >= 5) {
+        showConnectionStatus('offline', 'Connessione fallita. Tocca per riprovare.');
+        connectionStatus.style.cursor = 'pointer';
+        connectionStatus.onclick = () => {
+          retryCount = 0;
+          attemptReconnect();
+        };
+        return;
+      }
+      
+      retryCount++;
+      const delay = Math.min(5000 * retryCount, 20000); // 5s, 10s, 15s, 20s, 20s
+      
+      showConnectionStatus('reconnecting', `Riconnessione... (${retryCount}/5)`);
+      
+      if (retryTimer) clearTimeout(retryTimer);
+      
+      retryTimer = setTimeout(() => {
+        const currentSrc = audioPlayer.src;
+        audioPlayer.src = '';
+        audioPlayer.src = currentSrc;
+        audioPlayer.currentTime = lastPlaybackTime;
+        
+        if (wasPlayingBeforeError) {
+          audioPlayer.play()
+            .then(() => {
+              isPlaying = true;
+              playBtn.textContent = '❚❚';
+              hideConnectionStatus();
+              retryCount = 0;
+              resumeSleepTimer();
+            })
+            .catch(() => {
+              attemptReconnect();
+            });
+        }
+      }, delay);
+    }
+    
+    function handleOnline() {
+      showConnectionStatus('online', 'Connessione ripristinata');
+      setTimeout(() => {
+        hideConnectionStatus();
+        if (wasPlayingBeforeError && lastPlaybackTime > 0) {
+          retryCount = 0;
+          attemptReconnect();
+        }
+      }, 1500);
+    }
+    
+    function handleOffline() {
+      showConnectionStatus('offline', 'Nessuna connessione internet');
+      pauseSleepTimer();
+      if (retryTimer) clearTimeout(retryTimer);
+    }
+    
+    function showConnectionStatus(type, message) {
+      connectionStatus.className = 'connection-status show ' + type;
+      connectionText.textContent = message;
+      connectionStatus.style.cursor = type === 'offline' && retryCount >= 5 ? 'pointer' : 'default';
+    }
+    
+    function hideConnectionStatus() {
+      connectionStatus.classList.remove('show');
+      connectionStatus.onclick = null;
+    }
+    
+    function pauseSleepTimer() {
+      if (sleepEndTime && sleepCountdown) {
+        clearInterval(sleepCountdown);
+        sleepCountdown = null;
+        if (sleepTimer) {
+          clearTimeout(sleepTimer);
+          sleepTimer = null;
+        }
+      }
+    }
+    
+    function resumeSleepTimer() {
+      if (sleepEndTime) {
+        const remaining = sleepEndTime - Date.now();
+        if (remaining > 0) {
+          sleepCountdown = setInterval(updateSleepDisplay, 1000);
+          sleepTimer = setTimeout(() => {
+            audioPlayer.pause();
+            playBtn.textContent = '▶';
+            isPlaying = false;
+            setSleepTimer(0);
+          }, remaining);
+        } else {
+          setSleepTimer(0);
+        }
+      }
+    }
     
     playBtn.addEventListener('click', () => {
       if (isPlaying) { audioPlayer.pause(); playBtn.textContent = '▶'; }
