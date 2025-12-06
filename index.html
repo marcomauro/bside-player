@@ -259,7 +259,6 @@
     <p class="episode" id="episodeDate">Puntata del —</p>
     
     <div class="date-section">
-      <label for="datePicker">Seleziona data</label>
       <div class="date-row">
         <input type="date" id="datePicker">
       </div>
@@ -306,7 +305,7 @@
       </div>
       <div class="time-display">
         <span id="currentTime">0:00</span>
-        <span id="duration">0:00</span>
+        <span id="remainingTime">-0:00</span>
       </div>
       <div class="volume-control">
         <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="1">
@@ -330,7 +329,7 @@
     const playBtn = document.getElementById('playBtn');
     const progressSlider = document.getElementById('progressSlider');
     const currentTimeEl = document.getElementById('currentTime');
-    const durationEl = document.getElementById('duration');
+    const remainingTimeEl = document.getElementById('remainingTime');
     const volumeSlider = document.getElementById('volumeSlider');
     const volumeIcon = document.getElementById('volumeIcon');
     const errorMessage = document.getElementById('errorMessage');
@@ -469,7 +468,7 @@
         progressSlider.value = 0;
         updateProgressBackground(0);
         currentTimeEl.textContent = '0:00';
-        durationEl.textContent = '0:00';
+        remainingTimeEl.textContent = '-0:00';
         errorMessage.classList.remove('show');
       }
     }
@@ -645,6 +644,8 @@
         progressSlider.value = pct;
         updateProgressBackground(pct);
         currentTimeEl.textContent = formatTime(audioPlayer.currentTime);
+        const remaining = audioPlayer.duration - audioPlayer.currentTime;
+        remainingTimeEl.textContent = '-' + formatTime(remaining);
         if ('mediaSession' in navigator && audioPlayer.duration) {
           navigator.mediaSession.setPositionState({ duration: audioPlayer.duration, playbackRate: audioPlayer.playbackRate, position: audioPlayer.currentTime });
         }
@@ -652,7 +653,7 @@
     });
     
     audioPlayer.addEventListener('loadedmetadata', () => {
-      durationEl.textContent = formatTime(audioPlayer.duration);
+      remainingTimeEl.textContent = '-' + formatTime(audioPlayer.duration);
       progressSlider.max = 100;
       if ('mediaSession' in navigator) {
         navigator.mediaSession.setPositionState({ duration: audioPlayer.duration, playbackRate: 1, position: 0 });
@@ -663,7 +664,10 @@
       isDragging = true;
       const pct = progressSlider.value;
       updateProgressBackground(pct);
-      currentTimeEl.textContent = formatTime((pct / 100) * audioPlayer.duration);
+      const time = (pct / 100) * audioPlayer.duration;
+      currentTimeEl.textContent = formatTime(time);
+      const remaining = audioPlayer.duration - time;
+      remainingTimeEl.textContent = '-' + formatTime(remaining);
     });
     
     progressSlider.addEventListener('change', () => {
