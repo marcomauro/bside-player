@@ -107,15 +107,15 @@
     
     .time-display { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 20px; }
     
-    .controls { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 20px; padding: 0 10px; }
+    .controls { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 20px; }
     
     .nav-btn {
       background: transparent;
       border: none;
-      width: 40px;
-      height: 40px;
-      min-width: 40px;
-      min-height: 40px;
+      width: 32px;
+      height: 32px;
+      min-width: 32px;
+      min-height: 32px;
       flex-shrink: 0;
       cursor: pointer;
       display: flex;
@@ -123,11 +123,11 @@
       justify-content: center;
       color: var(--text-primary);
       transition: all 0.2s;
-      opacity: 0.7;
+      opacity: 0.6;
     }
     .nav-btn:hover { opacity: 1; }
-    .nav-btn svg { width: 28px; height: 28px; }
-    .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .nav-btn svg { width: 20px; height: 20px; }
+    .nav-btn:disabled { opacity: 0.25; cursor: not-allowed; }
     
     .skip-btn {
       background: var(--bg-card);
@@ -327,18 +327,16 @@
       
       <div class="controls">
         <button class="nav-btn" id="prevDay">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <polyline points="12 19 5 12 12 5"/>
-            <line x1="5" y1="12" x2="19" y2="12"/>
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M6 6h2v12H6zM9.5 12l8.5 6V6z"/>
           </svg>
         </button>
         <button class="skip-btn" id="skipBack">-30s</button>
         <button class="play-btn" id="playBtn">▶</button>
         <button class="skip-btn" id="skipForward">+30s</button>
         <button class="nav-btn" id="nextDay">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <polyline points="12 5 19 12 12 19"/>
-            <line x1="19" y1="12" x2="5" y2="12"/>
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M16 6h2v12h-2zM6 18l8.5-6L6 6z"/>
           </svg>
         </button>
       </div>
