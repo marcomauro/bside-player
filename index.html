@@ -143,8 +143,8 @@
     .skip-btn:hover { background: var(--bg-player); border-color: var(--text-tertiary); }
     
     .play-btn {
-      background: var(--accent);
-      border: none;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
       border-radius: 50%;
       width: 72px;
       height: 72px;
@@ -153,11 +153,10 @@
       align-items: center;
       justify-content: center;
       font-size: 1.5rem;
-      color: #fff;
+      color: var(--text-primary);
       transition: all 0.2s;
-      box-shadow: 0 4px 12px rgba(74, 144, 217, 0.3);
     }
-    .play-btn:hover { transform: scale(1.05); box-shadow: 0 6px 16px rgba(74, 144, 217, 0.4); }
+    .play-btn:hover { transform: scale(1.05); background: var(--bg-player); border-color: var(--text-tertiary); }
     
     .volume-control { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
     
@@ -295,7 +294,6 @@
     <p class="episode" id="episodeDate">Puntata del —</p>
     
     <div class="date-section">
-      <label for="datePicker">Seleziona data</label>
       <div class="date-row">
         <input type="date" id="datePicker">
       </div>
