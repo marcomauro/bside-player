@@ -218,6 +218,18 @@
     
     /* Bottom Bar */
     .bottom-bar { display: flex; justify-content: center; align-items: center; gap: 20px; padding-top: 16px; }
+    
+    .connection-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #30D158;
+      transition: background 0.3s;
+      flex-shrink: 0;
+    }
+    .connection-indicator.warning { background: #FF9F0A; animation: pulse 1.5s infinite; }
+    .connection-indicator.offline { background: #FF453A; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     .volume-btn {
       background: var(--bg-button);
       border: none;
@@ -422,6 +434,7 @@
       <audio id="audioPlayer"></audio>
       
       <div class="bottom-bar">
+        <div class="connection-indicator" id="connectionIndicator" title="Connessione"></div>
         <button class="setting-btn" id="volumeBtn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="volumeIcon">
             <path d="M11 5L6 9H2v6h4l5 4V5z"/>
@@ -505,9 +518,12 @@
     const favoritesMenu = document.getElementById('favoritesMenu');
     const favoritesList = document.getElementById('favoritesList');
     
+    const connectionIndicator = document.getElementById('connectionIndicator');
+    
     let isPlaying = false, lastVolume = 1, isDragging = false;
     let sleepTimer = null, sleepEndTime = null, sleepCountdown = null;
     let retryCount = 0, retryTimer = null, lastPlaybackTime = 0, wasPlayingBeforeError = false;
+    let connectionCheckInterval = null, bufferingTimeout = null, maxRetries = 10;
     
     // Theme
     const savedTheme = localStorage.getItem('bside-theme') || 'dark';
@@ -898,9 +914,46 @@
     
     // Audio events
     audioPlayer.addEventListener('error', () => handlePlaybackError());
-    audioPlayer.addEventListener('loadeddata', () => { errorMessage.classList.remove('show'); hideConnectionStatus(); retryCount = 0; });
-    audioPlayer.addEventListener('waiting', () => { if (isPlaying) showConnectionStatus('reconnecting', 'Buffering...'); });
-    audioPlayer.addEventListener('playing', () => { hideConnectionStatus(); retryCount = 0; });
+    audioPlayer.addEventListener('loadeddata', () => { 
+      errorMessage.classList.remove('show'); 
+      hideConnectionStatus(); 
+      retryCount = 0;
+      setConnectionIndicator('online');
+      startConnectionCheck();
+    });
+    audioPlayer.addEventListener('waiting', () => { 
+      if (isPlaying) {
+        setConnectionIndicator('warning');
+        // Buffering proattivo: se dura più di 4 secondi, avvia riconnessione
+        if (bufferingTimeout) clearTimeout(bufferingTimeout);
+        bufferingTimeout = setTimeout(() => {
+          if (isPlaying && audioPlayer.readyState < 3) {
+            handlePlaybackError();
+          }
+        }, 4000);
+      }
+    });
+    audioPlayer.addEventListener('playing', () => { 
+      hideConnectionStatus(); 
+      retryCount = 0;
+      setConnectionIndicator('online');
+      if (bufferingTimeout) {
+        clearTimeout(bufferingTimeout);
+        bufferingTimeout = null;
+      }
+    });
+    audioPlayer.addEventListener('stalled', () => {
+      if (isPlaying) {
+        setConnectionIndicator('warning');
+        // Stalled: tentativo di riconnessione dopo 5 secondi
+        if (bufferingTimeout) clearTimeout(bufferingTimeout);
+        bufferingTimeout = setTimeout(() => {
+          if (isPlaying) {
+            handlePlaybackError();
+          }
+        }, 5000);
+      }
+    });
     
     audioPlayer.addEventListener('loadedmetadata', () => {
       remainingTimeEl.textContent = '-' + formatTime(audioPlayer.duration);
@@ -931,62 +984,152 @@
     skipForward.addEventListener('click', () => audioPlayer.currentTime += 30);
     
     // Connection handling
+    function setConnectionIndicator(status) {
+      connectionIndicator.className = 'connection-indicator';
+      if (status === 'warning') connectionIndicator.classList.add('warning');
+      else if (status === 'offline') connectionIndicator.classList.add('offline');
+    }
+    
+    function startConnectionCheck() {
+      if (connectionCheckInterval) clearInterval(connectionCheckInterval);
+      connectionCheckInterval = setInterval(() => {
+        if (isPlaying) {
+          checkConnection();
+        }
+      }, 30000); // Controlla ogni 30 secondi durante la riproduzione
+    }
+    
+    function checkConnection() {
+      if (!navigator.onLine) {
+        setConnectionIndicator('offline');
+        return;
+      }
+      
+      // Ping leggero al server
+      fetch(audioPlayer.src, { method: 'HEAD', cache: 'no-store' })
+        .then(response => {
+          if (response.ok) {
+            setConnectionIndicator('online');
+          } else {
+            setConnectionIndicator('warning');
+          }
+        })
+        .catch(() => {
+          setConnectionIndicator('warning');
+        });
+    }
+    
     function handlePlaybackError() {
       lastPlaybackTime = audioPlayer.currentTime || 0;
       wasPlayingBeforeError = isPlaying;
       updatePlayButton(false);
       isPlaying = false;
       pauseSleepTimer();
+      setConnectionIndicator('offline');
       
-      if (!navigator.onLine) { handleOffline(); return; }
+      if (!navigator.onLine) {
+        handleOffline();
+        return;
+      }
       
-      fetch(audioPlayer.src, { method: 'HEAD' })
+      // Verifica se è errore 404 o errore di rete
+      fetch(audioPlayer.src, { method: 'HEAD', cache: 'no-store' })
         .then(response => {
-          if (response.status === 404) { errorMessage.classList.add('show'); hideConnectionStatus(); }
-          else attemptReconnect();
+          if (response.status === 404) {
+            errorMessage.classList.add('show');
+            hideConnectionStatus();
+            setConnectionIndicator('offline');
+          } else {
+            attemptReconnect();
+          }
         })
         .catch(() => attemptReconnect());
     }
     
     function attemptReconnect() {
-      if (retryCount >= 5) {
-        showConnectionStatus('offline', 'Connessione fallita. Tocca per riprovare.');
-        connectionStatus.style.cursor = 'pointer';
-        connectionStatus.onclick = () => { retryCount = 0; attemptReconnect(); };
+      if (retryCount >= maxRetries) {
+        // Dopo max tentativi, aspetta e riprova automaticamente
+        showConnectionStatus('offline', 'Riconnessione automatica...');
+        setConnectionIndicator('offline');
+        
+        // Retry automatico dopo 30 secondi
+        if (retryTimer) clearTimeout(retryTimer);
+        retryTimer = setTimeout(() => {
+          retryCount = 0;
+          attemptReconnect();
+        }, 30000);
         return;
       }
       
       retryCount++;
-      const delay = Math.min(5000 * retryCount, 20000);
-      showConnectionStatus('reconnecting', `Riconnessione... (${retryCount}/5)`);
+      // Backoff esponenziale: 2s, 4s, 8s, 16s, max 20s
+      const delay = Math.min(2000 * Math.pow(2, retryCount - 1), 20000);
+      
+      showConnectionStatus('reconnecting', `Riconnessione... (${retryCount}/${maxRetries})`);
+      setConnectionIndicator('warning');
       
       if (retryTimer) clearTimeout(retryTimer);
+      
       retryTimer = setTimeout(() => {
-        const currentSrc = audioPlayer.src;
-        audioPlayer.src = '';
-        audioPlayer.src = currentSrc;
-        audioPlayer.currentTime = lastPlaybackTime;
+        // Resume intelligente: usa load() invece di riassegnare src
+        const currentTime = lastPlaybackTime;
         
-        if (wasPlayingBeforeError) {
-          audioPlayer.play()
-            .then(() => { isPlaying = true; updatePlayButton(true); hideConnectionStatus(); retryCount = 0; resumeSleepTimer(); })
-            .catch(() => attemptReconnect());
-        }
+        audioPlayer.load();
+        
+        audioPlayer.addEventListener('loadedmetadata', function onLoaded() {
+          audioPlayer.removeEventListener('loadedmetadata', onLoaded);
+          audioPlayer.currentTime = currentTime;
+          
+          if (wasPlayingBeforeError) {
+            audioPlayer.play()
+              .then(() => {
+                isPlaying = true;
+                updatePlayButton(true);
+                hideConnectionStatus();
+                retryCount = 0;
+                setConnectionIndicator('online');
+                resumeSleepTimer();
+              })
+              .catch(() => attemptReconnect());
+          } else {
+            hideConnectionStatus();
+            retryCount = 0;
+            setConnectionIndicator('online');
+          }
+        }, { once: true });
+        
+        // Timeout per loadedmetadata
+        setTimeout(() => {
+          if (retryCount > 0 && !isPlaying && wasPlayingBeforeError) {
+            attemptReconnect();
+          }
+        }, 10000);
+        
       }, delay);
     }
     
     function handleOnline() {
       showConnectionStatus('online', 'Connessione ripristinata');
+      setConnectionIndicator('online');
+      
+      // Retry automatico immediato quando torna online
       setTimeout(() => {
         hideConnectionStatus();
-        if (wasPlayingBeforeError && lastPlaybackTime > 0) { retryCount = 0; attemptReconnect(); }
-      }, 1500);
+        if (wasPlayingBeforeError && lastPlaybackTime > 0) {
+          retryCount = 0;
+          attemptReconnect();
+        }
+      }, 1000);
     }
     
     function handleOffline() {
-      showConnectionStatus('offline', 'Nessuna connessione internet');
+      showConnectionStatus('offline', 'Nessuna connessione');
+      setConnectionIndicator('offline');
       pauseSleepTimer();
       if (retryTimer) clearTimeout(retryTimer);
+      
+      // Quando torna online, riprova automaticamente
+      // (gestito dall'evento 'online')
     }
     
     function showConnectionStatus(type, message) {
@@ -996,7 +1139,6 @@
     
     function hideConnectionStatus() {
       connectionStatus.classList.remove('show');
-      connectionStatus.onclick = null;
     }
     
     window.addEventListener('online', handleOnline);
@@ -1052,6 +1194,7 @@
     updateMediaSessionMetadata();
     updateNavButtons();
     updateFavoriteButton();
+    setConnectionIndicator(navigator.onLine ? 'online' : 'offline');
     
     // Service Worker
     if ('serviceWorker' in navigator) {
