@@ -154,7 +154,7 @@
     
     /* Progress */
     .progress-section { display: flex; flex-direction: column; gap: 10px; }
-    .progress-bar-container { width: 100%; height: 6px; background: var(--slider-bg); border-radius: 3px; position: relative; cursor: pointer; }
+    .progress-bar-container { width: 100%; height: 6px; background: var(--slider-bg); border-radius: 3px; position: relative; cursor: pointer; touch-action: none; }
     .progress-bar-fill { height: 100%; background: var(--accent); border-radius: 3px; width: 0%; position: relative; }
     .progress-bar-thumb { position: absolute; right: -7px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 10px var(--accent-glow); }
     .time-display { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 500; color: var(--text-tertiary); font-variant-numeric: tabular-nums; }
@@ -837,31 +837,60 @@
     // Progress bar
     let progressDragging = false;
     
-    progressContainer.addEventListener('click', (e) => {
+    function updateProgressFromEvent(e) {
       const rect = progressContainer.getBoundingClientRect();
-      const pct = (e.clientX - rect.left) / rect.width;
-      if (audioPlayer.duration) audioPlayer.currentTime = pct * audioPlayer.duration;
-    });
-    
-    progressContainer.addEventListener('mousedown', () => progressDragging = true);
-    progressContainer.addEventListener('touchstart', () => progressDragging = true);
-    document.addEventListener('mouseup', () => progressDragging = false);
-    document.addEventListener('touchend', () => progressDragging = false);
-    
-    document.addEventListener('mousemove', (e) => {
-      if (progressDragging && audioPlayer.duration) {
-        const rect = progressContainer.getBoundingClientRect();
-        const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-        progressFill.style.width = (pct * 100) + '%';
+      let clientX;
+      if (e.touches) {
+        clientX = e.touches[0].clientX;
+      } else {
+        clientX = e.clientX;
+      }
+      const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+      progressFill.style.width = (pct * 100) + '%';
+      if (audioPlayer.duration) {
         currentTimeEl.textContent = formatTime(pct * audioPlayer.duration);
         remainingTimeEl.textContent = '-' + formatTime((1 - pct) * audioPlayer.duration);
       }
+      return pct;
+    }
+    
+    progressContainer.addEventListener('mousedown', (e) => {
+      progressDragging = true;
+      updateProgressFromEvent(e);
     });
+    
+    progressContainer.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      progressDragging = true;
+      updateProgressFromEvent(e);
+    });
+    
+    document.addEventListener('mousemove', (e) => {
+      if (progressDragging) {
+        updateProgressFromEvent(e);
+      }
+    });
+    
+    document.addEventListener('touchmove', (e) => {
+      if (progressDragging) {
+        e.preventDefault();
+        updateProgressFromEvent(e);
+      }
+    }, { passive: false });
     
     document.addEventListener('mouseup', (e) => {
       if (progressDragging && audioPlayer.duration) {
+        const pct = updateProgressFromEvent(e);
+        audioPlayer.currentTime = pct * audioPlayer.duration;
+      }
+      progressDragging = false;
+    });
+    
+    document.addEventListener('touchend', (e) => {
+      if (progressDragging && audioPlayer.duration) {
         const rect = progressContainer.getBoundingClientRect();
-        const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+        const lastTouch = e.changedTouches[0];
+        const pct = Math.max(0, Math.min(1, (lastTouch.clientX - rect.left) / rect.width));
         audioPlayer.currentTime = pct * audioPlayer.duration;
       }
       progressDragging = false;
