@@ -82,6 +82,8 @@
       cursor: pointer;
       color: var(--text);
       transition: all 0.2s;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
     
     .icon-btn:active {
@@ -162,6 +164,8 @@
       cursor: pointer;
       color: var(--text-secondary);
       transition: all 0.2s;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
     
     .fav-btn:active { box-shadow: var(--neu-pressed); }
@@ -182,6 +186,7 @@
       box-shadow: var(--neu-pressed);
       position: relative;
       cursor: pointer;
+      touch-action: none;
     }
     
     .progress-fill {
@@ -240,6 +245,8 @@
       font-size: 0.85rem;
       font-weight: 600;
       transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
     
     .ctrl-btn:active { box-shadow: var(--neu-pressed); }
@@ -253,6 +260,8 @@
       background: var(--accent);
       box-shadow: -2px -2px 5px var(--shadow-light), 2px 2px 5px var(--shadow-dark);
       color: var(--bg);
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
     
     .play-btn:active {
@@ -291,6 +300,8 @@
       font-weight: 600;
       gap: 2px;
       position: relative;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
     
     .nav-item.active {
@@ -319,9 +330,13 @@
       z-index: 100;
       align-items: center;
       justify-content: center;
+      pointer-events: none;
     }
     
-    .popup-overlay.show { display: flex; }
+    .popup-overlay.show { 
+      display: flex; 
+      pointer-events: auto;
+    }
     
     .volume-popup {
       background: var(--bg);
@@ -385,6 +400,8 @@
       color: var(--text);
       box-shadow: var(--neu-flat);
       transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
     
     .sleep-option:last-child { margin-bottom: 0; }
@@ -479,6 +496,8 @@
       font-size: 0.9rem;
       font-weight: 500;
       color: var(--text);
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
     
     .fav-item:active { box-shadow: var(--neu-pressed); }
@@ -558,12 +577,13 @@
     
     .hidden-date-input {
       position: fixed;
-      bottom: 0;
-      left: 0;
+      bottom: -100px;
+      left: -100px;
       opacity: 0;
       pointer-events: none;
       width: 1px;
       height: 1px;
+      visibility: hidden;
     }
   </style>
 </head>
