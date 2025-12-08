@@ -86,13 +86,37 @@
       touch-action: manipulation;
     }
     
-    .icon-btn:active {
-      box-shadow: var(--neu-pressed);
+    .icon-btn:active { box-shadow: var(--neu-pressed); }
+    .icon-btn svg { width: 20px; height: 20px; }
+    
+    /* Date Picker Button */
+    .date-picker-btn {
+      background: var(--bg);
+      border: none;
+      border-radius: 12px;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      box-shadow: var(--neu-flat);
+      position: relative;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
     
-    .icon-btn svg {
-      width: 20px;
-      height: 20px;
+    .date-picker-btn:active { box-shadow: var(--neu-pressed); }
+    .date-picker-btn span { font-size: 0.9rem; font-weight: 600; color: var(--text); }
+    .date-picker-btn svg { color: var(--text-secondary); width: 18px; height: 18px; }
+    
+    .date-picker-btn input {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
     }
     
     /* Artwork */
@@ -174,9 +198,7 @@
     .fav-btn svg { width: 22px; height: 22px; }
     
     /* Progress */
-    .progress-section {
-      padding: 10px 10px 20px;
-    }
+    .progress-section { padding: 10px 10px 20px; }
     
     .progress-bar {
       width: 100%;
@@ -219,6 +241,38 @@
       color: var(--text-secondary);
       font-variant-numeric: tabular-nums;
     }
+    
+    /* Status Message */
+    .status-message {
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-top: 5px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    
+    .status-message.show { opacity: 1; }
+    .status-message.error { color: #e74c3c; }
+    .status-message.warning { color: #f39c12; }
+    .status-message.success { color: #27ae60; }
+    
+    .status-spinner {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border: 2px solid currentColor;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin { to { transform: rotate(360deg); } }
     
     /* Controls */
     .controls {
@@ -264,10 +318,7 @@
       touch-action: manipulation;
     }
     
-    .play-btn:active {
-      box-shadow: -1px -1px 3px var(--shadow-light), 1px 1px 3px var(--shadow-dark);
-    }
-    
+    .play-btn:active { box-shadow: -1px -1px 3px var(--shadow-light), 1px 1px 3px var(--shadow-dark); }
     .play-btn svg { width: 28px; height: 28px; fill: var(--bg); }
     
     /* Bottom Nav */
@@ -299,7 +350,6 @@
       font-size: 0.7rem;
       font-weight: 600;
       gap: 2px;
-      position: relative;
       -webkit-tap-highlight-color: transparent;
       touch-action: manipulation;
     }
@@ -318,7 +368,7 @@
       color: var(--accent);
     }
     
-    /* Volume Popup */
+    /* Popups */
     .popup-overlay {
       display: none;
       position: fixed;
@@ -330,13 +380,9 @@
       z-index: 100;
       align-items: center;
       justify-content: center;
-      pointer-events: none;
     }
     
-    .popup-overlay.show { 
-      display: flex; 
-      pointer-events: auto;
-    }
+    .popup-overlay.show { display: flex; }
     
     .volume-popup {
       background: var(--bg);
@@ -408,59 +454,7 @@
     .sleep-option:active { box-shadow: var(--neu-pressed); }
     .sleep-option.selected { color: var(--accent); box-shadow: var(--neu-pressed); }
     
-    /* Error Message */
-    /* Status Message - inline */
-    .status-message {
-      height: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      font-size: 0.8rem;
-      font-weight: 500;
-      color: var(--text-tertiary, var(--text-secondary));
-      margin-top: 5px;
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-    
-    .status-message.show {
-      opacity: 1;
-    }
-    
-    .status-message.error {
-      color: #e74c3c;
-    }
-    
-    .status-message.warning {
-      color: #f39c12;
-    }
-    
-    .status-message.success {
-      color: #27ae60;
-    }
-    
-    .status-spinner {
-      width: 12px;
-      height: 12px;
-      border: 2px solid currentColor;
-      border-top-color: transparent;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-    
-    .spinner {
-      width: 16px;
-      height: 16px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-    
-    @keyframes spin { to { transform: rotate(360deg); } }
-    
-    /* Favorites Menu */
+    /* Favorites Popup */
     .favorites-popup {
       background: var(--bg);
       border-radius: 20px;
@@ -478,10 +472,7 @@
       text-align: center;
     }
     
-    .favorites-list {
-      max-height: 250px;
-      overflow-y: auto;
-    }
+    .favorites-list { max-height: 250px; overflow-y: auto; }
     
     .fav-item {
       display: flex;
@@ -564,39 +555,19 @@
     }
     
     audio { display: none; }
-    
-    .date-input-wrapper input[type="date"] {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 50px;
-      height: 50px;
-      opacity: 0;
-      cursor: pointer;
-    }
-    
-    .hidden-date-input {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 50px;
-      height: 50px;
-      opacity: 0;
-      cursor: pointer;
-    }
-    
-    .calendar-nav-wrapper {
-      position: relative;
-      width: 50px;
-      height: 50px;
-    }
   </style>
 </head>
 <body>
   <div class="app">
     <!-- Top Bar -->
     <div class="top-bar">
-      <div style="width: 45px;"></div>
+      <div class="date-picker-btn" id="datePickerBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        <span id="dateDisplay">08/12/2025</span>
+        <input type="date" id="datePicker">
+      </div>
       <button class="icon-btn" id="menuBtn">
         <svg viewBox="0 0 24 24" fill="currentColor">
           <circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>
@@ -615,7 +586,7 @@
     <!-- Track Info -->
     <div class="track-info">
       <div class="track-details">
-        <h2 id="episodeDate">02/12/2025</h2>
+        <h2 id="episodeDate">08/12/2025</h2>
         <p>Radio Capital</p>
       </div>
       <button class="fav-btn" id="favBtn">
@@ -658,14 +629,6 @@
     
     <!-- Bottom Nav -->
     <div class="bottom-nav">
-      <div class="calendar-nav-wrapper">
-        <button class="nav-item" id="calendarNavBtn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-          </svg>
-        </button>
-        <input type="date" id="datePicker" class="hidden-date-input">
-      </div>
       <button class="nav-item" id="sleepBtn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="sleepIcon">
           <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
@@ -713,8 +676,6 @@
     </div>
   </div>
   
-  <!-- Toasts rimossi - ora usiamo status inline -->
-  
   <!-- Install Prompt -->
   <div class="install-prompt" id="installPrompt">
     <p>Installa B-SIDE sulla tua home screen</p>
@@ -725,52 +686,59 @@
   <audio id="audio"></audio>
 
   <script>
-    try {
-    const $ = id => document.getElementById(id);
-    const audio = $('audio');
-    const datePicker = $('datePicker');
-    const calendarNavBtn = $('calendarNavBtn');
-    const episodeDate = $('episodeDate');
-    const progressBar = $('progressBar');
-    const progressFill = $('progressFill');
-    const currentTime = $('currentTime');
-    const remainingTime = $('remainingTime');
-    const playBtn = $('playBtn');
-    const playIcon = $('playIcon');
-    const prevDay = $('prevDay');
-    const nextDay = $('nextDay');
-    const skipBack = $('skipBack');
-    const skipForward = $('skipForward');
-    const favBtn = $('favBtn');
-    const sleepBtn = $('sleepBtn');
-    const sleepIcon = $('sleepIcon');
-    const sleepCountdown = $('sleepCountdown');
-    const volumeNavBtn = $('volumeNavBtn');
-    const volumeIcon = $('volumeIcon');
-    const themeBtn = $('themeBtn');
-    const themeIcon = $('themeIcon');
-    const volumeOverlay = $('volumeOverlay');
-    const volumeSlider = $('volumeSlider');
-    const volumeFill = $('volumeFill');
-    const sleepOverlay = $('sleepOverlay');
-    const favOverlay = $('favOverlay');
-    const favList = $('favList');
-    const statusMessage = $('statusMessage');
-    const statusText = $('statusText');
-    const themeColorMeta = $('themeColor');
-    const installPrompt = $('installPrompt');
-    const installBtn = $('installBtn');
-    const installClose = $('installClose');
+    // Elements
+    const audio = document.getElementById('audio');
+    const datePicker = document.getElementById('datePicker');
+    const datePickerBtn = document.getElementById('datePickerBtn');
+    const dateDisplay = document.getElementById('dateDisplay');
+    const episodeDate = document.getElementById('episodeDate');
+    const progressBar = document.getElementById('progressBar');
+    const progressFill = document.getElementById('progressFill');
+    const currentTime = document.getElementById('currentTime');
+    const remainingTime = document.getElementById('remainingTime');
+    const playBtn = document.getElementById('playBtn');
+    const playIcon = document.getElementById('playIcon');
+    const prevDay = document.getElementById('prevDay');
+    const nextDay = document.getElementById('nextDay');
+    const skipBack = document.getElementById('skipBack');
+    const skipForward = document.getElementById('skipForward');
+    const favBtn = document.getElementById('favBtn');
+    const sleepBtn = document.getElementById('sleepBtn');
+    const sleepIcon = document.getElementById('sleepIcon');
+    const sleepCountdown = document.getElementById('sleepCountdown');
+    const volumeNavBtn = document.getElementById('volumeNavBtn');
+    const volumeIcon = document.getElementById('volumeIcon');
+    const themeBtn = document.getElementById('themeBtn');
+    const themeIcon = document.getElementById('themeIcon');
+    const volumeOverlay = document.getElementById('volumeOverlay');
+    const volumeSlider = document.getElementById('volumeSlider');
+    const volumeFill = document.getElementById('volumeFill');
+    const sleepOverlay = document.getElementById('sleepOverlay');
+    const favOverlay = document.getElementById('favOverlay');
+    const favList = document.getElementById('favList');
+    const menuBtn = document.getElementById('menuBtn');
+    const statusMessage = document.getElementById('statusMessage');
+    const statusText = document.getElementById('statusText');
+    const themeColorMeta = document.getElementById('themeColor');
+    const installPrompt = document.getElementById('installPrompt');
+    const installBtn = document.getElementById('installBtn');
+    const installClose = document.getElementById('installClose');
     
+    // State
     let isPlaying = false;
     let sleepTimer = null, sleepEndTime = null, sleepInterval = null;
     let favorites = JSON.parse(localStorage.getItem('bside-fav') || '[]');
     let retryCount = 0, retryTimer = null, lastTime = 0, wasPlaying = false;
     let deferredPrompt = null;
     
+
+    datePickerBtn.addEventListener('click', function() {
+      datePicker.showPicker();
+    });
+
     // Theme
-    const theme = localStorage.getItem('bside-theme') || 'light';
-    applyTheme(theme);
+    const savedTheme = localStorage.getItem('bside-theme') || 'light';
+    applyTheme(savedTheme);
     
     function applyTheme(t) {
       if (t === 'dark') {
@@ -784,58 +752,54 @@
       }
     }
     
-    themeBtn.onclick = () => {
+    themeBtn.addEventListener('click', function() {
       const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
       const newTheme = isDark ? 'light' : 'dark';
       applyTheme(newTheme);
       localStorage.setItem('bside-theme', newTheme);
-    };
+    });
     
-    // Date
+    // Date Picker
     const today = new Date();
     datePicker.value = today.toISOString().split('T')[0];
     datePicker.max = datePicker.value;
     
-    calendarNavBtn.onclick = () => {
-      try {
-        datePicker.showPicker();
-      } catch(e) {
-        datePicker.click();
-      }
-    };
-    datePicker.onchange = () => { 
-      updatePlayer(); 
-      updateNav(); 
-      updateFav(); 
-      updateMediaSession(); 
-    };
+    datePicker.addEventListener('change', function() {
+      updatePlayer();
+      updateNav();
+      updateFav();
+      updateMediaSession();
+    });
     
     function formatDate(d) {
-      const [y, m, day] = d.split('-');
-      return `${day}/${m}/${y}`;
+      const parts = d.split('-');
+      return parts[2] + '/' + parts[1] + '/' + parts[0];
     }
     
     function buildUrl(d) {
-      const [y, m, day] = d.split('-');
-      return `https://media.capital.it/${y}/${m}/${day}/episodes/bertallot/bertallot_${y}${m}${day}_220000.mp3`;
+      const parts = d.split('-');
+      return 'https://media.capital.it/' + parts[0] + '/' + parts[1] + '/' + parts[2] + '/episodes/bertallot/bertallot_' + parts[0] + parts[1] + parts[2] + '_220000.mp3';
     }
     
     function updatePlayer() {
       const d = datePicker.value;
       audio.src = buildUrl(d);
       episodeDate.textContent = formatDate(d);
+      dateDisplay.textContent = formatDate(d);
       isPlaying = false;
       updatePlayIcon(false);
       progressFill.style.width = '0%';
       currentTime.textContent = '0:00';
       remainingTime.textContent = '-0:00';
-      errorToast.classList.remove('show');
+      hideStatus();
     }
     
     function updatePlayIcon(playing) {
-      playIcon.innerHTML = playing 
-        ? '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>' 
-        : '<polygon points="6,4 20,12 6,20"/>';
+      if (playing) {
+        playIcon.innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+      } else {
+        playIcon.innerHTML = '<polygon points="6,4 20,12 6,20"/>';
+      }
     }
     
     function updateNav() {
@@ -859,29 +823,34 @@
       }
     }
     
-    prevDay.onclick = () => changeDay(-1);
-    nextDay.onclick = () => changeDay(1);
+    prevDay.addEventListener('click', function() { changeDay(-1); });
+    nextDay.addEventListener('click', function() { changeDay(1); });
     
-    // Play
-    playBtn.onclick = () => {
-      if (isPlaying) { audio.pause(); updatePlayIcon(false); }
-      else { audio.play(); updatePlayIcon(true); }
+    // Play Controls
+    playBtn.addEventListener('click', function() {
+      if (isPlaying) {
+        audio.pause();
+        updatePlayIcon(false);
+      } else {
+        audio.play();
+        updatePlayIcon(true);
+      }
       isPlaying = !isPlaying;
-    };
+    });
     
-    skipBack.onclick = () => audio.currentTime -= 30;
-    skipForward.onclick = () => audio.currentTime += 30;
+    skipBack.addEventListener('click', function() { audio.currentTime -= 30; });
+    skipForward.addEventListener('click', function() { audio.currentTime += 30; });
     
     // Progress
     function formatTime(s) {
       if (isNaN(s)) return '0:00';
-      const m = Math.floor(s / 60);
-      const sec = Math.floor(s % 60);
-      return `${m}:${sec.toString().padStart(2, '0')}`;
+      var m = Math.floor(s / 60);
+      var sec = Math.floor(s % 60);
+      return m + ':' + (sec < 10 ? '0' : '') + sec;
     }
     
-    audio.ontimeupdate = () => {
-      const pct = (audio.currentTime / audio.duration) * 100 || 0;
+    audio.addEventListener('timeupdate', function() {
+      var pct = (audio.currentTime / audio.duration) * 100 || 0;
       progressFill.style.width = pct + '%';
       currentTime.textContent = formatTime(audio.currentTime);
       remainingTime.textContent = '-' + formatTime(audio.duration - audio.currentTime);
@@ -893,46 +862,39 @@
           position: audio.currentTime
         });
       }
-    };
+    });
     
-    audio.onloadedmetadata = () => {
+    audio.addEventListener('loadedmetadata', function() {
       remainingTime.textContent = '-' + formatTime(audio.duration);
-      if ('mediaSession' in navigator) {
-        navigator.mediaSession.setPositionState({
-          duration: audio.duration,
-          playbackRate: 1,
-          position: 0
-        });
-      }
-    };
+    });
     
-    let progressDragging = false;
+    var progressDragging = false;
     
-    progressBar.onmousedown = (e) => {
+    progressBar.addEventListener('mousedown', function(e) {
       progressDragging = true;
       updateProgress(e);
-    };
+    });
     
-    progressBar.ontouchstart = (e) => {
+    progressBar.addEventListener('touchstart', function(e) {
       progressDragging = true;
       updateProgress(e);
-    };
+    });
     
-    document.onmousemove = (e) => {
+    document.addEventListener('mousemove', function(e) {
       if (progressDragging) updateProgress(e);
-    };
+    });
     
-    document.ontouchmove = (e) => {
+    document.addEventListener('touchmove', function(e) {
       if (progressDragging) updateProgress(e);
-    };
+    });
     
-    document.onmouseup = () => progressDragging = false;
-    document.ontouchend = () => progressDragging = false;
+    document.addEventListener('mouseup', function() { progressDragging = false; });
+    document.addEventListener('touchend', function() { progressDragging = false; });
     
     function updateProgress(e) {
-      const rect = progressBar.getBoundingClientRect();
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+      var rect = progressBar.getBoundingClientRect();
+      var clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      var pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
       if (audio.duration) {
         audio.currentTime = pct * audio.duration;
         progressFill.style.width = (pct * 100) + '%';
@@ -940,48 +902,56 @@
     }
     
     // Volume
-    volumeNavBtn.onclick = () => volumeOverlay.classList.add('show');
-    volumeOverlay.onclick = e => { if (e.target === volumeOverlay) volumeOverlay.classList.remove('show'); };
+    volumeNavBtn.addEventListener('click', function() { volumeOverlay.classList.add('show'); });
+    volumeOverlay.addEventListener('click', function(e) {
+      if (e.target === volumeOverlay) volumeOverlay.classList.remove('show');
+    });
     
-    let volDrag = false;
+    var volDrag = false;
     
     function updateVol(e) {
-      const rect = volumeSlider.getBoundingClientRect();
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-      const y = clientY - rect.top;
-      const pct = 1 - (y / rect.height);
+      var rect = volumeSlider.getBoundingClientRect();
+      var clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      var y = clientY - rect.top;
+      var pct = 1 - (y / rect.height);
       audio.volume = Math.max(0, Math.min(1, pct));
       volumeFill.style.height = (audio.volume * 100) + '%';
       updateVolIcon();
     }
     
     function updateVolIcon() {
-      const v = audio.volume;
-      if (v === 0) volumeIcon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>';
-      else if (v < 0.5) volumeIcon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07"/>';
-      else volumeIcon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07"/><path d="M19.07 4.93a10 10 0 010 14.14"/>';
+      var v = audio.volume;
+      if (v === 0) {
+        volumeIcon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>';
+      } else if (v < 0.5) {
+        volumeIcon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07"/>';
+      } else {
+        volumeIcon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07"/><path d="M19.07 4.93a10 10 0 010 14.14"/>';
+      }
     }
     
-    volumeSlider.onmousedown = e => { volDrag = true; updateVol(e); };
-    volumeSlider.ontouchstart = e => { e.preventDefault(); volDrag = true; updateVol(e); };
+    volumeSlider.addEventListener('mousedown', function(e) { volDrag = true; updateVol(e); });
+    volumeSlider.addEventListener('touchstart', function(e) { e.preventDefault(); volDrag = true; updateVol(e); });
+    document.addEventListener('mousemove', function(e) { if (volDrag) updateVol(e); });
+    document.addEventListener('touchmove', function(e) { if (volDrag) { e.preventDefault(); updateVol(e); } }, { passive: false });
+    document.addEventListener('mouseup', function() { volDrag = false; });
+    document.addEventListener('touchend', function() { volDrag = false; });
     
-    document.addEventListener('mousemove', e => { if (volDrag) updateVol(e); });
-    document.addEventListener('touchmove', e => { if (volDrag) { e.preventDefault(); updateVol(e); } }, { passive: false });
-    document.addEventListener('mouseup', () => volDrag = false);
-    document.addEventListener('touchend', () => volDrag = false);
+    // Sleep Timer
+    sleepBtn.addEventListener('click', function() { sleepOverlay.classList.add('show'); });
+    sleepOverlay.addEventListener('click', function(e) {
+      if (e.target === sleepOverlay) sleepOverlay.classList.remove('show');
+    });
     
-    // Sleep
-    sleepBtn.onclick = () => sleepOverlay.classList.add('show');
-    sleepOverlay.onclick = e => { if (e.target === sleepOverlay) sleepOverlay.classList.remove('show'); };
-    
-    document.querySelectorAll('.sleep-option').forEach(opt => {
-      opt.onclick = () => {
-        const min = parseInt(opt.dataset.min);
+    var sleepOptions = document.querySelectorAll('.sleep-option');
+    sleepOptions.forEach(function(opt) {
+      opt.addEventListener('click', function() {
+        var min = parseInt(opt.getAttribute('data-min'));
         setSleep(min);
         sleepOverlay.classList.remove('show');
-        document.querySelectorAll('.sleep-option').forEach(o => o.classList.remove('selected'));
+        sleepOptions.forEach(function(o) { o.classList.remove('selected'); });
         if (min > 0) opt.classList.add('selected');
-      };
+      });
     });
     
     function setSleep(min) {
@@ -1003,7 +973,7 @@
       updateSleepDisplay();
       
       sleepInterval = setInterval(updateSleepDisplay, 1000);
-      sleepTimer = setTimeout(() => {
+      sleepTimer = setTimeout(function() {
         audio.pause();
         updatePlayIcon(false);
         isPlaying = false;
@@ -1013,92 +983,131 @@
     
     function updateSleepDisplay() {
       if (!sleepEndTime) return;
-      const rem = Math.max(0, sleepEndTime - Date.now());
+      var rem = Math.max(0, sleepEndTime - Date.now());
       if (rem === 0) { setSleep(0); return; }
-      const m = Math.floor(rem / 60000);
-      const s = Math.floor((rem % 60000) / 1000);
-      sleepCountdown.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+      var m = Math.floor(rem / 60000);
+      var s = Math.floor((rem % 60000) / 1000);
+      sleepCountdown.textContent = m + ':' + (s < 10 ? '0' : '') + s;
     }
     
     // Favorites
-    favBtn.onclick = () => {
-      const d = datePicker.value;
-      const idx = favorites.indexOf(d);
-      if (idx > -1) favorites.splice(idx, 1);
-      else favorites.unshift(d);
+    favBtn.addEventListener('click', function() {
+      var d = datePicker.value;
+      var idx = favorites.indexOf(d);
+      if (idx > -1) {
+        favorites.splice(idx, 1);
+      } else {
+        favorites.unshift(d);
+      }
       localStorage.setItem('bside-fav', JSON.stringify(favorites));
       updateFav();
-    };
+    });
     
     function updateFav() {
-      const d = datePicker.value;
-      favBtn.classList.toggle('active', favorites.includes(d));
+      var d = datePicker.value;
+      if (favorites.indexOf(d) > -1) {
+        favBtn.classList.add('active');
+      } else {
+        favBtn.classList.remove('active');
+      }
     }
     
-    $('menuBtn').onclick = () => {
+    menuBtn.addEventListener('click', function() {
       renderFavList();
       favOverlay.classList.add('show');
-    };
-    favOverlay.onclick = e => { if (e.target === favOverlay) favOverlay.classList.remove('show'); };
+    });
+    
+    favOverlay.addEventListener('click', function(e) {
+      if (e.target === favOverlay) favOverlay.classList.remove('show');
+    });
     
     function renderFavList() {
       if (favorites.length === 0) {
         favList.innerHTML = '<div class="favorites-empty">Nessun preferito</div>';
         return;
       }
-      favList.innerHTML = favorites.map(d => `
-        <div class="fav-item" data-date="${d}">
-          <span>${formatDate(d)}</span>
-          <button class="fav-item-del" data-date="${d}">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-          </button>
-        </div>
-      `).join('');
       
-      favList.querySelectorAll('.fav-item').forEach(item => {
-        item.onclick = e => {
+      var html = '';
+      for (var i = 0; i < favorites.length; i++) {
+        var d = favorites[i];
+        html += '<div class="fav-item" data-date="' + d + '">';
+        html += '<span>' + formatDate(d) + '</span>';
+        html += '<button class="fav-item-del" data-date="' + d + '">';
+        html += '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">';
+        html += '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>';
+        html += '</svg></button></div>';
+      }
+      favList.innerHTML = html;
+      
+      var items = favList.querySelectorAll('.fav-item');
+      items.forEach(function(item) {
+        item.addEventListener('click', function(e) {
           if (!e.target.closest('.fav-item-del')) {
-            datePicker.value = item.dataset.date;
+            datePicker.value = item.getAttribute('data-date');
             updatePlayer();
             updateNav();
             updateFav();
             updateMediaSession();
             favOverlay.classList.remove('show');
           }
-        };
+        });
       });
       
-      favList.querySelectorAll('.fav-item-del').forEach(btn => {
-        btn.onclick = e => {
+      var delBtns = favList.querySelectorAll('.fav-item-del');
+      delBtns.forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
           e.stopPropagation();
-          const d = btn.dataset.date;
-          favorites = favorites.filter(f => f !== d);
+          var d = btn.getAttribute('data-date');
+          var idx = favorites.indexOf(d);
+          if (idx > -1) favorites.splice(idx, 1);
           localStorage.setItem('bside-fav', JSON.stringify(favorites));
           updateFav();
           renderFavList();
-        };
+        });
       });
     }
     
-    // Errors & Connection
-    audio.onerror = () => {
+    // Status Messages
+    function showStatus(msg, type, withSpinner) {
+      statusMessage.className = 'status-message show ' + (type || '');
+      if (withSpinner) {
+        statusText.innerHTML = '<span class="status-spinner"></span> ' + msg;
+      } else {
+        statusText.textContent = msg;
+      }
+    }
+    
+    function hideStatus() {
+      statusMessage.classList.remove('show');
+      setTimeout(function() { statusText.innerHTML = ''; }, 300);
+    }
+    
+    // Audio Errors
+    audio.addEventListener('error', function() {
       lastTime = audio.currentTime || 0;
       wasPlaying = isPlaying;
       updatePlayIcon(false);
       isPlaying = false;
       
-      if (!navigator.onLine) { showStatus('Nessuna connessione', 'error'); return; }
+      if (!navigator.onLine) {
+        showStatus('Nessuna connessione', 'error');
+        return;
+      }
       
       fetch(audio.src, { method: 'HEAD' })
-        .then(r => { if (r.status === 404) { showStatus('Puntata non disponibile', 'error'); } else retry(); })
-        .catch(() => retry());
-    };
+        .then(function(r) {
+          if (r.status === 404) {
+            showStatus('Puntata non disponibile', 'error');
+          } else {
+            retry();
+          }
+        })
+        .catch(function() { retry(); });
+    });
     
-    audio.onloadeddata = () => { hideStatus(); retryCount = 0; };
-    audio.onwaiting = () => { if (isPlaying) showStatus('Buffering...', 'warning', true); };
-    audio.onplaying = () => { hideStatus(); retryCount = 0; };
+    audio.addEventListener('loadeddata', function() { hideStatus(); retryCount = 0; });
+    audio.addEventListener('waiting', function() { if (isPlaying) showStatus('Buffering...', 'warning', true); });
+    audio.addEventListener('playing', function() { hideStatus(); retryCount = 0; });
     
     function retry() {
       if (retryCount >= 5) {
@@ -1106,39 +1115,39 @@
         return;
       }
       retryCount++;
-      showStatus(`Riconnessione... (${retryCount}/5)`, 'warning', true);
+      showStatus('Riconnessione... (' + retryCount + '/5)', 'warning', true);
       if (retryTimer) clearTimeout(retryTimer);
-      retryTimer = setTimeout(() => {
-        const src = audio.src;
+      retryTimer = setTimeout(function() {
+        var src = audio.src;
         audio.src = '';
         audio.src = src;
         audio.currentTime = lastTime;
-        if (wasPlaying) audio.play().then(() => { isPlaying = true; updatePlayIcon(true); }).catch(() => retry());
+        if (wasPlaying) {
+          audio.play().then(function() {
+            isPlaying = true;
+            updatePlayIcon(true);
+          }).catch(function() { retry(); });
+        }
       }, Math.min(5000 * retryCount, 20000));
     }
     
-    function showStatus(msg, type = '', withSpinner = false) {
-      statusMessage.className = 'status-message show ' + type;
-      statusText.innerHTML = withSpinner ? `<span class="status-spinner"></span> ${msg}` : msg;
-    }
-    
-    function hideStatus() { 
-      statusMessage.classList.remove('show'); 
-      setTimeout(() => { statusText.innerHTML = ''; }, 300);
-    }
-    
-    window.addEventListener('online', () => {
+    window.addEventListener('online', function() {
       showStatus('Connessione ripristinata', 'success');
-      setTimeout(() => { hideStatus(); if (wasPlaying) { retryCount = 0; retry(); } }, 2000);
+      setTimeout(function() {
+        hideStatus();
+        if (wasPlaying) { retryCount = 0; retry(); }
+      }, 2000);
     });
     
-    window.addEventListener('offline', () => showStatus('Nessuna connessione', 'error'));
+    window.addEventListener('offline', function() {
+      showStatus('Nessuna connessione', 'error');
+    });
     
-    // Media Session API
+    // Media Session
     function updateMediaSession() {
       if ('mediaSession' in navigator) {
         navigator.mediaSession.metadata = new MediaMetadata({
-          title: `Puntata del ${formatDate(datePicker.value)}`,
+          title: 'Puntata del ' + formatDate(datePicker.value),
           artist: 'Alessio Bertallot',
           album: 'B-SIDE - Radio Capital',
           artwork: [
@@ -1150,37 +1159,38 @@
     }
     
     if ('mediaSession' in navigator) {
-      navigator.mediaSession.setActionHandler('play', () => { audio.play(); updatePlayIcon(true); isPlaying = true; });
-      navigator.mediaSession.setActionHandler('pause', () => { audio.pause(); updatePlayIcon(false); isPlaying = false; });
-      navigator.mediaSession.setActionHandler('seekbackward', () => audio.currentTime -= 30);
-      navigator.mediaSession.setActionHandler('seekforward', () => audio.currentTime += 30);
-      navigator.mediaSession.setActionHandler('seekto', (d) => { if (d.seekTime) audio.currentTime = d.seekTime; });
+      navigator.mediaSession.setActionHandler('play', function() { audio.play(); updatePlayIcon(true); isPlaying = true; });
+      navigator.mediaSession.setActionHandler('pause', function() { audio.pause(); updatePlayIcon(false); isPlaying = false; });
+      navigator.mediaSession.setActionHandler('seekbackward', function() { audio.currentTime -= 30; });
+      navigator.mediaSession.setActionHandler('seekforward', function() { audio.currentTime += 30; });
+      navigator.mediaSession.setActionHandler('seekto', function(d) { if (d.seekTime) audio.currentTime = d.seekTime; });
     }
     
     // PWA Install
-    window.addEventListener('beforeinstallprompt', (e) => {
+    window.addEventListener('beforeinstallprompt', function(e) {
       e.preventDefault();
       deferredPrompt = e;
       installPrompt.classList.add('show');
     });
     
-    installBtn.onclick = async () => {
+    installBtn.addEventListener('click', function() {
       if (deferredPrompt) {
         deferredPrompt.prompt();
-        await deferredPrompt.userChoice;
-        deferredPrompt = null;
-        installPrompt.classList.remove('show');
+        deferredPrompt.userChoice.then(function() {
+          deferredPrompt = null;
+          installPrompt.classList.remove('show');
+        });
       }
-    };
+    });
     
-    installClose.onclick = () => installPrompt.classList.remove('show');
-    window.addEventListener('appinstalled', () => installPrompt.classList.remove('show'));
+    installClose.addEventListener('click', function() { installPrompt.classList.remove('show'); });
+    window.addEventListener('appinstalled', function() { installPrompt.classList.remove('show'); });
     
     // Service Worker
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js')
-        .then((reg) => console.log('Service Worker registrato:', reg.scope))
-        .catch((err) => console.log('Service Worker errore:', err));
+        .then(function(reg) { console.log('SW registrato:', reg.scope); })
+        .catch(function(err) { console.log('SW errore:', err); });
     }
     
     // Init
@@ -1189,10 +1199,6 @@
     updateFav();
     updateVolIcon();
     updateMediaSession();
-    
-    } catch(err) {
-      alert('Errore: ' + err.message);
-    }
   </script>
 </body>
 </html>
