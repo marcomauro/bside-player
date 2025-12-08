@@ -3,699 +3,1017 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#000000" id="themeColor">
+  <meta name="theme-color" content="#e0e5ec" id="themeColor">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="B-SIDE">
   <title>B-SIDE</title>
   
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
   
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
+    :root {
+      --bg: #e0e5ec;
+      --bg-dark: #d1d9e6;
+      --text: #1a1a1a;
+      --text-secondary: #5a6170;
+      --accent: #1a1a1a;
+      --shadow-light: #ffffff;
+      --shadow-dark: #a3b1c6;
+      --neu-flat: -2px -2px 5px var(--shadow-light), 2px 2px 5px var(--shadow-dark);
+      --neu-pressed: inset -1px -1px 3px var(--shadow-light), inset 1px 1px 3px var(--shadow-dark);
+      --neu-convex: -2px -2px 6px var(--shadow-light), 2px 2px 6px var(--shadow-dark);
+    }
+    
+    [data-theme="dark"] {
+      --bg: #2d3436;
+      --bg-dark: #232526;
+      --text: #ffffff;
+      --text-secondary: #a0a0a0;
+      --accent: #ffffff;
+      --shadow-light: #3d4447;
+      --shadow-dark: #1d2425;
+    }
+    
     html, body {
       height: 100%;
       width: 100%;
-    }
-    
-    :root {
-      --bg-main: #000000;
-      --bg-elevated: #1a1a1a;
-      --bg-button: #2a2a2a;
-      --text-primary: #ffffff;
-      --text-secondary: rgba(255,255,255,0.7);
-      --text-tertiary: rgba(255,255,255,0.5);
-      --accent: #0A84FF;
-      --accent-glow: rgba(10,132,255,0.3);
-      --border-color: #333;
-      --slider-bg: rgba(255,255,255,0.2);
-    }
-    
-    [data-theme="light"] {
-      --bg-main: #f5f5f7;
-      --bg-elevated: #ffffff;
-      --bg-button: #e5e5e5;
-      --text-primary: #000000;
-      --text-secondary: rgba(0,0,0,0.7);
-      --text-tertiary: rgba(0,0,0,0.5);
-      --accent: #007AFF;
-      --accent-glow: rgba(0,122,255,0.2);
-      --border-color: #d0d0d0;
-      --slider-bg: rgba(0,0,0,0.15);
-    }
-    
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--bg-main);
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-      padding: 60px 24px 40px;
-      color: var(--text-primary);
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
       -webkit-font-smoothing: antialiased;
     }
     
-    .container {
-      width: 100%;
-      max-width: 380px;
+    .app {
+      height: 100%;
+      max-width: 430px;
+      margin: 0 auto;
       display: flex;
       flex-direction: column;
-      flex: 1;
+      padding: 20px;
+      padding-bottom: 0;
+    }
+    
+    /* Top Bar */
+    .top-bar {
+      display: flex;
       justify-content: space-between;
+      align-items: center;
+      padding: 10px 5px;
+      margin-bottom: 20px;
     }
     
-    /* Header */
-    .header { text-align: center; padding-top: 20px; }
-    .header h1 { font-size: 3rem; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 12px; }
-    .header .artist { font-size: 1.1rem; font-weight: 400; color: var(--text-secondary); margin-bottom: 8px; }
-    .header .episode { font-size: 0.9rem; font-weight: 300; color: var(--text-tertiary); }
-    
-    .episode-row { display: flex; align-items: center; justify-content: center; gap: 10px; }
-    
-    .favorite-btn {
-      background: transparent;
+    .icon-btn {
+      width: 45px;
+      height: 45px;
       border: none;
-      width: 28px;
-      height: 28px;
-      cursor: pointer;
+      border-radius: 12px;
+      background: var(--bg);
+      box-shadow: var(--neu-flat);
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--text-tertiary);
+      cursor: pointer;
+      color: var(--text);
       transition: all 0.2s;
     }
-    .favorite-btn:hover { color: var(--accent); transform: scale(1.1); }
-    .favorite-btn.active { color: #FFD60A; }
-    .favorite-btn.active svg { fill: #FFD60A; stroke: #FFD60A; }
-    .favorite-btn svg { width: 18px; height: 18px; }
     
-    /* Date Picker */
-    .date-picker-wrapper { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 32px; }
-    .date-picker-btn {
-      background: var(--bg-button);
-      border: none;
-      border-radius: 50px;
-      padding: 12px 24px;
+    .icon-btn:active {
+      box-shadow: var(--neu-pressed);
+    }
+    
+    .icon-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+    
+    /* Artwork */
+    .artwork-container {
+      flex: 1;
       display: flex;
       align-items: center;
-      gap: 10px;
-      cursor: pointer;
-      transition: all 0.2s;
-      position: relative;
-    }
-    .date-picker-btn:hover { background: var(--bg-elevated); }
-    .date-picker-btn span { font-size: 0.95rem; font-weight: 500; color: var(--text-primary); }
-    .date-picker-btn svg { width: 16px; height: 16px; color: var(--text-tertiary); }
-    .date-picker-btn input {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      opacity: 0;
-      cursor: pointer;
+      justify-content: center;
+      padding: 20px 0;
     }
     
-    .favorites-list-btn {
-      background: var(--bg-button);
-      border: none;
-      width: 44px;
-      height: 44px;
+    .artwork {
+      width: 260px;
+      height: 260px;
       border-radius: 50%;
-      cursor: pointer;
+      background: var(--bg);
+      box-shadow: var(--neu-convex);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    
+    .artwork h1 {
+      font-size: 3.2rem;
+      font-weight: 800;
+      letter-spacing: -2px;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    
+    .artwork p {
+      font-size: 1rem;
+      font-weight: 400;
+      color: var(--text-secondary);
+    }
+    
+    /* Track Info */
+    .track-info {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 10px;
+    }
+    
+    .track-details h2 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    
+    .track-details p {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+    
+    .fav-btn {
+      width: 45px;
+      height: 45px;
+      border: none;
+      border-radius: 50%;
+      background: var(--bg);
+      box-shadow: var(--neu-flat);
       display: flex;
       align-items: center;
       justify-content: center;
+      cursor: pointer;
       color: var(--text-secondary);
       transition: all 0.2s;
-      position: relative;
     }
-    .favorites-list-btn:hover { background: var(--bg-elevated); color: var(--text-primary); }
-    .favorites-list-btn svg { width: 20px; height: 20px; }
     
-    /* Error & Connection */
-    .error-message { background: #FF453A; color: #fff; padding: 12px 20px; border-radius: 12px; font-size: 0.85rem; font-weight: 500; text-align: center; display: none; }
-    .error-message.show { display: block; }
-    .connection-status { background: #FF9F0A; color: #fff; padding: 10px 20px; border-radius: 12px; font-size: 0.8rem; font-weight: 500; display: none; align-items: center; justify-content: center; gap: 10px; }
-    .connection-status.show { display: flex; }
-    .connection-status.offline { background: #FF453A; }
-    .connection-status.online { background: #30D158; }
-    .spinner { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    
-    /* Player Section */
-    .player-section { display: flex; flex-direction: column; gap: 28px; padding-bottom: 20px; }
+    .fav-btn:active { box-shadow: var(--neu-pressed); }
+    .fav-btn.active { color: #e74c3c; }
+    .fav-btn.active svg { fill: #e74c3c; }
+    .fav-btn svg { width: 22px; height: 22px; }
     
     /* Progress */
-    .progress-section { display: flex; flex-direction: column; gap: 10px; }
-    .progress-bar-container { width: 100%; height: 6px; background: var(--slider-bg); border-radius: 3px; position: relative; cursor: pointer; touch-action: none; }
-    .progress-bar-fill { height: 100%; background: var(--accent); border-radius: 3px; width: 0%; position: relative; }
-    .progress-bar-thumb { position: absolute; right: -7px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 10px var(--accent-glow); }
-    .time-display { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 500; color: var(--text-tertiary); font-variant-numeric: tabular-nums; }
+    .progress-section {
+      padding: 10px 10px 20px;
+    }
+    
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: var(--bg);
+      border-radius: 3px;
+      box-shadow: var(--neu-pressed);
+      position: relative;
+      cursor: pointer;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 3px;
+      width: 0%;
+      position: relative;
+      transition: width 0.1s linear;
+    }
+    
+    .progress-thumb {
+      position: absolute;
+      right: -8px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      background: var(--bg);
+      border-radius: 50%;
+      box-shadow: var(--neu-flat);
+    }
+    
+    .time-display {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 12px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      font-variant-numeric: tabular-nums;
+    }
     
     /* Controls */
-    .controls { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 12px 0; }
-    .nav-btn {
-      background: var(--bg-button);
-      border: none;
-      width: 48px; height: 48px;
-      min-width: 48px; min-height: 48px;
-      flex-shrink: 0;
-      border-radius: 50%;
-      cursor: pointer;
+    .controls {
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--text-primary);
-      transition: all 0.2s;
+      gap: 15px;
+      padding: 15px 0 25px;
     }
-    .nav-btn:hover { background: var(--bg-elevated); transform: scale(1.05); }
-    .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
-    .nav-btn svg { width: 20px; height: 20px; }
     
-    .skip-btn {
-      background: var(--bg-button);
+    .ctrl-btn {
+      width: 50px;
+      height: 50px;
       border: none;
-      border-radius: 50px;
-      padding: 14px 18px;
-      min-width: 60px; height: 48px;
-      flex-shrink: 0;
-      cursor: pointer;
+      border-radius: 14px;
+      background: var(--bg);
+      box-shadow: var(--neu-flat);
       display: flex;
       align-items: center;
       justify-content: center;
+      cursor: pointer;
+      color: var(--text);
       font-family: 'Inter', sans-serif;
       font-size: 0.85rem;
       font-weight: 600;
-      color: var(--text-primary);
-      transition: all 0.2s;
+      transition: all 0.15s;
     }
-    .skip-btn:hover { background: var(--bg-elevated); transform: scale(1.05); }
+    
+    .ctrl-btn:active { box-shadow: var(--neu-pressed); }
+    .ctrl-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .ctrl-btn svg { width: 18px; height: 18px; }
     
     .play-btn {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
       background: var(--accent);
-      border: none;
-      border-radius: 50%;
-      width: 80px; height: 80px;
-      min-width: 80px; min-height: 80px;
-      flex-shrink: 0;
-      cursor: pointer;
+      box-shadow: -2px -2px 5px var(--shadow-light), 2px 2px 5px var(--shadow-dark);
+      color: var(--bg);
+    }
+    
+    .play-btn:active {
+      box-shadow: -1px -1px 3px var(--shadow-light), 1px 1px 3px var(--shadow-dark);
+    }
+    
+    .play-btn svg { width: 28px; height: 28px; fill: var(--bg); }
+    
+    /* Bottom Nav */
+    .bottom-nav {
+      background: var(--bg);
+      border-radius: 24px 24px 0 0;
+      box-shadow: -2px -2px 5px var(--shadow-light), 2px 2px 5px var(--shadow-dark);
+      padding: 15px 30px 25px;
       display: flex;
+      justify-content: space-around;
+      align-items: center;
+      margin: 0 -20px;
+    }
+    
+    .nav-item {
+      width: 50px;
+      height: 50px;
+      border: none;
+      border-radius: 14px;
+      background: transparent;
+      display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      color: #fff;
-      transition: all 0.2s;
-      box-shadow: 0 4px 24px var(--accent-glow);
-    }
-    .play-btn:hover { transform: scale(1.08); box-shadow: 0 6px 32px var(--accent-glow); }
-    .play-btn svg { width: 32px; height: 32px; fill: #fff; }
-    
-    /* Bottom Bar */
-    .bottom-bar { display: flex; justify-content: center; align-items: center; gap: 20px; padding-top: 16px; }
-    
-    .connection-indicator {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #30D158;
-      transition: background 0.3s;
-      flex-shrink: 0;
-    }
-    .connection-indicator.warning { background: #FF9F0A; animation: pulse 1.5s infinite; }
-    .connection-indicator.offline { background: #FF453A; }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-    .volume-btn {
-      background: var(--bg-button);
-      border: none;
-      width: 44px; height: 44px;
-      border-radius: 50%;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       color: var(--text-secondary);
       transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 600;
+      gap: 2px;
       position: relative;
     }
-    .volume-btn:hover { background: var(--bg-elevated); color: var(--text-primary); }
-    .volume-btn svg { width: 20px; height: 20px; }
     
-    .settings-group { display: flex; gap: 12px; }
-    .setting-btn {
-      background: var(--bg-button);
-      border: none;
-      height: 48px;
-      padding: 0 20px;
-      border-radius: 50px;
+    .nav-item.active {
+      background: var(--bg);
+      box-shadow: var(--neu-pressed);
+      color: var(--accent);
+    }
+    
+    .nav-item svg { width: 22px; height: 22px; }
+    
+    .sleep-countdown {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    
+    /* Volume Popup */
+    .popup-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.3);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .popup-overlay.show { display: flex; }
+    
+    .volume-popup {
+      background: var(--bg);
+      border-radius: 24px;
+      padding: 30px;
+      box-shadow: var(--neu-flat);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    
+    .volume-slider {
+      width: 8px;
+      height: 150px;
+      background: var(--bg);
+      border-radius: 4px;
+      box-shadow: var(--neu-pressed);
+      position: relative;
       cursor: pointer;
+      touch-action: none;
+    }
+    
+    .volume-fill {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      background: var(--accent);
+      border-radius: 4px;
+    }
+    
+    .volume-fill .progress-thumb {
+      top: -8px;
+      right: 50%;
+      transform: translateX(50%);
+    }
+    
+    .popup-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    
+    /* Sleep Menu */
+    .sleep-menu {
+      background: var(--bg);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: var(--neu-flat);
+    }
+    
+    .sleep-option {
+      padding: 15px 40px;
+      border-radius: 12px;
+      background: var(--bg);
+      margin-bottom: 10px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text);
+      box-shadow: var(--neu-flat);
+      transition: all 0.15s;
+    }
+    
+    .sleep-option:last-child { margin-bottom: 0; }
+    .sleep-option:active { box-shadow: var(--neu-pressed); }
+    .sleep-option.selected { color: var(--accent); box-shadow: var(--neu-pressed); }
+    
+    /* Error Message */
+    /* Status Message - inline */
+    .status-message {
+      height: 24px;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      color: var(--text-secondary);
-      font-family: 'Inter', sans-serif;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       font-weight: 500;
-      transition: all 0.2s;
-      position: relative;
+      color: var(--text-tertiary, var(--text-secondary));
+      margin-top: 5px;
+      opacity: 0;
+      transition: opacity 0.3s;
     }
-    .setting-btn:hover { background: var(--bg-elevated); color: var(--text-primary); }
-    .setting-btn.active { color: var(--accent); }
-    .setting-btn svg { width: 20px; height: 20px; }
     
-    /* Sleep Menu */
-    .sleep-menu {
-      display: none;
-      position: absolute;
-      bottom: 52px;
-      right: 0;
-      background: var(--bg-elevated);
-      border: 1px solid var(--border-color);
-      border-radius: 14px;
-      overflow: hidden;
-      z-index: 100;
-      min-width: 120px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    .status-message.show {
+      opacity: 1;
     }
-    .sleep-menu.show { display: block; }
-    .sleep-option { padding: 14px 20px; cursor: pointer; font-size: 0.9rem; font-weight: 500; color: var(--text-primary); transition: background 0.15s; text-align: center; }
-    .sleep-option:hover { background: var(--bg-button); }
-    .sleep-option.selected { color: var(--accent); }
+    
+    .status-message.error {
+      color: #e74c3c;
+    }
+    
+    .status-message.warning {
+      color: #f39c12;
+    }
+    
+    .status-message.success {
+      color: #27ae60;
+    }
+    
+    .status-spinner {
+      width: 12px;
+      height: 12px;
+      border: 2px solid currentColor;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin { to { transform: rotate(360deg); } }
     
     /* Favorites Menu */
-    .favorites-menu {
-      display: none;
-      position: absolute;
-      top: 52px;
-      right: 0;
-      background: var(--bg-elevated);
-      border: 1px solid var(--border-color);
-      border-radius: 14px;
-      overflow: hidden;
-      z-index: 100;
-      min-width: 180px;
-      max-height: 300px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    .favorites-popup {
+      background: var(--bg);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: var(--neu-flat);
+      max-width: 300px;
+      width: 90%;
     }
-    .favorites-menu.show { display: block; }
-    .favorites-header { padding: 14px 20px; font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); border-bottom: 1px solid var(--border-color); }
-    .favorites-list { max-height: 240px; overflow-y: auto; }
-    .favorites-empty { padding: 20px; text-align: center; font-size: 0.85rem; color: var(--text-tertiary); }
-    .favorite-item { 
-      padding: 12px 20px; 
-      cursor: pointer; 
-      font-size: 0.9rem; 
-      font-weight: 500; 
-      color: var(--text-primary); 
-      transition: background 0.15s; 
+    
+    .favorites-header {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 15px;
+      text-align: center;
+    }
+    
+    .favorites-list {
+      max-height: 250px;
+      overflow-y: auto;
+    }
+    
+    .fav-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-    }
-    .favorite-item:hover { background: var(--bg-button); }
-    .favorite-item-delete {
-      background: transparent;
-      border: none;
-      color: var(--text-tertiary);
+      padding: 12px 15px;
+      margin-bottom: 8px;
+      border-radius: 12px;
+      background: var(--bg);
+      box-shadow: var(--neu-flat);
       cursor: pointer;
-      padding: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: color 0.2s;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text);
     }
-    .favorite-item-delete:hover { color: #FF453A; }
-    .favorite-item-delete svg { width: 14px; height: 14px; }
     
-    /* Volume Popup */
-    .volume-popup {
-      display: none;
-      position: absolute;
-      bottom: 52px;
-      left: 0;
-      background: var(--bg-elevated);
-      border: 1px solid var(--border-color);
-      border-radius: 14px;
-      padding: 20px 16px;
-      z-index: 100;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.4);
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
+    .fav-item:active { box-shadow: var(--neu-pressed); }
+    
+    .fav-item-del {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      padding: 5px;
     }
-    .volume-popup.show { display: flex; }
-    .volume-slider-vertical { width: 4px; height: 120px; background: var(--slider-bg); border-radius: 2px; position: relative; cursor: pointer; touch-action: none; }
-    .volume-slider-fill { position: absolute; bottom: 0; width: 100%; background: var(--accent); border-radius: 2px; }
-    .volume-slider-thumb { position: absolute; top: -6px; left: 50%; transform: translateX(-50%); width: 12px; height: 12px; background: #fff; border-radius: 50%; }
+    
+    .fav-item-del:hover { color: #e74c3c; }
+    .fav-item-del svg { width: 16px; height: 16px; }
+    
+    .favorites-empty {
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      padding: 20px;
+    }
     
     /* Install Prompt */
-    .install-prompt { display: none; position: fixed; bottom: 20px; left: 20px; right: 20px; background: var(--bg-elevated); color: var(--text-primary); padding: 20px; border-radius: 16px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.4); z-index: 1000; border: 1px solid var(--border-color); }
+    .install-prompt {
+      display: none;
+      position: fixed;
+      bottom: 100px;
+      left: 20px;
+      right: 20px;
+      background: var(--bg);
+      color: var(--text);
+      padding: 20px;
+      border-radius: 20px;
+      text-align: center;
+      box-shadow: var(--neu-flat);
+      z-index: 1000;
+    }
+    
     .install-prompt.show { display: block; }
     .install-prompt p { margin-bottom: 16px; font-size: 0.95rem; font-weight: 500; }
-    .install-btn { background: var(--accent); color: #fff; border: none; padding: 12px 28px; border-radius: 50px; font-size: 0.9rem; font-weight: 600; cursor: pointer; margin-right: 10px; }
-    .install-close { background: var(--bg-button); color: var(--text-secondary); border: none; padding: 12px 20px; border-radius: 50px; font-size: 0.9rem; font-weight: 500; cursor: pointer; }
+    
+    .install-btn {
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      padding: 12px 28px;
+      border-radius: 50px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+    
+    .install-close {
+      background: var(--bg);
+      color: var(--text-secondary);
+      border: none;
+      padding: 12px 20px;
+      border-radius: 50px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      box-shadow: var(--neu-flat);
+    }
     
     audio { display: none; }
+    
+    .date-input-wrapper input[type="date"] {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 50px;
+      height: 50px;
+      opacity: 0;
+      cursor: pointer;
+    }
+    
+    .hidden-date-input {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      opacity: 0;
+      pointer-events: none;
+      width: 1px;
+      height: 1px;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <header class="header">
-      <h1>B-SIDE</h1>
-      <p class="artist">Alessio Bertallot</p>
-      <div class="episode-row">
-        <p class="episode" id="episodeDate">Puntata del —</p>
-        <button class="favorite-btn" id="favoriteBtn" title="Aggiungi ai preferiti">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="favoriteIcon">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-          </svg>
-        </button>
-      </div>
-    </header>
-    
-    <div class="date-picker-wrapper">
-      <div class="date-picker-btn" id="datePickerBtn">
-        <span id="dateDisplay">Seleziona Data</span>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-        <input type="date" id="datePicker">
-      </div>
-      <button class="favorites-list-btn" id="favoritesListBtn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+  <div class="app">
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <div style="width: 45px;"></div>
+      <button class="icon-btn" id="menuBtn">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>
         </svg>
-        <div class="favorites-menu" id="favoritesMenu">
-          <div class="favorites-header">Preferiti</div>
-          <div class="favorites-list" id="favoritesList">
-            <div class="favorites-empty">Nessun preferito</div>
-          </div>
-        </div>
       </button>
     </div>
     
-    <div class="error-message" id="errorMessage">Puntata non disponibile per questa data</div>
-    <div class="connection-status" id="connectionStatus">
-      <div class="spinner"></div>
-      <span id="connectionText">Riconnessione...</span>
+    <!-- Artwork -->
+    <div class="artwork-container">
+      <div class="artwork">
+        <h1>B-SIDE</h1>
+        <p>Alessio Bertallot</p>
+      </div>
     </div>
     
-    <div class="player-section">
-      <div class="progress-section">
-        <div class="progress-bar-container" id="progressContainer">
-          <div class="progress-bar-fill" id="progressFill">
-            <div class="progress-bar-thumb"></div>
-          </div>
-        </div>
-        <div class="time-display">
-          <span id="currentTime">0:00</span>
-          <span id="remainingTime">-0:00</span>
+    <!-- Track Info -->
+    <div class="track-info">
+      <div class="track-details">
+        <h2 id="episodeDate">02/12/2025</h2>
+        <p>Radio Capital</p>
+      </div>
+      <button class="fav-btn" id="favBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+      </button>
+    </div>
+    
+    <!-- Progress -->
+    <div class="progress-section">
+      <div class="progress-bar" id="progressBar">
+        <div class="progress-fill" id="progressFill">
+          <div class="progress-thumb"></div>
         </div>
       </div>
-      
-      <div class="controls">
-        <button class="nav-btn" id="prevDay">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
-        </button>
-        <button class="skip-btn" id="skipBack">-30</button>
-        <button class="play-btn" id="playBtn">
-          <svg viewBox="0 0 24 24" id="playIcon"><polygon points="6,4 20,12 6,20"/></svg>
-        </button>
-        <button class="skip-btn" id="skipForward">+30</button>
-        <button class="nav-btn" id="nextDay">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zM6 18l8.5-6L6 6z"/></svg>
-        </button>
+      <div class="time-display">
+        <span id="currentTime">0:00</span>
+        <span id="remainingTime">-0:00</span>
       </div>
-      
-      <audio id="audioPlayer"></audio>
-      
-      <div class="bottom-bar">
-        <div class="connection-indicator" id="connectionIndicator" title="Connessione"></div>
-        <button class="setting-btn" id="volumeBtn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="volumeIcon">
-            <path d="M11 5L6 9H2v6h4l5 4V5z"/>
-            <path d="M15.54 8.46a5 5 0 010 7.07"/>
-            <path d="M19.07 4.93a10 10 0 010 14.14"/>
-          </svg>
-          <div class="volume-popup" id="volumePopup">
-            <div class="volume-slider-vertical" id="volumeSliderContainer">
-              <div class="volume-slider-fill" id="volumeSliderFill" style="height: 100%;">
-                <div class="volume-slider-thumb"></div>
-              </div>
-            </div>
-          </div>
-        </button>
-        <button class="setting-btn" id="sleepBtn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/>
-            <polyline points="12 6 12 12 16 14"/>
-          </svg>
-          <span id="sleepLabel">Sleep</span>
-          <div class="sleep-menu" id="sleepMenu">
-            <div class="sleep-option" data-minutes="30">30 min</div>
-            <div class="sleep-option" data-minutes="60">60 min</div>
-            <div class="sleep-option" data-minutes="90">90 min</div>
-            <div class="sleep-option" data-minutes="0">Off</div>
-          </div>
-        </button>
-        <button class="setting-btn" id="themeToggle">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="themeIcon">
-            <circle cx="12" cy="12" r="5"/>
-            <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-            <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-          </svg>
-        </button>
+      <div class="status-message" id="statusMessage">
+        <span id="statusText"></span>
+      </div>
+    </div>
+    
+    <!-- Controls -->
+    <div class="controls">
+      <button class="ctrl-btn" id="prevDay">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+      </button>
+      <button class="ctrl-btn" id="skipBack">-30</button>
+      <button class="ctrl-btn play-btn" id="playBtn">
+        <svg viewBox="0 0 24 24" id="playIcon"><polygon points="6,4 20,12 6,20"/></svg>
+      </button>
+      <button class="ctrl-btn" id="skipForward">+30</button>
+      <button class="ctrl-btn" id="nextDay">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zM6 18l8.5-6L6 6z"/></svg>
+      </button>
+    </div>
+    
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+      <button class="nav-item" id="calendarNavBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+      </button>
+      <input type="date" id="datePicker" class="hidden-date-input">
+      <button class="nav-item" id="sleepBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="sleepIcon">
+          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+        </svg>
+        <span class="sleep-countdown" id="sleepCountdown" style="display:none;"></span>
+      </button>
+      <button class="nav-item active" id="volumeNavBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="volumeIcon">
+          <path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07"/><path d="M19.07 4.93a10 10 0 010 14.14"/>
+        </svg>
+      </button>
+      <button class="nav-item" id="themeBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="themeIcon">
+          <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+  
+  <!-- Popups -->
+  <div class="popup-overlay" id="volumeOverlay">
+    <div class="volume-popup">
+      <span class="popup-title">Volume</span>
+      <div class="volume-slider" id="volumeSlider">
+        <div class="volume-fill" id="volumeFill" style="height:100%;">
+          <div class="progress-thumb"></div>
+        </div>
       </div>
     </div>
   </div>
   
+  <div class="popup-overlay" id="sleepOverlay">
+    <div class="sleep-menu">
+      <div class="sleep-option" data-min="30">30 min</div>
+      <div class="sleep-option" data-min="60">60 min</div>
+      <div class="sleep-option" data-min="90">90 min</div>
+      <div class="sleep-option" data-min="0">Off</div>
+    </div>
+  </div>
+  
+  <div class="popup-overlay" id="favOverlay">
+    <div class="favorites-popup">
+      <div class="favorites-header">Preferiti</div>
+      <div class="favorites-list" id="favList"></div>
+    </div>
+  </div>
+  
+  <!-- Toasts rimossi - ora usiamo status inline -->
+  
+  <!-- Install Prompt -->
   <div class="install-prompt" id="installPrompt">
     <p>Installa B-SIDE sulla tua home screen</p>
     <button class="install-btn" id="installBtn">Installa</button>
     <button class="install-close" id="installClose">No grazie</button>
   </div>
+  
+  <audio id="audio"></audio>
 
   <script>
-    const datePicker = document.getElementById('datePicker');
-    const datePickerBtn = document.getElementById('datePickerBtn');
-    const dateDisplay = document.getElementById('dateDisplay');
-    const audioPlayer = document.getElementById('audioPlayer');
-    const episodeDate = document.getElementById('episodeDate');
-    const skipBack = document.getElementById('skipBack');
-    const skipForward = document.getElementById('skipForward');
-    const prevDay = document.getElementById('prevDay');
-    const nextDay = document.getElementById('nextDay');
-    const playBtn = document.getElementById('playBtn');
-    const playIcon = document.getElementById('playIcon');
-    const progressContainer = document.getElementById('progressContainer');
-    const progressFill = document.getElementById('progressFill');
-    const currentTimeEl = document.getElementById('currentTime');
-    const remainingTimeEl = document.getElementById('remainingTime');
-    const volumeBtn = document.getElementById('volumeBtn');
-    const volumePopup = document.getElementById('volumePopup');
-    const volumeSliderContainer = document.getElementById('volumeSliderContainer');
-    const volumeSliderFill = document.getElementById('volumeSliderFill');
-    const volumeIcon = document.getElementById('volumeIcon');
-    const errorMessage = document.getElementById('errorMessage');
-    const connectionStatus = document.getElementById('connectionStatus');
-    const connectionText = document.getElementById('connectionText');
-    const themeToggle = document.getElementById('themeToggle');
-    const themeIcon = document.getElementById('themeIcon');
-    const themeColorMeta = document.getElementById('themeColor');
-    const sleepBtn = document.getElementById('sleepBtn');
-    const sleepMenu = document.getElementById('sleepMenu');
-    const sleepLabel = document.getElementById('sleepLabel');
-    const sleepOptions = document.querySelectorAll('.sleep-option');
-    const favoriteBtn = document.getElementById('favoriteBtn');
-    const favoriteIcon = document.getElementById('favoriteIcon');
-    const favoritesListBtn = document.getElementById('favoritesListBtn');
-    const favoritesMenu = document.getElementById('favoritesMenu');
-    const favoritesList = document.getElementById('favoritesList');
+    const $ = id => document.getElementById(id);
+    const audio = $('audio');
+    const datePicker = $('datePicker');
+    const calendarNavBtn = $('calendarNavBtn');
+    const episodeDate = $('episodeDate');
+    const progressBar = $('progressBar');
+    const progressFill = $('progressFill');
+    const currentTime = $('currentTime');
+    const remainingTime = $('remainingTime');
+    const playBtn = $('playBtn');
+    const playIcon = $('playIcon');
+    const prevDay = $('prevDay');
+    const nextDay = $('nextDay');
+    const skipBack = $('skipBack');
+    const skipForward = $('skipForward');
+    const favBtn = $('favBtn');
+    const sleepBtn = $('sleepBtn');
+    const sleepIcon = $('sleepIcon');
+    const sleepCountdown = $('sleepCountdown');
+    const volumeNavBtn = $('volumeNavBtn');
+    const volumeIcon = $('volumeIcon');
+    const themeBtn = $('themeBtn');
+    const themeIcon = $('themeIcon');
+    const volumeOverlay = $('volumeOverlay');
+    const volumeSlider = $('volumeSlider');
+    const volumeFill = $('volumeFill');
+    const sleepOverlay = $('sleepOverlay');
+    const favOverlay = $('favOverlay');
+    const favList = $('favList');
+    const statusMessage = $('statusMessage');
+    const statusText = $('statusText');
+    const themeColorMeta = $('themeColor');
+    const installPrompt = $('installPrompt');
+    const installBtn = $('installBtn');
+    const installClose = $('installClose');
     
-    const connectionIndicator = document.getElementById('connectionIndicator');
-    
-    let isPlaying = false, lastVolume = 1, isDragging = false;
-    let sleepTimer = null, sleepEndTime = null, sleepCountdown = null;
-    let retryCount = 0, retryTimer = null, lastPlaybackTime = 0, wasPlayingBeforeError = false;
-    let connectionCheckInterval = null, bufferingTimeout = null, maxRetries = 10;
-    let playbackMonitorInterval = null, lastKnownPlayingState = false;
+    let isPlaying = false;
+    let sleepTimer = null, sleepEndTime = null, sleepInterval = null;
+    let favorites = JSON.parse(localStorage.getItem('bside-fav') || '[]');
+    let retryCount = 0, retryTimer = null, lastTime = 0, wasPlaying = false;
+    let deferredPrompt = null;
     
     // Theme
-    const savedTheme = localStorage.getItem('bside-theme') || 'dark';
-    applyTheme(savedTheme);
+    const theme = localStorage.getItem('bside-theme') || 'light';
+    applyTheme(theme);
     
-    function applyTheme(theme) {
-      if (theme === 'light') {
-        document.documentElement.setAttribute('data-theme', 'light');
+    function applyTheme(t) {
+      if (t === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
         themeIcon.innerHTML = '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
-        themeColorMeta.setAttribute('content', '#f5f5f7');
+        themeColorMeta.content = '#2d3436';
       } else {
         document.documentElement.removeAttribute('data-theme');
         themeIcon.innerHTML = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
-        themeColorMeta.setAttribute('content', '#000000');
+        themeColorMeta.content = '#e0e5ec';
       }
     }
     
-    themeToggle.addEventListener('click', () => {
-      const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-      const newTheme = isLight ? 'dark' : 'light';
+    themeBtn.onclick = () => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const newTheme = isDark ? 'light' : 'dark';
       applyTheme(newTheme);
       localStorage.setItem('bside-theme', newTheme);
-    });
+    };
     
-    // Date Picker
+    // Date
     const today = new Date();
     datePicker.value = today.toISOString().split('T')[0];
-    datePicker.max = today.toISOString().split('T')[0];
+    datePicker.max = datePicker.value;
     
-    datePickerBtn.addEventListener('click', () => {
+    calendarNavBtn.onclick = () => {
       datePicker.showPicker();
-    });
+    };
+    datePicker.onclick = (e) => e.stopPropagation();
+    datePicker.onchange = () => { updatePlayer(); updateNav(); updateFav(); updateMediaSession(); };
     
-    datePicker.addEventListener('change', () => {
-      updatePlayer();
-      updateMediaSessionMetadata();
-      updateNavButtons();
-      updateFavoriteButton();
-    });
+    function formatDate(d) {
+      const [y, m, day] = d.split('-');
+      return `${day}/${m}/${y}`;
+    }
     
-    // Sleep Timer
-    sleepBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      sleepMenu.classList.toggle('show');
-      volumePopup.classList.remove('show');
-    });
+    function buildUrl(d) {
+      const [y, m, day] = d.split('-');
+      return `https://media.capital.it/${y}/${m}/${day}/episodes/bertallot/bertallot_${y}${m}${day}_220000.mp3`;
+    }
     
-    document.addEventListener('click', (e) => {
-      if (!sleepBtn.contains(e.target)) sleepMenu.classList.remove('show');
-      if (!volumeBtn.contains(e.target)) volumePopup.classList.remove('show');
-      if (!favoritesListBtn.contains(e.target)) favoritesMenu.classList.remove('show');
-    });
+    function updatePlayer() {
+      const d = datePicker.value;
+      audio.src = buildUrl(d);
+      episodeDate.textContent = formatDate(d);
+      isPlaying = false;
+      updatePlayIcon(false);
+      progressFill.style.width = '0%';
+      currentTime.textContent = '0:00';
+      remainingTime.textContent = '-0:00';
+      errorToast.classList.remove('show');
+    }
     
-    sleepOptions.forEach(option => {
-      option.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const minutes = parseInt(option.dataset.minutes);
-        setSleepTimer(minutes);
-        sleepMenu.classList.remove('show');
-        sleepOptions.forEach(o => o.classList.remove('selected'));
-        if (minutes > 0) option.classList.add('selected');
-      });
-    });
+    function updatePlayIcon(playing) {
+      playIcon.innerHTML = playing 
+        ? '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>' 
+        : '<polygon points="6,4 20,12 6,20"/>';
+    }
     
-    function setSleepTimer(minutes) {
-      if (sleepTimer) clearTimeout(sleepTimer);
-      if (sleepCountdown) clearInterval(sleepCountdown);
+    function updateNav() {
+      const curr = new Date(datePicker.value);
+      const tod = new Date();
+      curr.setHours(0,0,0,0);
+      tod.setHours(0,0,0,0);
+      nextDay.disabled = curr >= tod;
+    }
+    
+    function changeDay(delta) {
+      const d = new Date(datePicker.value);
+      d.setDate(d.getDate() + delta);
+      const str = d.toISOString().split('T')[0];
+      if (str <= datePicker.max) {
+        datePicker.value = str;
+        updatePlayer();
+        updateNav();
+        updateFav();
+        updateMediaSession();
+      }
+    }
+    
+    prevDay.onclick = () => changeDay(-1);
+    nextDay.onclick = () => changeDay(1);
+    
+    // Play
+    playBtn.onclick = () => {
+      if (isPlaying) { audio.pause(); updatePlayIcon(false); }
+      else { audio.play(); updatePlayIcon(true); }
+      isPlaying = !isPlaying;
+    };
+    
+    skipBack.onclick = () => audio.currentTime -= 30;
+    skipForward.onclick = () => audio.currentTime += 30;
+    
+    // Progress
+    function formatTime(s) {
+      if (isNaN(s)) return '0:00';
+      const m = Math.floor(s / 60);
+      const sec = Math.floor(s % 60);
+      return `${m}:${sec.toString().padStart(2, '0')}`;
+    }
+    
+    audio.ontimeupdate = () => {
+      const pct = (audio.currentTime / audio.duration) * 100 || 0;
+      progressFill.style.width = pct + '%';
+      currentTime.textContent = formatTime(audio.currentTime);
+      remainingTime.textContent = '-' + formatTime(audio.duration - audio.currentTime);
       
-      if (minutes === 0) {
+      if ('mediaSession' in navigator && audio.duration) {
+        navigator.mediaSession.setPositionState({
+          duration: audio.duration,
+          playbackRate: audio.playbackRate,
+          position: audio.currentTime
+        });
+      }
+    };
+    
+    audio.onloadedmetadata = () => {
+      remainingTime.textContent = '-' + formatTime(audio.duration);
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.setPositionState({
+          duration: audio.duration,
+          playbackRate: 1,
+          position: 0
+        });
+      }
+    };
+    
+    let progressDragging = false;
+    
+    progressBar.onmousedown = (e) => {
+      progressDragging = true;
+      updateProgress(e);
+    };
+    
+    progressBar.ontouchstart = (e) => {
+      progressDragging = true;
+      updateProgress(e);
+    };
+    
+    document.onmousemove = (e) => {
+      if (progressDragging) updateProgress(e);
+    };
+    
+    document.ontouchmove = (e) => {
+      if (progressDragging) updateProgress(e);
+    };
+    
+    document.onmouseup = () => progressDragging = false;
+    document.ontouchend = () => progressDragging = false;
+    
+    function updateProgress(e) {
+      const rect = progressBar.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+      if (audio.duration) {
+        audio.currentTime = pct * audio.duration;
+        progressFill.style.width = (pct * 100) + '%';
+      }
+    }
+    
+    // Volume
+    volumeNavBtn.onclick = () => volumeOverlay.classList.add('show');
+    volumeOverlay.onclick = e => { if (e.target === volumeOverlay) volumeOverlay.classList.remove('show'); };
+    
+    let volDrag = false;
+    
+    function updateVol(e) {
+      const rect = volumeSlider.getBoundingClientRect();
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const y = clientY - rect.top;
+      const pct = 1 - (y / rect.height);
+      audio.volume = Math.max(0, Math.min(1, pct));
+      volumeFill.style.height = (audio.volume * 100) + '%';
+      updateVolIcon();
+    }
+    
+    function updateVolIcon() {
+      const v = audio.volume;
+      if (v === 0) volumeIcon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>';
+      else if (v < 0.5) volumeIcon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07"/>';
+      else volumeIcon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07"/><path d="M19.07 4.93a10 10 0 010 14.14"/>';
+    }
+    
+    volumeSlider.onmousedown = e => { volDrag = true; updateVol(e); };
+    volumeSlider.ontouchstart = e => { e.preventDefault(); volDrag = true; updateVol(e); };
+    
+    document.addEventListener('mousemove', e => { if (volDrag) updateVol(e); });
+    document.addEventListener('touchmove', e => { if (volDrag) { e.preventDefault(); updateVol(e); } }, { passive: false });
+    document.addEventListener('mouseup', () => volDrag = false);
+    document.addEventListener('touchend', () => volDrag = false);
+    
+    // Sleep
+    sleepBtn.onclick = () => sleepOverlay.classList.add('show');
+    sleepOverlay.onclick = e => { if (e.target === sleepOverlay) sleepOverlay.classList.remove('show'); };
+    
+    document.querySelectorAll('.sleep-option').forEach(opt => {
+      opt.onclick = () => {
+        const min = parseInt(opt.dataset.min);
+        setSleep(min);
+        sleepOverlay.classList.remove('show');
+        document.querySelectorAll('.sleep-option').forEach(o => o.classList.remove('selected'));
+        if (min > 0) opt.classList.add('selected');
+      };
+    });
+    
+    function setSleep(min) {
+      if (sleepTimer) clearTimeout(sleepTimer);
+      if (sleepInterval) clearInterval(sleepInterval);
+      
+      if (min === 0) {
         sleepEndTime = null;
-        sleepLabel.textContent = 'Sleep';
+        sleepIcon.style.display = '';
+        sleepCountdown.style.display = 'none';
         sleepBtn.classList.remove('active');
         return;
       }
       
-      sleepEndTime = Date.now() + minutes * 60 * 1000;
+      sleepEndTime = Date.now() + min * 60000;
       sleepBtn.classList.add('active');
+      sleepIcon.style.display = 'none';
+      sleepCountdown.style.display = '';
       updateSleepDisplay();
-      sleepCountdown = setInterval(updateSleepDisplay, 1000);
       
+      sleepInterval = setInterval(updateSleepDisplay, 1000);
       sleepTimer = setTimeout(() => {
-        audioPlayer.pause();
-        updatePlayButton(false);
+        audio.pause();
+        updatePlayIcon(false);
         isPlaying = false;
-        setSleepTimer(0);
-      }, minutes * 60 * 1000);
+        setSleep(0);
+      }, min * 60000);
     }
     
     function updateSleepDisplay() {
       if (!sleepEndTime) return;
-      const remaining = Math.max(0, sleepEndTime - Date.now());
-      if (remaining === 0) { setSleepTimer(0); return; }
-      const mins = Math.floor(remaining / 60000);
-      const secs = Math.floor((remaining % 60000) / 1000);
-      sleepLabel.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
-    }
-    
-    function pauseSleepTimer() {
-      if (sleepEndTime && sleepCountdown) {
-        clearInterval(sleepCountdown);
-        sleepCountdown = null;
-        if (sleepTimer) { clearTimeout(sleepTimer); sleepTimer = null; }
-      }
-    }
-    
-    function resumeSleepTimer() {
-      if (sleepEndTime) {
-        const remaining = sleepEndTime - Date.now();
-        if (remaining > 0) {
-          sleepCountdown = setInterval(updateSleepDisplay, 1000);
-          sleepTimer = setTimeout(() => {
-            audioPlayer.pause();
-            updatePlayButton(false);
-            isPlaying = false;
-            setSleepTimer(0);
-          }, remaining);
-        } else { setSleepTimer(0); }
-      }
+      const rem = Math.max(0, sleepEndTime - Date.now());
+      if (rem === 0) { setSleep(0); return; }
+      const m = Math.floor(rem / 60000);
+      const s = Math.floor((rem % 60000) / 1000);
+      sleepCountdown.textContent = `${m}:${s.toString().padStart(2, '0')}`;
     }
     
     // Favorites
-    let favorites = JSON.parse(localStorage.getItem('bside-favorites') || '[]');
+    favBtn.onclick = () => {
+      const d = datePicker.value;
+      const idx = favorites.indexOf(d);
+      if (idx > -1) favorites.splice(idx, 1);
+      else favorites.unshift(d);
+      localStorage.setItem('bside-fav', JSON.stringify(favorites));
+      updateFav();
+    };
     
-    favoriteBtn.addEventListener('click', () => {
-      const currentDate = datePicker.value;
-      toggleFavorite(currentDate);
-    });
-    
-    favoritesListBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      favoritesMenu.classList.toggle('show');
-      sleepMenu.classList.remove('show');
-      volumePopup.classList.remove('show');
-      renderFavoritesList();
-    });
-    
-    function toggleFavorite(date) {
-      const index = favorites.indexOf(date);
-      if (index > -1) {
-        favorites.splice(index, 1);
-      } else {
-        favorites.unshift(date);
-      }
-      saveFavorites();
-      updateFavoriteButton();
+    function updateFav() {
+      const d = datePicker.value;
+      favBtn.classList.toggle('active', favorites.includes(d));
     }
     
-    function saveFavorites() {
-      localStorage.setItem('bside-favorites', JSON.stringify(favorites));
-    }
+    $('menuBtn').onclick = () => {
+      renderFavList();
+      favOverlay.classList.add('show');
+    };
+    favOverlay.onclick = e => { if (e.target === favOverlay) favOverlay.classList.remove('show'); };
     
-    function updateFavoriteButton() {
-      const currentDate = datePicker.value;
-      const isFavorite = favorites.includes(currentDate);
-      if (isFavorite) {
-        favoriteBtn.classList.add('active');
-      } else {
-        favoriteBtn.classList.remove('active');
-      }
-    }
-    
-    function renderFavoritesList() {
+    function renderFavList() {
       if (favorites.length === 0) {
-        favoritesList.innerHTML = '<div class="favorites-empty">Nessun preferito</div>';
+        favList.innerHTML = '<div class="favorites-empty">Nessun preferito</div>';
         return;
       }
-      
-      favoritesList.innerHTML = favorites.map(date => `
-        <div class="favorite-item" data-date="${date}">
-          <span>${formatDate(date)}</span>
-          <button class="favorite-item-delete" data-date="${date}">
+      favList.innerHTML = favorites.map(d => `
+        <div class="fav-item" data-date="${d}">
+          <span>${formatDate(d)}</span>
+          <button class="fav-item-del" data-date="${d}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
             </svg>
@@ -703,566 +1021,85 @@
         </div>
       `).join('');
       
-      // Click su preferito per caricare
-      favoritesList.querySelectorAll('.favorite-item').forEach(item => {
-        item.addEventListener('click', (e) => {
-          if (!e.target.closest('.favorite-item-delete')) {
-            const date = item.dataset.date;
-            datePicker.value = date;
+      favList.querySelectorAll('.fav-item').forEach(item => {
+        item.onclick = e => {
+          if (!e.target.closest('.fav-item-del')) {
+            datePicker.value = item.dataset.date;
             updatePlayer();
-            updateMediaSessionMetadata();
-            updateNavButtons();
-            updateFavoriteButton();
-            favoritesMenu.classList.remove('show');
+            updateNav();
+            updateFav();
+            updateMediaSession();
+            favOverlay.classList.remove('show');
           }
-        });
+        };
       });
       
-      // Click su elimina
-      favoritesList.querySelectorAll('.favorite-item-delete').forEach(btn => {
-        btn.addEventListener('click', (e) => {
+      favList.querySelectorAll('.fav-item-del').forEach(btn => {
+        btn.onclick = e => {
           e.stopPropagation();
-          const date = btn.dataset.date;
-          toggleFavorite(date);
-          renderFavoritesList();
-        });
+          const d = btn.dataset.date;
+          favorites = favorites.filter(f => f !== d);
+          localStorage.setItem('bside-fav', JSON.stringify(favorites));
+          updateFav();
+          renderFavList();
+        };
       });
     }
     
-    // Volume
-    volumeBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      volumePopup.classList.toggle('show');
-      sleepMenu.classList.remove('show');
-    });
-    
-    let volumeDragging = false;
-    
-    function updateVolumeFromEvent(e) {
-      const rect = volumeSliderContainer.getBoundingClientRect();
-      let clientY;
-      if (e.touches) {
-        clientY = e.touches[0].clientY;
-      } else {
-        clientY = e.clientY;
-      }
-      const y = clientY - rect.top;
-      const pct = 1 - (y / rect.height);
-      const vol = Math.max(0, Math.min(1, pct));
-      audioPlayer.volume = vol;
-      lastVolume = vol > 0 ? vol : lastVolume;
-      updateVolumeUI();
-    }
-    
-    volumeSliderContainer.addEventListener('mousedown', (e) => {
-      e.stopPropagation();
-      volumeDragging = true;
-      updateVolumeFromEvent(e);
-    });
-    
-    volumeSliderContainer.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      volumeDragging = true;
-      updateVolumeFromEvent(e);
-    });
-    
-    document.addEventListener('mousemove', (e) => {
-      if (volumeDragging) updateVolumeFromEvent(e);
-    });
-    
-    document.addEventListener('touchmove', (e) => {
-      if (volumeDragging) {
-        e.preventDefault();
-        updateVolumeFromEvent(e);
-      }
-    }, { passive: false });
-    
-    document.addEventListener('mouseup', () => { volumeDragging = false; });
-    document.addEventListener('touchend', () => { volumeDragging = false; });
-    
-    function updateVolumeUI() {
-      const v = audioPlayer.volume;
-      volumeSliderFill.style.height = (v * 100) + '%';
-      if (v === 0) volumeIcon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>';
-      else if (v < 0.5) volumeIcon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07"/>';
-      else volumeIcon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07"/><path d="M19.07 4.93a10 10 0 010 14.14"/>';
-    }
-    
-    // Player functions
-    function buildUrl(dateStr) {
-      const [year, month, day] = dateStr.split('-');
-      return `https://media.capital.it/${year}/${month}/${day}/episodes/bertallot/bertallot_${year}${month}${day}_220000.mp3`;
-    }
-    
-    function formatDate(dateStr) {
-      const [year, month, day] = dateStr.split('-');
-      return `${day}/${month}/${year}`;
-    }
-    
-    function formatTime(sec) {
-      if (isNaN(sec)) return '0:00';
-      const m = Math.floor(sec / 60);
-      const s = Math.floor(sec % 60);
-      return `${m}:${s.toString().padStart(2, '0')}`;
-    }
-    
-    function updatePlayer() {
-      const dateValue = datePicker.value;
-      if (dateValue) {
-        audioPlayer.src = buildUrl(dateValue);
-        episodeDate.textContent = `Puntata del ${formatDate(dateValue)}`;
-        dateDisplay.textContent = formatDate(dateValue);
-        isPlaying = false;
-        updatePlayButton(false);
-        progressFill.style.width = '0%';
-        currentTimeEl.textContent = '0:00';
-        remainingTimeEl.textContent = '-0:00';
-        errorMessage.classList.remove('show');
-      }
-    }
-    
-    function updatePlayButton(playing) {
-      if (playing) playIcon.innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
-      else playIcon.innerHTML = '<polygon points="6,4 20,12 6,20"/>';
-    }
-    
-    function updateNavButtons() {
-      const currentDate = new Date(datePicker.value);
-      const todayDate = new Date();
-      todayDate.setHours(0, 0, 0, 0);
-      currentDate.setHours(0, 0, 0, 0);
-      nextDay.disabled = currentDate >= todayDate;
-    }
-    
-    function changeDay(delta) {
-      const currentDate = new Date(datePicker.value);
-      currentDate.setDate(currentDate.getDate() + delta);
-      const newDateStr = currentDate.toISOString().split('T')[0];
-      if (newDateStr <= datePicker.max) {
-        datePicker.value = newDateStr;
-        updatePlayer();
-        updateMediaSessionMetadata();
-        updateNavButtons();
-        updateFavoriteButton();
-      }
-    }
-    
-    prevDay.addEventListener('click', () => changeDay(-1));
-    nextDay.addEventListener('click', () => changeDay(1));
-    
-    // Progress bar
-    let progressDragging = false;
-    
-    function updateProgressFromEvent(e) {
-      const rect = progressContainer.getBoundingClientRect();
-      let clientX;
-      if (e.touches) {
-        clientX = e.touches[0].clientX;
-      } else {
-        clientX = e.clientX;
-      }
-      const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-      progressFill.style.width = (pct * 100) + '%';
-      if (audioPlayer.duration) {
-        currentTimeEl.textContent = formatTime(pct * audioPlayer.duration);
-        remainingTimeEl.textContent = '-' + formatTime((1 - pct) * audioPlayer.duration);
-      }
-      return pct;
-    }
-    
-    progressContainer.addEventListener('mousedown', (e) => {
-      progressDragging = true;
-      updateProgressFromEvent(e);
-    });
-    
-    progressContainer.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      progressDragging = true;
-      updateProgressFromEvent(e);
-    });
-    
-    document.addEventListener('mousemove', (e) => {
-      if (progressDragging) {
-        updateProgressFromEvent(e);
-      }
-    });
-    
-    document.addEventListener('touchmove', (e) => {
-      if (progressDragging) {
-        e.preventDefault();
-        updateProgressFromEvent(e);
-      }
-    }, { passive: false });
-    
-    document.addEventListener('mouseup', (e) => {
-      if (progressDragging && audioPlayer.duration) {
-        const pct = updateProgressFromEvent(e);
-        audioPlayer.currentTime = pct * audioPlayer.duration;
-      }
-      progressDragging = false;
-    });
-    
-    document.addEventListener('touchend', (e) => {
-      if (progressDragging && audioPlayer.duration) {
-        const rect = progressContainer.getBoundingClientRect();
-        const lastTouch = e.changedTouches[0];
-        const pct = Math.max(0, Math.min(1, (lastTouch.clientX - rect.left) / rect.width));
-        audioPlayer.currentTime = pct * audioPlayer.duration;
-      }
-      progressDragging = false;
-    });
-    
-    // Audio events
-    audioPlayer.addEventListener('error', () => handlePlaybackError());
-    audioPlayer.addEventListener('loadeddata', () => { 
-      errorMessage.classList.remove('show'); 
-      hideConnectionStatus(); 
-      retryCount = 0;
-      setConnectionIndicator('online');
-      startConnectionCheck();
-    });
-    audioPlayer.addEventListener('waiting', () => { 
-      if (isPlaying) {
-        setConnectionIndicator('warning');
-        // Buffering proattivo: se dura più di 4 secondi, avvia riconnessione
-        if (bufferingTimeout) clearTimeout(bufferingTimeout);
-        bufferingTimeout = setTimeout(() => {
-          if (isPlaying && audioPlayer.readyState < 3) {
-            handlePlaybackError();
-          }
-        }, 4000);
-      }
-    });
-    audioPlayer.addEventListener('playing', () => { 
-      hideConnectionStatus(); 
-      retryCount = 0;
-      setConnectionIndicator('online');
-      if (bufferingTimeout) {
-        clearTimeout(bufferingTimeout);
-        bufferingTimeout = null;
-      }
-    });
-    audioPlayer.addEventListener('stalled', () => {
-      if (isPlaying) {
-        setConnectionIndicator('warning');
-        // Stalled: tentativo di riconnessione dopo 5 secondi
-        if (bufferingTimeout) clearTimeout(bufferingTimeout);
-        bufferingTimeout = setTimeout(() => {
-          if (isPlaying) {
-            handlePlaybackError();
-          }
-        }, 5000);
-      }
-    });
-    
-    audioPlayer.addEventListener('loadedmetadata', () => {
-      remainingTimeEl.textContent = '-' + formatTime(audioPlayer.duration);
-      if ('mediaSession' in navigator) {
-        navigator.mediaSession.setPositionState({ duration: audioPlayer.duration, playbackRate: 1, position: 0 });
-      }
-    });
-    
-    audioPlayer.addEventListener('timeupdate', () => {
-      if (!progressDragging) {
-        const pct = (audioPlayer.currentTime / audioPlayer.duration) * 100 || 0;
-        progressFill.style.width = pct + '%';
-        currentTimeEl.textContent = formatTime(audioPlayer.currentTime);
-        remainingTimeEl.textContent = '-' + formatTime(audioPlayer.duration - audioPlayer.currentTime);
-        if ('mediaSession' in navigator && audioPlayer.duration) {
-          navigator.mediaSession.setPositionState({ duration: audioPlayer.duration, playbackRate: audioPlayer.playbackRate, position: audioPlayer.currentTime });
-        }
-      }
-    });
-    
-    playBtn.addEventListener('click', () => {
-      if (isPlaying) { 
-        audioPlayer.pause(); 
-        updatePlayButton(false);
-        stopPlaybackMonitor();
-      }
-      else { 
-        audioPlayer.play(); 
-        updatePlayButton(true);
-        startPlaybackMonitor();
-      }
-      isPlaying = !isPlaying;
-      lastKnownPlayingState = isPlaying;
-    });
-    
-    skipBack.addEventListener('click', () => audioPlayer.currentTime -= 30);
-    skipForward.addEventListener('click', () => audioPlayer.currentTime += 30);
-    
-    // Connection handling
-    function setConnectionIndicator(status) {
-      connectionIndicator.className = 'connection-indicator';
-      if (status === 'warning') connectionIndicator.classList.add('warning');
-      else if (status === 'offline') connectionIndicator.classList.add('offline');
-    }
-    
-    // Monitor continuo della riproduzione
-    function startPlaybackMonitor() {
-      stopPlaybackMonitor();
-      playbackMonitorInterval = setInterval(() => {
-        // Salva continuamente la posizione durante la riproduzione
-        if (isPlaying && audioPlayer.currentTime > 0) {
-          lastPlaybackTime = audioPlayer.currentTime;
-          wasPlayingBeforeError = true;
-        }
-        
-        // Controlla se l'audio si è fermato inaspettatamente
-        if (isPlaying && audioPlayer.paused && !audioPlayer.ended) {
-          console.log('Audio fermato inaspettatamente, tento riconnessione...');
-          setConnectionIndicator('warning');
-          handlePlaybackError();
-        }
-        
-        // Controlla se il buffer è bloccato
-        if (isPlaying && !audioPlayer.paused) {
-          const buffered = audioPlayer.buffered;
-          if (buffered.length > 0) {
-            const bufferedEnd = buffered.end(buffered.length - 1);
-            const currentTime = audioPlayer.currentTime;
-            // Se siamo vicini alla fine del buffer e non sta crescendo, c'è un problema
-            if (bufferedEnd - currentTime < 1 && bufferedEnd < audioPlayer.duration - 1) {
-              setConnectionIndicator('warning');
-            }
-          }
-        }
-      }, 2000);
-    }
-    
-    function stopPlaybackMonitor() {
-      if (playbackMonitorInterval) {
-        clearInterval(playbackMonitorInterval);
-        playbackMonitorInterval = null;
-      }
-    }
-    
-    function startConnectionCheck() {
-      if (connectionCheckInterval) clearInterval(connectionCheckInterval);
-      connectionCheckInterval = setInterval(() => {
-        if (isPlaying) {
-          checkConnection();
-        }
-      }, 30000);
-    }
-    
-    function checkConnection() {
-      if (!navigator.onLine) {
-        setConnectionIndicator('offline');
-        return;
-      }
-      
-      fetch(audioPlayer.src, { method: 'HEAD', cache: 'no-store' })
-        .then(response => {
-          if (response.ok) {
-            setConnectionIndicator('online');
-          } else {
-            setConnectionIndicator('warning');
-          }
-        })
-        .catch(() => {
-          setConnectionIndicator('warning');
-        });
-    }
-    
-    function handlePlaybackError() {
-      // Salva stato SEMPRE
-      if (audioPlayer.currentTime > 0) {
-        lastPlaybackTime = audioPlayer.currentTime;
-      }
-      if (isPlaying || lastKnownPlayingState) {
-        wasPlayingBeforeError = true;
-      }
-      
-      updatePlayButton(false);
+    // Errors & Connection
+    audio.onerror = () => {
+      lastTime = audio.currentTime || 0;
+      wasPlaying = isPlaying;
+      updatePlayIcon(false);
       isPlaying = false;
-      pauseSleepTimer();
-      setConnectionIndicator('offline');
       
-      if (!navigator.onLine) {
-        handleOffline();
-        return;
-      }
+      if (!navigator.onLine) { showStatus('Nessuna connessione', 'error'); return; }
       
-      fetch(audioPlayer.src, { method: 'HEAD', cache: 'no-store' })
-        .then(response => {
-          if (response.status === 404) {
-            errorMessage.classList.add('show');
-            hideConnectionStatus();
-            setConnectionIndicator('offline');
-          } else {
-            attemptReconnect();
-          }
-        })
-        .catch(() => attemptReconnect());
-    }
+      fetch(audio.src, { method: 'HEAD' })
+        .then(r => { if (r.status === 404) { showStatus('Puntata non disponibile', 'error'); } else retry(); })
+        .catch(() => retry());
+    };
     
-    function attemptReconnect() {
-      if (retryCount >= maxRetries) {
-        showConnectionStatus('offline', 'Riconnessione automatica...');
-        setConnectionIndicator('offline');
-        
-        if (retryTimer) clearTimeout(retryTimer);
-        retryTimer = setTimeout(() => {
-          retryCount = 0;
-          attemptReconnect();
-        }, 30000);
+    audio.onloadeddata = () => { hideStatus(); retryCount = 0; };
+    audio.onwaiting = () => { if (isPlaying) showStatus('Buffering...', 'warning', true); };
+    audio.onplaying = () => { hideStatus(); retryCount = 0; };
+    
+    function retry() {
+      if (retryCount >= 5) {
+        showStatus('Connessione fallita', 'error');
         return;
       }
-      
       retryCount++;
-      const delay = Math.min(2000 * Math.pow(2, retryCount - 1), 20000);
-      
-      showConnectionStatus('reconnecting', `Riconnessione... (${retryCount}/${maxRetries})`);
-      setConnectionIndicator('warning');
-      
+      showStatus(`Riconnessione... (${retryCount}/5)`, 'warning', true);
       if (retryTimer) clearTimeout(retryTimer);
-      
       retryTimer = setTimeout(() => {
-        const currentTime = lastPlaybackTime;
-        const shouldPlay = wasPlayingBeforeError || lastKnownPlayingState;
-        
-        const currentSrc = audioPlayer.src;
-        audioPlayer.src = '';
-        audioPlayer.src = currentSrc;
-        
-        function onAudioReady() {
-          audioPlayer.removeEventListener('canplay', onAudioReady);
-          audioPlayer.removeEventListener('loadeddata', onAudioReady);
-          
-          if (currentTime > 0 && audioPlayer.duration) {
-            audioPlayer.currentTime = Math.min(currentTime, audioPlayer.duration);
-          }
-          
-          if (shouldPlay) {
-            const playPromise = audioPlayer.play();
-            if (playPromise !== undefined) {
-              playPromise
-                .then(() => {
-                  isPlaying = true;
-                  lastKnownPlayingState = true;
-                  updatePlayButton(true);
-                  hideConnectionStatus();
-                  retryCount = 0;
-                  setConnectionIndicator('online');
-                  resumeSleepTimer();
-                  startPlaybackMonitor();
-                })
-                .catch((err) => {
-                  console.log('Play fallito:', err);
-                  attemptReconnect();
-                });
-            }
-          } else {
-            hideConnectionStatus();
-            retryCount = 0;
-            setConnectionIndicator('online');
-          }
-        }
-        
-        audioPlayer.addEventListener('canplay', onAudioReady, { once: true });
-        audioPlayer.addEventListener('loadeddata', onAudioReady, { once: true });
-        
-        function onAudioError() {
-          audioPlayer.removeEventListener('error', onAudioError);
-          audioPlayer.removeEventListener('canplay', onAudioReady);
-          audioPlayer.removeEventListener('loadeddata', onAudioReady);
-          console.log('Errore caricamento audio, ritento...');
-          attemptReconnect();
-        }
-        audioPlayer.addEventListener('error', onAudioError, { once: true });
-        
-        setTimeout(() => {
-          if (!isPlaying && shouldPlay) {
-            audioPlayer.removeEventListener('canplay', onAudioReady);
-            audioPlayer.removeEventListener('loadeddata', onAudioReady);
-            audioPlayer.removeEventListener('error', onAudioError);
-            console.log('Timeout caricamento, ritento...');
-            attemptReconnect();
-          }
-        }, 15000);
-        
-      }, delay);
+        const src = audio.src;
+        audio.src = '';
+        audio.src = src;
+        audio.currentTime = lastTime;
+        if (wasPlaying) audio.play().then(() => { isPlaying = true; updatePlayIcon(true); }).catch(() => retry());
+      }, Math.min(5000 * retryCount, 20000));
     }
     
-    function handleOnline() {
-      showConnectionStatus('online', 'Connessione ripristinata');
-      setConnectionIndicator('online');
-      
-      // Retry automatico SEMPRE quando torna online se c'era una riproduzione
-      setTimeout(() => {
-        hideConnectionStatus();
-        // Usa lastKnownPlayingState come backup
-        if (wasPlayingBeforeError || lastKnownPlayingState || lastPlaybackTime > 0) {
-          retryCount = 0;
-          attemptReconnect();
-        }
-      }, 1500);
+    function showStatus(msg, type = '', withSpinner = false) {
+      statusMessage.className = 'status-message show ' + type;
+      statusText.innerHTML = withSpinner ? `<span class="status-spinner"></span> ${msg}` : msg;
     }
     
-    function handleOffline() {
-      // Salva SEMPRE lo stato quando vai offline
-      if (isPlaying || !audioPlayer.paused) {
-        wasPlayingBeforeError = true;
-        lastKnownPlayingState = true;
-        if (audioPlayer.currentTime > 0) {
-          lastPlaybackTime = audioPlayer.currentTime;
-        }
-      }
-      
-      showConnectionStatus('offline', 'Nessuna connessione');
-      setConnectionIndicator('offline');
-      pauseSleepTimer();
-      stopPlaybackMonitor();
-      if (retryTimer) clearTimeout(retryTimer);
-      if (bufferingTimeout) clearTimeout(bufferingTimeout);
+    function hideStatus() { 
+      statusMessage.classList.remove('show'); 
+      setTimeout(() => { statusText.innerHTML = ''; }, 300);
     }
     
-    function showConnectionStatus(type, message) {
-      connectionStatus.className = 'connection-status show ' + type;
-      connectionText.textContent = message;
-    }
+    window.addEventListener('online', () => {
+      showStatus('Connessione ripristinata', 'success');
+      setTimeout(() => { hideStatus(); if (wasPlaying) { retryCount = 0; retry(); } }, 2000);
+    });
     
-    function hideConnectionStatus() {
-      connectionStatus.classList.remove('show');
-    }
-    
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-    
-    // PWA Install
-    let deferredPrompt;
-    const installPrompt = document.getElementById('installPrompt');
-    const installBtn = document.getElementById('installBtn');
-    const installClose = document.getElementById('installClose');
-    
-    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; installPrompt.classList.add('show'); });
-    installBtn.addEventListener('click', async () => { if (deferredPrompt) { deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; installPrompt.classList.remove('show'); } });
-    installClose.addEventListener('click', () => installPrompt.classList.remove('show'));
-    window.addEventListener('appinstalled', () => installPrompt.classList.remove('show'));
+    window.addEventListener('offline', () => showStatus('Nessuna connessione', 'error'));
     
     // Media Session API
-    if ('mediaSession' in navigator) {
-      navigator.mediaSession.metadata = new MediaMetadata({
-        title: 'B-SIDE',
-        artist: 'Alessio Bertallot',
-        album: 'Radio Capital',
-        artwork: [
-          { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: 'icon-512.png', sizes: '512x512', type: 'image/png' }
-        ]
-      });
-      
-      navigator.mediaSession.setActionHandler('play', () => { audioPlayer.play(); updatePlayButton(true); isPlaying = true; });
-      navigator.mediaSession.setActionHandler('pause', () => { audioPlayer.pause(); updatePlayButton(false); isPlaying = false; });
-      navigator.mediaSession.setActionHandler('seekbackward', () => audioPlayer.currentTime -= 30);
-      navigator.mediaSession.setActionHandler('seekforward', () => audioPlayer.currentTime += 30);
-      navigator.mediaSession.setActionHandler('seekto', (d) => { if (d.seekTime) audioPlayer.currentTime = d.seekTime; });
-    }
-    
-    function updateMediaSessionMetadata() {
+    function updateMediaSession() {
       if ('mediaSession' in navigator) {
         navigator.mediaSession.metadata = new MediaMetadata({
           title: `Puntata del ${formatDate(datePicker.value)}`,
@@ -1276,13 +1113,32 @@
       }
     }
     
-    // Init
-    updateVolumeUI();
-    updatePlayer();
-    updateMediaSessionMetadata();
-    updateNavButtons();
-    updateFavoriteButton();
-    setConnectionIndicator(navigator.onLine ? 'online' : 'offline');
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.setActionHandler('play', () => { audio.play(); updatePlayIcon(true); isPlaying = true; });
+      navigator.mediaSession.setActionHandler('pause', () => { audio.pause(); updatePlayIcon(false); isPlaying = false; });
+      navigator.mediaSession.setActionHandler('seekbackward', () => audio.currentTime -= 30);
+      navigator.mediaSession.setActionHandler('seekforward', () => audio.currentTime += 30);
+      navigator.mediaSession.setActionHandler('seekto', (d) => { if (d.seekTime) audio.currentTime = d.seekTime; });
+    }
+    
+    // PWA Install
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      installPrompt.classList.add('show');
+    });
+    
+    installBtn.onclick = async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        await deferredPrompt.userChoice;
+        deferredPrompt = null;
+        installPrompt.classList.remove('show');
+      }
+    };
+    
+    installClose.onclick = () => installPrompt.classList.remove('show');
+    window.addEventListener('appinstalled', () => installPrompt.classList.remove('show'));
     
     // Service Worker
     if ('serviceWorker' in navigator) {
@@ -1290,6 +1146,13 @@
         .then((reg) => console.log('Service Worker registrato:', reg.scope))
         .catch((err) => console.log('Service Worker errore:', err));
     }
+    
+    // Init
+    updatePlayer();
+    updateNav();
+    updateFav();
+    updateVolIcon();
+    updateMediaSession();
   </script>
 </body>
 </html>
