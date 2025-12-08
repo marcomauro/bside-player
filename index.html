@@ -25,9 +25,9 @@
       --accent: #1a1a1a;
       --shadow-light: #ffffff;
       --shadow-dark: #a3b1c6;
-      --neu-flat: -2px -2px 5px var(--shadow-light), 2px 2px 5px var(--shadow-dark);
-      --neu-pressed: inset -1px -1px 3px var(--shadow-light), inset 1px 1px 3px var(--shadow-dark);
-      --neu-convex: -2px -2px 6px var(--shadow-light), 2px 2px 6px var(--shadow-dark);
+      --neu-flat: -1px -1px 2px var(--shadow-light), 1px 1px 2px var(--shadow-dark);
+      --neu-pressed: inset -1px -1px 2px var(--shadow-light), inset 1px 1px 2px var(--shadow-dark);
+      --neu-convex: -1px -1px 3px var(--shadow-light), 1px 1px 3px var(--shadow-dark);
     }
     
     [data-theme="dark"] {
@@ -848,8 +848,9 @@
       var sec = Math.floor(s % 60);
       return m + ':' + (sec < 10 ? '0' : '') + sec;
     }
-    
+
     audio.addEventListener('timeupdate', function() {
+      if (progressDragging) return; // Non aggiornare durante il drag
       var pct = (audio.currentTime / audio.duration) * 100 || 0;
       progressFill.style.width = pct + '%';
       currentTime.textContent = formatTime(audio.currentTime);
@@ -863,43 +864,69 @@
         });
       }
     });
-    
+
     audio.addEventListener('loadedmetadata', function() {
       remainingTime.textContent = '-' + formatTime(audio.duration);
     });
-    
+
     var progressDragging = false;
-    
-    progressBar.addEventListener('mousedown', function(e) {
-      progressDragging = true;
-      updateProgress(e);
-    });
-    
-    progressBar.addEventListener('touchstart', function(e) {
-      progressDragging = true;
-      updateProgress(e);
-    });
-    
-    document.addEventListener('mousemove', function(e) {
-      if (progressDragging) updateProgress(e);
-    });
-    
-    document.addEventListener('touchmove', function(e) {
-      if (progressDragging) updateProgress(e);
-    });
-    
-    document.addEventListener('mouseup', function() { progressDragging = false; });
-    document.addEventListener('touchend', function() { progressDragging = false; });
-    
-    function updateProgress(e) {
+    var seekTime = 0;
+
+    function getProgressPercent(e) {
       var rect = progressBar.getBoundingClientRect();
       var clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      var pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+      return Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    }
+
+    function updateProgressUI(pct) {
+      progressFill.style.width = (pct * 100) + '%';
       if (audio.duration) {
-        audio.currentTime = pct * audio.duration;
-        progressFill.style.width = (pct * 100) + '%';
+        seekTime = pct * audio.duration;
+        currentTime.textContent = formatTime(seekTime);
+        remainingTime.textContent = '-' + formatTime(audio.duration - seekTime);
       }
     }
+
+    progressBar.addEventListener('mousedown', function(e) {
+      progressDragging = true;
+      var pct = getProgressPercent(e);
+      updateProgressUI(pct);
+    });
+
+    progressBar.addEventListener('touchstart', function(e) {
+      e.preventDefault();
+      progressDragging = true;
+      var pct = getProgressPercent(e);
+      updateProgressUI(pct);
+    }, { passive: false });
+
+    document.addEventListener('mousemove', function(e) {
+      if (progressDragging) {
+        var pct = getProgressPercent(e);
+        updateProgressUI(pct);
+      }
+    });
+
+    document.addEventListener('touchmove', function(e) {
+      if (progressDragging) {
+        var pct = getProgressPercent(e);
+        updateProgressUI(pct);
+      }
+    }, { passive: true });
+
+    document.addEventListener('mouseup', function() {
+      if (progressDragging && audio.duration) {
+        audio.currentTime = seekTime;
+      }
+      progressDragging = false;
+    });
+
+    document.addEventListener('touchend', function() {
+      if (progressDragging && audio.duration) {
+        audio.currentTime = seekTime;
+      }
+      progressDragging = false;
+    });
     
     // Volume
     volumeNavBtn.addEventListener('click', function() { volumeOverlay.classList.add('show'); });
