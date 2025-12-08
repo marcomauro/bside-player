@@ -1115,7 +1115,8 @@
       // Retry automatico immediato quando torna online
       setTimeout(() => {
         hideConnectionStatus();
-        if (wasPlayingBeforeError && lastPlaybackTime > 0) {
+        // Riprova se stava riproducendo o se c'era una posizione salvata
+        if (wasPlayingBeforeError || lastPlaybackTime > 0) {
           retryCount = 0;
           attemptReconnect();
         }
@@ -1123,13 +1124,17 @@
     }
     
     function handleOffline() {
+      // Salva lo stato di riproduzione PRIMA di fermare
+      if (isPlaying) {
+        wasPlayingBeforeError = true;
+        lastPlaybackTime = audioPlayer.currentTime || 0;
+      }
+      
       showConnectionStatus('offline', 'Nessuna connessione');
       setConnectionIndicator('offline');
       pauseSleepTimer();
       if (retryTimer) clearTimeout(retryTimer);
-      
-      // Quando torna online, riprova automaticamente
-      // (gestito dall'evento 'online')
+      if (bufferingTimeout) clearTimeout(bufferingTimeout);
     }
     
     function showConnectionStatus(type, message) {
