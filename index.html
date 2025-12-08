@@ -524,6 +524,7 @@
     let sleepTimer = null, sleepEndTime = null, sleepCountdown = null;
     let retryCount = 0, retryTimer = null, lastPlaybackTime = 0, wasPlayingBeforeError = false;
     let connectionCheckInterval = null, bufferingTimeout = null, maxRetries = 10;
+    let playbackMonitorInterval = null, lastKnownPlayingState = false;
     
     // Theme
     const savedTheme = localStorage.getItem('bside-theme') || 'dark';
@@ -975,9 +976,18 @@
     });
     
     playBtn.addEventListener('click', () => {
-      if (isPlaying) { audioPlayer.pause(); updatePlayButton(false); }
-      else { audioPlayer.play(); updatePlayButton(true); }
+      if (isPlaying) { 
+        audioPlayer.pause(); 
+        updatePlayButton(false);
+        stopPlaybackMonitor();
+      }
+      else { 
+        audioPlayer.play(); 
+        updatePlayButton(true);
+        startPlaybackMonitor();
+      }
       isPlaying = !isPlaying;
+      lastKnownPlayingState = isPlaying;
     });
     
     skipBack.addEventListener('click', () => audioPlayer.currentTime -= 30);
@@ -990,13 +1000,52 @@
       else if (status === 'offline') connectionIndicator.classList.add('offline');
     }
     
+    // Monitor continuo della riproduzione
+    function startPlaybackMonitor() {
+      stopPlaybackMonitor();
+      playbackMonitorInterval = setInterval(() => {
+        // Salva continuamente la posizione durante la riproduzione
+        if (isPlaying && audioPlayer.currentTime > 0) {
+          lastPlaybackTime = audioPlayer.currentTime;
+          wasPlayingBeforeError = true;
+        }
+        
+        // Controlla se l'audio si è fermato inaspettatamente
+        if (isPlaying && audioPlayer.paused && !audioPlayer.ended) {
+          console.log('Audio fermato inaspettatamente, tento riconnessione...');
+          setConnectionIndicator('warning');
+          handlePlaybackError();
+        }
+        
+        // Controlla se il buffer è bloccato
+        if (isPlaying && !audioPlayer.paused) {
+          const buffered = audioPlayer.buffered;
+          if (buffered.length > 0) {
+            const bufferedEnd = buffered.end(buffered.length - 1);
+            const currentTime = audioPlayer.currentTime;
+            // Se siamo vicini alla fine del buffer e non sta crescendo, c'è un problema
+            if (bufferedEnd - currentTime < 1 && bufferedEnd < audioPlayer.duration - 1) {
+              setConnectionIndicator('warning');
+            }
+          }
+        }
+      }, 2000);
+    }
+    
+    function stopPlaybackMonitor() {
+      if (playbackMonitorInterval) {
+        clearInterval(playbackMonitorInterval);
+        playbackMonitorInterval = null;
+      }
+    }
+    
     function startConnectionCheck() {
       if (connectionCheckInterval) clearInterval(connectionCheckInterval);
       connectionCheckInterval = setInterval(() => {
         if (isPlaying) {
           checkConnection();
         }
-      }, 30000); // Controlla ogni 30 secondi durante la riproduzione
+      }, 30000);
     }
     
     function checkConnection() {
@@ -1005,7 +1054,6 @@
         return;
       }
       
-      // Ping leggero al server
       fetch(audioPlayer.src, { method: 'HEAD', cache: 'no-store' })
         .then(response => {
           if (response.ok) {
@@ -1020,8 +1068,14 @@
     }
     
     function handlePlaybackError() {
-      lastPlaybackTime = audioPlayer.currentTime || 0;
-      wasPlayingBeforeError = isPlaying;
+      // Salva stato SEMPRE
+      if (audioPlayer.currentTime > 0) {
+        lastPlaybackTime = audioPlayer.currentTime;
+      }
+      if (isPlaying || lastKnownPlayingState) {
+        wasPlayingBeforeError = true;
+      }
+      
       updatePlayButton(false);
       isPlaying = false;
       pauseSleepTimer();
@@ -1032,7 +1086,6 @@
         return;
       }
       
-      // Verifica se è errore 404 o errore di rete
       fetch(audioPlayer.src, { method: 'HEAD', cache: 'no-store' })
         .then(response => {
           if (response.status === 404) {
@@ -1048,11 +1101,9 @@
     
     function attemptReconnect() {
       if (retryCount >= maxRetries) {
-        // Dopo max tentativi, aspetta e riprova automaticamente
         showConnectionStatus('offline', 'Riconnessione automatica...');
         setConnectionIndicator('offline');
         
-        // Retry automatico dopo 30 secondi
         if (retryTimer) clearTimeout(retryTimer);
         retryTimer = setTimeout(() => {
           retryCount = 0;
@@ -1062,7 +1113,6 @@
       }
       
       retryCount++;
-      // Backoff esponenziale: 2s, 4s, 8s, 16s, max 20s
       const delay = Math.min(2000 * Math.pow(2, retryCount - 1), 20000);
       
       showConnectionStatus('reconnecting', `Riconnessione... (${retryCount}/${maxRetries})`);
@@ -1071,39 +1121,68 @@
       if (retryTimer) clearTimeout(retryTimer);
       
       retryTimer = setTimeout(() => {
-        // Resume intelligente: usa load() invece di riassegnare src
         const currentTime = lastPlaybackTime;
+        const shouldPlay = wasPlayingBeforeError || lastKnownPlayingState;
         
-        audioPlayer.load();
+        const currentSrc = audioPlayer.src;
+        audioPlayer.src = '';
+        audioPlayer.src = currentSrc;
         
-        audioPlayer.addEventListener('loadedmetadata', function onLoaded() {
-          audioPlayer.removeEventListener('loadedmetadata', onLoaded);
-          audioPlayer.currentTime = currentTime;
+        function onAudioReady() {
+          audioPlayer.removeEventListener('canplay', onAudioReady);
+          audioPlayer.removeEventListener('loadeddata', onAudioReady);
           
-          if (wasPlayingBeforeError) {
-            audioPlayer.play()
-              .then(() => {
-                isPlaying = true;
-                updatePlayButton(true);
-                hideConnectionStatus();
-                retryCount = 0;
-                setConnectionIndicator('online');
-                resumeSleepTimer();
-              })
-              .catch(() => attemptReconnect());
+          if (currentTime > 0 && audioPlayer.duration) {
+            audioPlayer.currentTime = Math.min(currentTime, audioPlayer.duration);
+          }
+          
+          if (shouldPlay) {
+            const playPromise = audioPlayer.play();
+            if (playPromise !== undefined) {
+              playPromise
+                .then(() => {
+                  isPlaying = true;
+                  lastKnownPlayingState = true;
+                  updatePlayButton(true);
+                  hideConnectionStatus();
+                  retryCount = 0;
+                  setConnectionIndicator('online');
+                  resumeSleepTimer();
+                  startPlaybackMonitor();
+                })
+                .catch((err) => {
+                  console.log('Play fallito:', err);
+                  attemptReconnect();
+                });
+            }
           } else {
             hideConnectionStatus();
             retryCount = 0;
             setConnectionIndicator('online');
           }
-        }, { once: true });
+        }
         
-        // Timeout per loadedmetadata
+        audioPlayer.addEventListener('canplay', onAudioReady, { once: true });
+        audioPlayer.addEventListener('loadeddata', onAudioReady, { once: true });
+        
+        function onAudioError() {
+          audioPlayer.removeEventListener('error', onAudioError);
+          audioPlayer.removeEventListener('canplay', onAudioReady);
+          audioPlayer.removeEventListener('loadeddata', onAudioReady);
+          console.log('Errore caricamento audio, ritento...');
+          attemptReconnect();
+        }
+        audioPlayer.addEventListener('error', onAudioError, { once: true });
+        
         setTimeout(() => {
-          if (retryCount > 0 && !isPlaying && wasPlayingBeforeError) {
+          if (!isPlaying && shouldPlay) {
+            audioPlayer.removeEventListener('canplay', onAudioReady);
+            audioPlayer.removeEventListener('loadeddata', onAudioReady);
+            audioPlayer.removeEventListener('error', onAudioError);
+            console.log('Timeout caricamento, ritento...');
             attemptReconnect();
           }
-        }, 10000);
+        }, 15000);
         
       }, delay);
     }
@@ -1112,27 +1191,31 @@
       showConnectionStatus('online', 'Connessione ripristinata');
       setConnectionIndicator('online');
       
-      // Retry automatico immediato quando torna online
+      // Retry automatico SEMPRE quando torna online se c'era una riproduzione
       setTimeout(() => {
         hideConnectionStatus();
-        // Riprova se stava riproducendo o se c'era una posizione salvata
-        if (wasPlayingBeforeError || lastPlaybackTime > 0) {
+        // Usa lastKnownPlayingState come backup
+        if (wasPlayingBeforeError || lastKnownPlayingState || lastPlaybackTime > 0) {
           retryCount = 0;
           attemptReconnect();
         }
-      }, 1000);
+      }, 1500);
     }
     
     function handleOffline() {
-      // Salva lo stato di riproduzione PRIMA di fermare
-      if (isPlaying) {
+      // Salva SEMPRE lo stato quando vai offline
+      if (isPlaying || !audioPlayer.paused) {
         wasPlayingBeforeError = true;
-        lastPlaybackTime = audioPlayer.currentTime || 0;
+        lastKnownPlayingState = true;
+        if (audioPlayer.currentTime > 0) {
+          lastPlaybackTime = audioPlayer.currentTime;
+        }
       }
       
       showConnectionStatus('offline', 'Nessuna connessione');
       setConnectionIndicator('offline');
       pauseSleepTimer();
+      stopPlaybackMonitor();
       if (retryTimer) clearTimeout(retryTimer);
       if (bufferingTimeout) clearTimeout(bufferingTimeout);
     }
