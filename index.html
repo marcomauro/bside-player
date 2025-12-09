@@ -735,6 +735,7 @@
     let favorites = JSON.parse(localStorage.getItem('bside-fav') || '[]');
     let deferredPrompt = null;
 
+
     // ============================================
     // STREAMING MANAGER - STATO
     // ============================================
@@ -744,11 +745,11 @@
       lastKnownTime: 0,
       currentSrc: '',
       
-      // Retry configuration
+      // Retry configuration - PIU' AGGRESSIVO
       retryCount: 0,
-      maxRetries: 10,
-      baseRetryDelay: 1000,
-      maxRetryDelay: 10000,
+      maxRetries: 50,           // Aumentato da 10 a 50
+      baseRetryDelay: 500,      // Ridotto da 1000 a 500ms
+      maxRetryDelay: 5000,      // Ridotto da 10000 a 5000ms
       retryTimer: null,
       
       // Buffer monitoring
@@ -756,13 +757,18 @@
       
       // Recovery state
       isRecovering: false,
+      recoveryStartTime: null,  // NUOVO: traccia quando è iniziato il recovery
       
       // Network state
       isOnline: navigator.onLine,
       pendingRecovery: false,
       
       // Wake Lock
-      wakeLock: null
+      wakeLock: null,
+      
+      // NUOVO: Continuous retry
+      continuousRetryTimer: null,
+      lastSuccessfulPlay: 0
     };
 
     // ============================================
@@ -776,26 +782,17 @@
     }
 
     function setupStreamingListeners() {
-      // Eventi riproduzione
       audio.addEventListener('playing', onAudioPlaying);
       audio.addEventListener('pause', onAudioPause);
       audio.addEventListener('ended', onAudioEnded);
-      
-      // Eventi caricamento
       audio.addEventListener('loadstart', onAudioLoadStart);
       audio.addEventListener('loadeddata', onAudioLoadedData);
       audio.addEventListener('canplay', onAudioCanPlay);
       audio.addEventListener('canplaythrough', onAudioCanPlayThrough);
-      
-      // Eventi buffering
       audio.addEventListener('waiting', onAudioWaiting);
       audio.addEventListener('stalled', onAudioStalled);
-      
-      // Progresso
       audio.addEventListener('progress', onAudioProgress);
       audio.addEventListener('timeupdate', onAudioTimeUpdate);
-      
-      // Errori
       audio.addEventListener('error', onAudioError);
     }
 
@@ -804,7 +801,9 @@
       isPlaying = true;
       streaming.isRecovering = false;
       streaming.retryCount = 0;
-      clearRetryTimer();
+      streaming.recoveryStartTime = null;
+      streaming.lastSuccessfulPlay = Date.now();
+      clearAllTimers();
       startBufferMonitoring();
       acquireWakeLock();
       hideStatus();
@@ -821,8 +820,10 @@
     function onAudioEnded() {
       console.log('[Streaming] Ended');
       isPlaying = false;
+      streaming.wasPlayingBeforeError = false;
       stopBufferMonitoring();
       releaseWakeLock();
+      clearAllTimers();
       updatePlayIcon(false);
     }
 
@@ -831,11 +832,14 @@
     }
 
     function onAudioLoadedData() {
-      hideStatus();
+      if (!streaming.isRecovering) {
+        hideStatus();
+      }
     }
 
     function onAudioCanPlay() {
-      if (streaming.isRecovering && streaming.wasPlayingBeforeError) {
+      console.log('[Streaming] CanPlay, recovering:', streaming.isRecovering, 'wasPlaying:', streaming.wasPlayingBeforeError);
+      if (streaming.wasPlayingBeforeError) {
         attemptResume();
       }
     }
@@ -845,26 +849,40 @@
     }
 
     function onAudioWaiting() {
-      if (isPlaying) {
+      if (isPlaying || streaming.wasPlayingBeforeError) {
         showStatus('Buffering...', 'warning', true);
-        checkBufferHealth();
+        // Avvia recovery dopo 3 secondi se ancora in waiting
+        scheduleRecoveryCheck(3000);
       }
     }
 
     function onAudioStalled() {
       console.log('[Streaming] Stalled');
-      if (isPlaying) {
+      if (isPlaying || streaming.wasPlayingBeforeError) {
         showStatus('Connessione lenta...', 'warning', true);
-        setTimeout(function() {
-          if (audio.readyState < 3 && !streaming.isRecovering) {
-            softRecovery();
-          }
-        }, 3000);
+        // Recovery più rapido su stalled
+        scheduleRecoveryCheck(2000);
       }
     }
 
     function onAudioProgress() {
-      checkBufferHealth();
+      // Se stiamo ricevendo dati, resetta alcuni contatori
+      if (streaming.isRecovering && audio.buffered.length > 0) {
+        var ct = audio.currentTime;
+        for (var i = 0; i < audio.buffered.length; i++) {
+          if (ct >= audio.buffered.start(i) && ct <= audio.buffered.end(i)) {
+            var ahead = audio.buffered.end(i) - ct;
+            if (ahead > 5) {
+              // Abbiamo abbastanza buffer, proviamo a riprendere
+              console.log('[Streaming] Buffer recovered:', ahead.toFixed(1) + 's');
+              if (streaming.wasPlayingBeforeError && audio.paused) {
+                attemptResume();
+              }
+            }
+            break;
+          }
+        }
+      }
     }
 
     function onAudioTimeUpdate() {
@@ -875,37 +893,42 @@
 
     function onAudioError(e) {
       var error = audio.error;
-      console.error('[Streaming] Error:', error);
+      console.error('[Streaming] Error:', error ? error.code : 'unknown');
       
-      streaming.wasPlayingBeforeError = isPlaying;
+      streaming.wasPlayingBeforeError = isPlaying || streaming.wasPlayingBeforeError;
       isPlaying = false;
       updatePlayIcon(false);
       
       if (!streaming.isOnline) {
         showStatus('Nessuna connessione', 'error');
         streaming.pendingRecovery = true;
+        startContinuousRetry();
         return;
       }
       
-      if (error) {
-        switch (error.code) {
-          case MediaError.MEDIA_ERR_NETWORK:
-            showStatus('Errore di rete', 'error');
-            hardRecovery();
-            break;
-          case MediaError.MEDIA_ERR_DECODE:
-            showStatus('Errore decodifica', 'error');
-            hardRecovery();
-            break;
-          case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
-            checkSourceAvailability();
-            break;
-          default:
-            hardRecovery();
-        }
+      if (error && error.code === MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED) {
+        checkSourceAvailability();
       } else {
-        hardRecovery();
+        immediateRecovery();
       }
+    }
+
+    // ============================================
+    // NUOVO: RECOVERY CHECK SCHEDULATO
+    // ============================================
+    
+    function scheduleRecoveryCheck(delay) {
+      clearRetryTimer();
+      streaming.retryTimer = setTimeout(function() {
+        // Verifica se siamo ancora in uno stato problematico
+        if (audio.paused && streaming.wasPlayingBeforeError) {
+          console.log('[Streaming] Recovery check: paused, need recovery');
+          immediateRecovery();
+        } else if (!audio.paused && audio.readyState < 3) {
+          console.log('[Streaming] Recovery check: playing but no data');
+          immediateRecovery();
+        }
+      }, delay);
     }
 
     // ============================================
@@ -924,14 +947,14 @@
     function onOnline() {
       console.log('[Streaming] Online');
       streaming.isOnline = true;
-      showStatus('Connessione ripristinata', 'success');
       
       if (streaming.pendingRecovery || streaming.wasPlayingBeforeError) {
+        showStatus('Connessione ripristinata, riconnessione...', 'success');
         streaming.pendingRecovery = false;
-        setTimeout(function() {
-          hardRecovery();
-        }, 1000);
+        streaming.retryCount = 0; // Reset contatore
+        setTimeout(immediateRecovery, 500);
       } else {
+        showStatus('Connessione ripristinata', 'success');
         setTimeout(hideStatus, 2000);
       }
     }
@@ -940,20 +963,61 @@
       console.log('[Streaming] Offline');
       streaming.isOnline = false;
       showStatus('Nessuna connessione', 'error');
-      clearRetryTimer();
       
-      if (isPlaying) {
+      if (isPlaying || streaming.wasPlayingBeforeError) {
         streaming.wasPlayingBeforeError = true;
         streaming.pendingRecovery = true;
       }
+      
+      // Continua a provare anche offline (la rete potrebbe tornare)
+      startContinuousRetry();
     }
 
     function onConnectionChange() {
       var conn = navigator.connection;
       console.log('[Streaming] Connection:', conn.effectiveType, conn.downlink + 'Mbps');
       
-      if (streaming.pendingRecovery && conn.downlink > 0.5) {
-        hardRecovery();
+      // Se la connessione migliora e stavamo aspettando
+      if (streaming.pendingRecovery && conn.downlink > 0) {
+        streaming.retryCount = 0;
+        immediateRecovery();
+      }
+    }
+
+    // ============================================
+    // NUOVO: CONTINUOUS RETRY
+    // ============================================
+    
+    function startContinuousRetry() {
+      stopContinuousRetry();
+      
+      streaming.continuousRetryTimer = setInterval(function() {
+        if (streaming.wasPlayingBeforeError && !isPlaying) {
+          console.log('[Streaming] Continuous retry ping');
+          
+          // Prova a fare un fetch per vedere se la rete funziona
+          fetch(streaming.currentSrc, { method: 'HEAD', cache: 'no-cache' })
+            .then(function(r) {
+              if (r.ok) {
+                console.log('[Streaming] Network available, attempting recovery');
+                streaming.isOnline = true;
+                streaming.retryCount = 0;
+                immediateRecovery();
+              }
+            })
+            .catch(function() {
+              // Ancora offline, continua a provare
+            });
+        } else {
+          stopContinuousRetry();
+        }
+      }, 5000); // Prova ogni 5 secondi
+    }
+    
+    function stopContinuousRetry() {
+      if (streaming.continuousRetryTimer) {
+        clearInterval(streaming.continuousRetryTimer);
+        streaming.continuousRetryTimer = null;
       }
     }
 
@@ -969,13 +1033,23 @@
       });
       
       window.addEventListener('pageshow', onVisible);
+      window.addEventListener('focus', onVisible);
     }
 
     function onVisible() {
       console.log('[Streaming] Visible, wasPlaying:', streaming.wasPlayingBeforeError, 'paused:', audio.paused);
       
-      if (streaming.wasPlayingBeforeError && audio.paused) {
-        checkAndRecover();
+      // Verifica stato e recupera se necessario
+      if (streaming.wasPlayingBeforeError) {
+        if (audio.paused) {
+          console.log('[Streaming] Was playing, now paused - recovering');
+          streaming.retryCount = 0; // Reset per dare nuove chance
+          immediateRecovery();
+        } else if (audio.readyState < 3) {
+          console.log('[Streaming] Was playing, no data - recovering');
+          streaming.retryCount = 0;
+          immediateRecovery();
+        }
       }
       
       if (isPlaying) {
@@ -1001,7 +1075,7 @@
           });
         }
       } catch (err) {
-        console.log('[Streaming] Wake lock error:', err);
+        console.log('[Streaming] Wake lock error:', err.message);
       }
     }
 
@@ -1013,12 +1087,12 @@
     }
 
     // ============================================
-    // BUFFER MONITORING
+    // BUFFER MONITORING - PIU' AGGRESSIVO
     // ============================================
 
     function startBufferMonitoring() {
       stopBufferMonitoring();
-      streaming.bufferCheckInterval = setInterval(checkBufferHealth, 2000);
+      streaming.bufferCheckInterval = setInterval(checkBufferHealth, 1000); // Ogni secondo invece di 2
     }
 
     function stopBufferMonitoring() {
@@ -1034,149 +1108,220 @@
       var buffered = audio.buffered;
       var ct = audio.currentTime;
       
-      if (buffered.length === 0) return;
+      if (buffered.length === 0) {
+        console.log('[Streaming] No buffer!');
+        immediateRecovery();
+        return;
+      }
       
       var bufferAhead = 0;
+      var inBuffer = false;
+      
       for (var i = 0; i < buffered.length; i++) {
         if (ct >= buffered.start(i) && ct <= buffered.end(i)) {
           bufferAhead = buffered.end(i) - ct;
+          inBuffer = true;
           break;
         }
       }
       
-      if (bufferAhead < 2 && isPlaying && !streaming.isRecovering) {
-        console.log('[Streaming] Critical buffer:', bufferAhead.toFixed(1) + 's');
-        softRecovery();
-      }
-    }
-
-    // ============================================
-    // RECOVERY STRATEGIES
-    // ============================================
-
-    function checkAndRecover() {
-      if (audio.paused && streaming.wasPlayingBeforeError) {
-        var rs = audio.readyState;
-        console.log('[Streaming] Check recover, readyState:', rs);
-        
-        if (rs >= 2) {
-          attemptResume();
-        } else if (rs === 0) {
-          hardRecovery();
-        } else {
-          showStatus('Buffering...', 'warning', true);
-          setTimeout(checkAndRecover, 2000);
-        }
-      }
-    }
-
-    function softRecovery() {
-      if (streaming.isRecovering) return;
-      streaming.isRecovering = true;
-      
-      console.log('[Streaming] Soft recovery');
-      
-      var ct = audio.currentTime;
-      audio.currentTime = ct + 0.01;
-      
-      setTimeout(function() {
-        if (audio.readyState < 3 && streaming.isRecovering) {
-          hardRecovery();
-        } else {
-          streaming.isRecovering = false;
-        }
-      }, 3000);
-    }
-
-    function hardRecovery() {
-      if (streaming.retryCount >= streaming.maxRetries) {
-        showStatus('Impossibile riprodurre', 'error');
-        streaming.isRecovering = false;
+      if (!inBuffer) {
+        console.log('[Streaming] Current time not in buffer!');
+        immediateRecovery();
         return;
       }
       
+      if (bufferAhead < 1) {
+        console.log('[Streaming] Critical buffer:', bufferAhead.toFixed(1) + 's');
+        // Non fermare, ma prepara recovery
+        if (!streaming.isRecovering) {
+          streaming.isRecovering = true;
+          streaming.recoveryStartTime = Date.now();
+          showStatus('Buffer basso, attendere...', 'warning', true);
+        }
+      } else if (bufferAhead < 3 && !streaming.isRecovering) {
+        showStatus('Buffering...', 'warning', true);
+      } else if (bufferAhead >= 5 && streaming.isRecovering) {
+        // Buffer recuperato
+        console.log('[Streaming] Buffer recovered:', bufferAhead.toFixed(1) + 's');
+        streaming.isRecovering = false;
+        streaming.recoveryStartTime = null;
+        hideStatus();
+      }
+    }
+
+    // ============================================
+    // RECOVERY STRATEGIES - SEMPLIFICATE E AGGRESSIVE
+    // ============================================
+
+    function immediateRecovery() {
+      // Previeni recovery multipli simultanei
+      if (streaming.isRecovering && streaming.recoveryStartTime) {
+        var elapsed = Date.now() - streaming.recoveryStartTime;
+        if (elapsed < 2000) {
+          console.log('[Streaming] Recovery already in progress, waiting...');
+          return;
+        }
+      }
+      
+      if (streaming.retryCount >= streaming.maxRetries) {
+        // Anche dopo max retry, continua a provare ma meno frequentemente
+        showStatus('Connessione difficile, riprovo...', 'warning', true);
+        streaming.retryCount = Math.floor(streaming.maxRetries / 2); // Resetta parzialmente
+      }
+      
       streaming.isRecovering = true;
+      streaming.recoveryStartTime = Date.now();
       streaming.retryCount++;
       
       var delay = Math.min(
-        streaming.baseRetryDelay * Math.pow(1.5, streaming.retryCount - 1),
+        streaming.baseRetryDelay * Math.pow(1.3, Math.min(streaming.retryCount - 1, 10)),
         streaming.maxRetryDelay
       );
       
-      showStatus('Riconnessione (' + streaming.retryCount + '/' + streaming.maxRetries + ')...', 'warning', true);
-      console.log('[Streaming] Hard recovery #' + streaming.retryCount + ' in ' + delay + 'ms');
+      console.log('[Streaming] Recovery #' + streaming.retryCount + ' in ' + delay + 'ms');
+      showStatus('Riconnessione (' + streaming.retryCount + ')...', 'warning', true);
       
       clearRetryTimer();
-      streaming.retryTimer = setTimeout(executeHardRecovery, delay);
+      streaming.retryTimer = setTimeout(executeRecovery, delay);
     }
 
-    function executeHardRecovery() {
-      if (!streaming.isOnline) {
-        streaming.pendingRecovery = true;
-        showStatus('In attesa connessione...', 'warning');
+    function executeRecovery() {
+      if (!streaming.wasPlayingBeforeError) {
+        streaming.isRecovering = false;
+        hideStatus();
         return;
       }
+      
+      // Prima prova: seek semplice (veloce)
+      if (streaming.retryCount <= 3) {
+        console.log('[Streaming] Trying seek recovery');
+        try {
+          var ct = audio.currentTime;
+          audio.currentTime = ct; // Force reload del buffer
+          
+          if (audio.paused) {
+            attemptResume();
+          }
+          
+          // Verifica dopo 2 secondi
+          setTimeout(function() {
+            if (audio.paused && streaming.wasPlayingBeforeError) {
+              immediateRecovery();
+            } else if (!audio.paused && audio.readyState >= 3) {
+              streaming.isRecovering = false;
+              hideStatus();
+            }
+          }, 2000);
+          
+        } catch (e) {
+          console.log('[Streaming] Seek failed:', e);
+          streaming.retryCount = 4; // Salta ai metodi più aggressivi
+          immediateRecovery();
+        }
+        return;
+      }
+      
+      // Seconda prova: reload completo
+      console.log('[Streaming] Trying full reload');
       
       var savedTime = streaming.lastKnownTime;
       var src = streaming.currentSrc;
       
-      console.log('[Streaming] Executing hard recovery, savedTime:', savedTime);
-      
+      // Reset audio
       audio.pause();
-      audio.removeAttribute('src');
-      audio.load();
+      audio.src = '';
       
       setTimeout(function() {
-        var bustUrl = src + (src.includes('?') ? '&' : '?') + '_t=' + Date.now();
+        // Ricarica con cache busting
+        var bustUrl = src + (src.includes('?') ? '&' : '?') + '_t=' + Date.now() + '_r=' + streaming.retryCount;
         audio.src = bustUrl;
         
+        var loadTimeout = setTimeout(function() {
+          console.log('[Streaming] Load timeout, retrying');
+          immediateRecovery();
+        }, 10000);
+        
         var onCanPlayOnce = function() {
+          clearTimeout(loadTimeout);
           audio.removeEventListener('canplay', onCanPlayOnce);
+          audio.removeEventListener('error', onErrorOnce);
           
-          if (savedTime > 0 && audio.duration > savedTime) {
+          console.log('[Streaming] Loaded, seeking to', savedTime);
+          
+          if (savedTime > 0 && audio.duration && savedTime < audio.duration) {
             audio.currentTime = savedTime;
           }
           
-          if (streaming.wasPlayingBeforeError) {
-            attemptResume();
-          }
+          attemptResume();
+        };
+        
+        var onErrorOnce = function() {
+          clearTimeout(loadTimeout);
+          audio.removeEventListener('canplay', onCanPlayOnce);
+          audio.removeEventListener('error', onErrorOnce);
+          
+          console.log('[Streaming] Load error, retrying');
+          setTimeout(immediateRecovery, 1000);
         };
         
         audio.addEventListener('canplay', onCanPlayOnce);
+        audio.addEventListener('error', onErrorOnce);
         audio.load();
+        
       }, 100);
     }
 
     function attemptResume() {
-      console.log('[Streaming] Attempting resume');
+      if (!streaming.wasPlayingBeforeError) {
+        streaming.isRecovering = false;
+        return;
+      }
+      
+      console.log('[Streaming] Attempting resume, readyState:', audio.readyState);
       
       var playPromise = audio.play();
       
       if (playPromise) {
         playPromise.then(function() {
-          console.log('[Streaming] Resume successful');
+          console.log('[Streaming] Resume successful!');
           streaming.isRecovering = false;
           streaming.wasPlayingBeforeError = false;
+          streaming.retryCount = 0;
           isPlaying = true;
           updatePlayIcon(true);
+          hideStatus();
+          stopContinuousRetry();
         }).catch(function(err) {
-          console.log('[Streaming] Resume failed:', err);
+          console.log('[Streaming] Resume failed:', err.name, err.message);
           
           if (err.name === 'NotAllowedError') {
             showStatus('Tocca play per riprendere', 'warning');
             streaming.isRecovering = false;
+          } else if (err.name === 'AbortError') {
+            // Ignorato, probabilmente un altro caricamento in corso
           } else {
-            setTimeout(hardRecovery, 2000);
+            setTimeout(immediateRecovery, 1000);
           }
         });
       }
     }
 
+    // ============================================
+    // TIMER UTILITIES
+    // ============================================
+    
     function clearRetryTimer() {
       if (streaming.retryTimer) {
         clearTimeout(streaming.retryTimer);
         streaming.retryTimer = null;
       }
+    }
+    
+    function clearAllTimers() {
+      clearRetryTimer();
+      stopContinuousRetry();
+      stopBufferMonitoring();
     }
 
     async function checkSourceAvailability() {
@@ -1191,11 +1336,13 @@
         if (response.status === 404) {
           showStatus('Puntata non disponibile', 'error');
           streaming.isRecovering = false;
+          streaming.wasPlayingBeforeError = false;
         } else {
-          hardRecovery();
+          immediateRecovery();
         }
       } catch (err) {
-        hardRecovery();
+        // Errore di rete, riprova
+        setTimeout(immediateRecovery, 2000);
       }
     }
 
@@ -1215,6 +1362,107 @@
     function hideStatus() {
       statusMessage.classList.remove('show');
       setTimeout(function() { statusText.innerHTML = ''; }, 300);
+    }
+
+    // ============================================
+    // PLAY BUTTON - CON RESET FORZATO
+    // ============================================
+    
+    function handlePlayClick() {
+      if (isPlaying) {
+        // STOP
+        streaming.wasPlayingBeforeError = false;
+        streaming.isRecovering = false;
+        clearAllTimers();
+        audio.pause();
+        hideStatus();
+      } else {
+        // PLAY - Reset completo dello stato recovery
+        console.log('[Play] User pressed play, resetting state');
+        
+        // Reset di tutti gli stati di recovery
+        streaming.wasPlayingBeforeError = true;
+        streaming.isRecovering = false;
+        streaming.retryCount = 0;
+        streaming.recoveryStartTime = null;
+        clearAllTimers();
+        
+        showStatus('Avvio...', 'warning', true);
+        
+        // Se l'audio non ha sorgente o è in errore, ricarica
+        if (!audio.src || audio.error || audio.readyState === 0) {
+          console.log('[Play] Reloading source');
+          var url = buildUrl(datePicker.value);
+          streaming.currentSrc = url;
+          audio.src = url + '?_t=' + Date.now();
+          audio.load();
+        }
+        
+        // Prova a fare play
+        var playPromise = audio.play();
+        
+        if (playPromise) {
+          playPromise.then(function() {
+            console.log('[Play] Success');
+            isPlaying = true;
+            updatePlayIcon(true);
+            hideStatus();
+          }).catch(function(err) {
+            console.log('[Play] Failed:', err.name, err.message);
+            
+            if (err.name === 'NotAllowedError') {
+              // Browser blocca autoplay - richiede gesto utente
+              showStatus('Riprova a premere play', 'warning');
+              streaming.wasPlayingBeforeError = false;
+            } else if (err.name === 'NotSupportedError' || err.name === 'AbortError') {
+              // Sorgente non valida o caricamento interrotto, ricarica
+              console.log('[Play] Reloading due to error');
+              forceReload();
+            } else {
+              // Altri errori - avvia recovery
+              immediateRecovery();
+            }
+          });
+        }
+      }
+    }
+    
+    // Forza ricaricamento completo
+    function forceReload() {
+      console.log('[Play] Force reload');
+      showStatus('Caricamento...', 'warning', true);
+      
+      var savedTime = streaming.lastKnownTime;
+      var url = buildUrl(datePicker.value);
+      streaming.currentSrc = url;
+      
+      audio.pause();
+      audio.removeAttribute('src');
+      audio.load();
+      
+      setTimeout(function() {
+        audio.src = url + '?_t=' + Date.now();
+        
+        var onCanPlay = function() {
+          audio.removeEventListener('canplay', onCanPlay);
+          
+          if (savedTime > 0 && audio.duration && savedTime < audio.duration) {
+            audio.currentTime = savedTime;
+          }
+          
+          audio.play().then(function() {
+            isPlaying = true;
+            updatePlayIcon(true);
+            hideStatus();
+          }).catch(function(err) {
+            console.log('[Play] Reload play failed:', err);
+            showStatus('Tocca di nuovo play', 'warning');
+          });
+        };
+        
+        audio.addEventListener('canplay', onCanPlay);
+        audio.load();
+      }, 100);
     }
 
     // ============================================
@@ -1306,20 +1554,7 @@
     // PLAY CONTROLS
     // ============================================
 
-    playBtn.addEventListener('click', function() {
-      if (isPlaying) {
-        streaming.wasPlayingBeforeError = false;
-        audio.pause();
-      } else {
-        streaming.wasPlayingBeforeError = true;
-        audio.play().catch(function(err) {
-          console.log('[Play] Error:', err);
-          if (err.name !== 'AbortError') {
-            hardRecovery();
-          }
-        });
-      }
-    });
+    playBtn.addEventListener('click', handlePlayClick);
 
     skipBack.addEventListener('click', function() { 
       streaming.lastKnownTime = Math.max(0, audio.currentTime - 30);
