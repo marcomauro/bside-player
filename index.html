@@ -683,10 +683,13 @@
     <button class="install-close" id="installClose">No grazie</button>
   </div>
   
-  <audio id="audio"></audio>
+  <!-- Audio element con preload -->
+  <audio id="audio" preload="auto"></audio>
 
   <script>
-    // Elements
+    // ============================================
+    // ELEMENTI DOM
+    // ============================================
     const audio = document.getElementById('audio');
     const datePicker = document.getElementById('datePicker');
     const datePickerBtn = document.getElementById('datePickerBtn');
@@ -723,67 +726,540 @@
     const installPrompt = document.getElementById('installPrompt');
     const installBtn = document.getElementById('installBtn');
     const installClose = document.getElementById('installClose');
-    
-    // State
+
+    // ============================================
+    // STATO APPLICAZIONE
+    // ============================================
     let isPlaying = false;
     let sleepTimer = null, sleepEndTime = null, sleepInterval = null;
     let favorites = JSON.parse(localStorage.getItem('bside-fav') || '[]');
-    let retryCount = 0, retryTimer = null, lastTime = 0, wasPlaying = false;
     let deferredPrompt = null;
+
+    // ============================================
+    // STREAMING MANAGER - STATO
+    // ============================================
+    const streaming = {
+      // Stato riproduzione
+      wasPlayingBeforeError: false,
+      lastKnownTime: 0,
+      currentSrc: '',
+      
+      // Retry configuration
+      retryCount: 0,
+      maxRetries: 10,
+      baseRetryDelay: 1000,
+      maxRetryDelay: 10000,
+      retryTimer: null,
+      
+      // Buffer monitoring
+      bufferCheckInterval: null,
+      
+      // Recovery state
+      isRecovering: false,
+      
+      // Network state
+      isOnline: navigator.onLine,
+      pendingRecovery: false,
+      
+      // Wake Lock
+      wakeLock: null
+    };
+
+    // ============================================
+    // STREAMING MANAGER - FUNZIONI
+    // ============================================
     
+    function initStreaming() {
+      setupStreamingListeners();
+      setupNetworkListeners();
+      setupVisibilityListener();
+    }
+
+    function setupStreamingListeners() {
+      // Eventi riproduzione
+      audio.addEventListener('playing', onAudioPlaying);
+      audio.addEventListener('pause', onAudioPause);
+      audio.addEventListener('ended', onAudioEnded);
+      
+      // Eventi caricamento
+      audio.addEventListener('loadstart', onAudioLoadStart);
+      audio.addEventListener('loadeddata', onAudioLoadedData);
+      audio.addEventListener('canplay', onAudioCanPlay);
+      audio.addEventListener('canplaythrough', onAudioCanPlayThrough);
+      
+      // Eventi buffering
+      audio.addEventListener('waiting', onAudioWaiting);
+      audio.addEventListener('stalled', onAudioStalled);
+      
+      // Progresso
+      audio.addEventListener('progress', onAudioProgress);
+      audio.addEventListener('timeupdate', onAudioTimeUpdate);
+      
+      // Errori
+      audio.addEventListener('error', onAudioError);
+    }
+
+    function onAudioPlaying() {
+      console.log('[Streaming] Playing');
+      isPlaying = true;
+      streaming.isRecovering = false;
+      streaming.retryCount = 0;
+      clearRetryTimer();
+      startBufferMonitoring();
+      acquireWakeLock();
+      hideStatus();
+      updatePlayIcon(true);
+    }
+
+    function onAudioPause() {
+      console.log('[Streaming] Paused');
+      isPlaying = false;
+      stopBufferMonitoring();
+      updatePlayIcon(false);
+    }
+
+    function onAudioEnded() {
+      console.log('[Streaming] Ended');
+      isPlaying = false;
+      stopBufferMonitoring();
+      releaseWakeLock();
+      updatePlayIcon(false);
+    }
+
+    function onAudioLoadStart() {
+      showStatus('Caricamento...', 'warning', true);
+    }
+
+    function onAudioLoadedData() {
+      hideStatus();
+    }
+
+    function onAudioCanPlay() {
+      if (streaming.isRecovering && streaming.wasPlayingBeforeError) {
+        attemptResume();
+      }
+    }
+
+    function onAudioCanPlayThrough() {
+      hideStatus();
+    }
+
+    function onAudioWaiting() {
+      if (isPlaying) {
+        showStatus('Buffering...', 'warning', true);
+        checkBufferHealth();
+      }
+    }
+
+    function onAudioStalled() {
+      console.log('[Streaming] Stalled');
+      if (isPlaying) {
+        showStatus('Connessione lenta...', 'warning', true);
+        setTimeout(function() {
+          if (audio.readyState < 3 && !streaming.isRecovering) {
+            softRecovery();
+          }
+        }, 3000);
+      }
+    }
+
+    function onAudioProgress() {
+      checkBufferHealth();
+    }
+
+    function onAudioTimeUpdate() {
+      if (isPlaying && !streaming.isRecovering) {
+        streaming.lastKnownTime = audio.currentTime;
+      }
+    }
+
+    function onAudioError(e) {
+      var error = audio.error;
+      console.error('[Streaming] Error:', error);
+      
+      streaming.wasPlayingBeforeError = isPlaying;
+      isPlaying = false;
+      updatePlayIcon(false);
+      
+      if (!streaming.isOnline) {
+        showStatus('Nessuna connessione', 'error');
+        streaming.pendingRecovery = true;
+        return;
+      }
+      
+      if (error) {
+        switch (error.code) {
+          case MediaError.MEDIA_ERR_NETWORK:
+            showStatus('Errore di rete', 'error');
+            hardRecovery();
+            break;
+          case MediaError.MEDIA_ERR_DECODE:
+            showStatus('Errore decodifica', 'error');
+            hardRecovery();
+            break;
+          case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
+            checkSourceAvailability();
+            break;
+          default:
+            hardRecovery();
+        }
+      } else {
+        hardRecovery();
+      }
+    }
+
+    // ============================================
+    // NETWORK LISTENERS
+    // ============================================
+
+    function setupNetworkListeners() {
+      window.addEventListener('online', onOnline);
+      window.addEventListener('offline', onOffline);
+      
+      if ('connection' in navigator) {
+        navigator.connection.addEventListener('change', onConnectionChange);
+      }
+    }
+
+    function onOnline() {
+      console.log('[Streaming] Online');
+      streaming.isOnline = true;
+      showStatus('Connessione ripristinata', 'success');
+      
+      if (streaming.pendingRecovery || streaming.wasPlayingBeforeError) {
+        streaming.pendingRecovery = false;
+        setTimeout(function() {
+          hardRecovery();
+        }, 1000);
+      } else {
+        setTimeout(hideStatus, 2000);
+      }
+    }
+
+    function onOffline() {
+      console.log('[Streaming] Offline');
+      streaming.isOnline = false;
+      showStatus('Nessuna connessione', 'error');
+      clearRetryTimer();
+      
+      if (isPlaying) {
+        streaming.wasPlayingBeforeError = true;
+        streaming.pendingRecovery = true;
+      }
+    }
+
+    function onConnectionChange() {
+      var conn = navigator.connection;
+      console.log('[Streaming] Connection:', conn.effectiveType, conn.downlink + 'Mbps');
+      
+      if (streaming.pendingRecovery && conn.downlink > 0.5) {
+        hardRecovery();
+      }
+    }
+
+    // ============================================
+    // VISIBILITY & WAKE LOCK
+    // ============================================
+
+    function setupVisibilityListener() {
+      document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'visible') {
+          onVisible();
+        }
+      });
+      
+      window.addEventListener('pageshow', onVisible);
+    }
+
+    function onVisible() {
+      console.log('[Streaming] Visible, wasPlaying:', streaming.wasPlayingBeforeError, 'paused:', audio.paused);
+      
+      if (streaming.wasPlayingBeforeError && audio.paused) {
+        checkAndRecover();
+      }
+      
+      if (isPlaying) {
+        acquireWakeLock();
+      }
+    }
+
+    async function acquireWakeLock() {
+      if (!('wakeLock' in navigator)) return;
+      
+      try {
+        if (!streaming.wakeLock) {
+          streaming.wakeLock = await navigator.wakeLock.request('screen');
+          console.log('[Streaming] Wake lock acquired');
+          
+          streaming.wakeLock.addEventListener('release', function() {
+            console.log('[Streaming] Wake lock released');
+            streaming.wakeLock = null;
+            
+            if (isPlaying && document.visibilityState === 'visible') {
+              acquireWakeLock();
+            }
+          });
+        }
+      } catch (err) {
+        console.log('[Streaming] Wake lock error:', err);
+      }
+    }
+
+    function releaseWakeLock() {
+      if (streaming.wakeLock) {
+        streaming.wakeLock.release();
+        streaming.wakeLock = null;
+      }
+    }
+
+    // ============================================
+    // BUFFER MONITORING
+    // ============================================
+
+    function startBufferMonitoring() {
+      stopBufferMonitoring();
+      streaming.bufferCheckInterval = setInterval(checkBufferHealth, 2000);
+    }
+
+    function stopBufferMonitoring() {
+      if (streaming.bufferCheckInterval) {
+        clearInterval(streaming.bufferCheckInterval);
+        streaming.bufferCheckInterval = null;
+      }
+    }
+
+    function checkBufferHealth() {
+      if (!isPlaying || streaming.isRecovering) return;
+      
+      var buffered = audio.buffered;
+      var ct = audio.currentTime;
+      
+      if (buffered.length === 0) return;
+      
+      var bufferAhead = 0;
+      for (var i = 0; i < buffered.length; i++) {
+        if (ct >= buffered.start(i) && ct <= buffered.end(i)) {
+          bufferAhead = buffered.end(i) - ct;
+          break;
+        }
+      }
+      
+      if (bufferAhead < 2 && isPlaying && !streaming.isRecovering) {
+        console.log('[Streaming] Critical buffer:', bufferAhead.toFixed(1) + 's');
+        softRecovery();
+      }
+    }
+
+    // ============================================
+    // RECOVERY STRATEGIES
+    // ============================================
+
+    function checkAndRecover() {
+      if (audio.paused && streaming.wasPlayingBeforeError) {
+        var rs = audio.readyState;
+        console.log('[Streaming] Check recover, readyState:', rs);
+        
+        if (rs >= 2) {
+          attemptResume();
+        } else if (rs === 0) {
+          hardRecovery();
+        } else {
+          showStatus('Buffering...', 'warning', true);
+          setTimeout(checkAndRecover, 2000);
+        }
+      }
+    }
+
+    function softRecovery() {
+      if (streaming.isRecovering) return;
+      streaming.isRecovering = true;
+      
+      console.log('[Streaming] Soft recovery');
+      
+      var ct = audio.currentTime;
+      audio.currentTime = ct + 0.01;
+      
+      setTimeout(function() {
+        if (audio.readyState < 3 && streaming.isRecovering) {
+          hardRecovery();
+        } else {
+          streaming.isRecovering = false;
+        }
+      }, 3000);
+    }
+
+    function hardRecovery() {
+      if (streaming.retryCount >= streaming.maxRetries) {
+        showStatus('Impossibile riprodurre', 'error');
+        streaming.isRecovering = false;
+        return;
+      }
+      
+      streaming.isRecovering = true;
+      streaming.retryCount++;
+      
+      var delay = Math.min(
+        streaming.baseRetryDelay * Math.pow(1.5, streaming.retryCount - 1),
+        streaming.maxRetryDelay
+      );
+      
+      showStatus('Riconnessione (' + streaming.retryCount + '/' + streaming.maxRetries + ')...', 'warning', true);
+      console.log('[Streaming] Hard recovery #' + streaming.retryCount + ' in ' + delay + 'ms');
+      
+      clearRetryTimer();
+      streaming.retryTimer = setTimeout(executeHardRecovery, delay);
+    }
+
+    function executeHardRecovery() {
+      if (!streaming.isOnline) {
+        streaming.pendingRecovery = true;
+        showStatus('In attesa connessione...', 'warning');
+        return;
+      }
+      
+      var savedTime = streaming.lastKnownTime;
+      var src = streaming.currentSrc;
+      
+      console.log('[Streaming] Executing hard recovery, savedTime:', savedTime);
+      
+      audio.pause();
+      audio.removeAttribute('src');
+      audio.load();
+      
+      setTimeout(function() {
+        var bustUrl = src + (src.includes('?') ? '&' : '?') + '_t=' + Date.now();
+        audio.src = bustUrl;
+        
+        var onCanPlayOnce = function() {
+          audio.removeEventListener('canplay', onCanPlayOnce);
+          
+          if (savedTime > 0 && audio.duration > savedTime) {
+            audio.currentTime = savedTime;
+          }
+          
+          if (streaming.wasPlayingBeforeError) {
+            attemptResume();
+          }
+        };
+        
+        audio.addEventListener('canplay', onCanPlayOnce);
+        audio.load();
+      }, 100);
+    }
+
+    function attemptResume() {
+      console.log('[Streaming] Attempting resume');
+      
+      var playPromise = audio.play();
+      
+      if (playPromise) {
+        playPromise.then(function() {
+          console.log('[Streaming] Resume successful');
+          streaming.isRecovering = false;
+          streaming.wasPlayingBeforeError = false;
+          isPlaying = true;
+          updatePlayIcon(true);
+        }).catch(function(err) {
+          console.log('[Streaming] Resume failed:', err);
+          
+          if (err.name === 'NotAllowedError') {
+            showStatus('Tocca play per riprendere', 'warning');
+            streaming.isRecovering = false;
+          } else {
+            setTimeout(hardRecovery, 2000);
+          }
+        });
+      }
+    }
+
+    function clearRetryTimer() {
+      if (streaming.retryTimer) {
+        clearTimeout(streaming.retryTimer);
+        streaming.retryTimer = null;
+      }
+    }
+
+    async function checkSourceAvailability() {
+      showStatus('Verifica disponibilità...', 'warning', true);
+      
+      try {
+        var response = await fetch(streaming.currentSrc, { 
+          method: 'HEAD',
+          cache: 'no-cache'
+        });
+        
+        if (response.status === 404) {
+          showStatus('Puntata non disponibile', 'error');
+          streaming.isRecovering = false;
+        } else {
+          hardRecovery();
+        }
+      } catch (err) {
+        hardRecovery();
+      }
+    }
+
+    // ============================================
+    // STATUS MESSAGES
+    // ============================================
+
+    function showStatus(msg, type, withSpinner) {
+      statusMessage.className = 'status-message show ' + (type || '');
+      if (withSpinner) {
+        statusText.innerHTML = '<span class="status-spinner"></span> ' + msg;
+      } else {
+        statusText.textContent = msg;
+      }
+    }
+
+    function hideStatus() {
+      statusMessage.classList.remove('show');
+      setTimeout(function() { statusText.innerHTML = ''; }, 300);
+    }
+
+    // ============================================
+    // DATE PICKER
+    // ============================================
 
     datePickerBtn.addEventListener('click', function() {
       datePicker.showPicker();
     });
 
-    // Theme
-    const savedTheme = localStorage.getItem('bside-theme') || 'light';
-    applyTheme(savedTheme);
-    
-    function applyTheme(t) {
-      if (t === 'dark') {
-        document.documentElement.setAttribute('data-theme', 'dark');
-        themeIcon.innerHTML = '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
-        themeColorMeta.content = '#2d3436';
-      } else {
-        document.documentElement.removeAttribute('data-theme');
-        themeIcon.innerHTML = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
-        themeColorMeta.content = '#e0e5ec';
-      }
-    }
-    
-    themeBtn.addEventListener('click', function() {
-      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      const newTheme = isDark ? 'light' : 'dark';
-      applyTheme(newTheme);
-      localStorage.setItem('bside-theme', newTheme);
-    });
-    
-    // Date Picker
-    const today = new Date();
+    var today = new Date();
     datePicker.value = today.toISOString().split('T')[0];
     datePicker.max = datePicker.value;
-    
+
     datePicker.addEventListener('change', function() {
       updatePlayer();
       updateNav();
       updateFav();
       updateMediaSession();
     });
-    
+
     function formatDate(d) {
-      const parts = d.split('-');
+      var parts = d.split('-');
       return parts[2] + '/' + parts[1] + '/' + parts[0];
     }
-    
+
     function buildUrl(d) {
-      const parts = d.split('-');
+      var parts = d.split('-');
       return 'https://media.capital.it/' + parts[0] + '/' + parts[1] + '/' + parts[2] + '/episodes/bertallot/bertallot_' + parts[0] + parts[1] + parts[2] + '_220000.mp3';
     }
-    
+
     function updatePlayer() {
-      const d = datePicker.value;
-      audio.src = buildUrl(d);
+      var d = datePicker.value;
+      var url = buildUrl(d);
+      
+      // Reset streaming state
+      clearRetryTimer();
+      stopBufferMonitoring();
+      streaming.currentSrc = url;
+      streaming.lastKnownTime = 0;
+      streaming.retryCount = 0;
+      streaming.isRecovering = false;
+      streaming.wasPlayingBeforeError = false;
+      
+      audio.src = url;
       episodeDate.textContent = formatDate(d);
       dateDisplay.textContent = formatDate(d);
       isPlaying = false;
@@ -793,7 +1269,7 @@
       remainingTime.textContent = '-0:00';
       hideStatus();
     }
-    
+
     function updatePlayIcon(playing) {
       if (playing) {
         playIcon.innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
@@ -801,19 +1277,19 @@
         playIcon.innerHTML = '<polygon points="6,4 20,12 6,20"/>';
       }
     }
-    
+
     function updateNav() {
-      const curr = new Date(datePicker.value);
-      const tod = new Date();
+      var curr = new Date(datePicker.value);
+      var tod = new Date();
       curr.setHours(0,0,0,0);
       tod.setHours(0,0,0,0);
       nextDay.disabled = curr >= tod;
     }
-    
+
     function changeDay(delta) {
-      const d = new Date(datePicker.value);
+      var d = new Date(datePicker.value);
       d.setDate(d.getDate() + delta);
-      const str = d.toISOString().split('T')[0];
+      var str = d.toISOString().split('T')[0];
       if (str <= datePicker.max) {
         datePicker.value = str;
         updatePlayer();
@@ -822,26 +1298,43 @@
         updateMediaSession();
       }
     }
-    
+
     prevDay.addEventListener('click', function() { changeDay(-1); });
     nextDay.addEventListener('click', function() { changeDay(1); });
-    
-    // Play Controls
+
+    // ============================================
+    // PLAY CONTROLS
+    // ============================================
+
     playBtn.addEventListener('click', function() {
       if (isPlaying) {
+        streaming.wasPlayingBeforeError = false;
         audio.pause();
-        updatePlayIcon(false);
       } else {
-        audio.play();
-        updatePlayIcon(true);
+        streaming.wasPlayingBeforeError = true;
+        audio.play().catch(function(err) {
+          console.log('[Play] Error:', err);
+          if (err.name !== 'AbortError') {
+            hardRecovery();
+          }
+        });
       }
-      isPlaying = !isPlaying;
     });
-    
-    skipBack.addEventListener('click', function() { audio.currentTime -= 30; });
-    skipForward.addEventListener('click', function() { audio.currentTime += 30; });
-    
-    // Progress
+
+    skipBack.addEventListener('click', function() { 
+      streaming.lastKnownTime = Math.max(0, audio.currentTime - 30);
+      audio.currentTime = streaming.lastKnownTime;
+    });
+
+    skipForward.addEventListener('click', function() { 
+      streaming.lastKnownTime = audio.currentTime + 30;
+      audio.currentTime = streaming.lastKnownTime;
+    });
+
+    // ============================================
+    // PROGRESS BAR
+    // ============================================
+
     function formatTime(s) {
       if (isNaN(s)) return '0:00';
       var m = Math.floor(s / 60);
@@ -850,7 +1343,7 @@
     }
 
     audio.addEventListener('timeupdate', function() {
-      if (progressDragging) return; // Non aggiornare durante il drag
+      if (progressDragging) return;
       var pct = (audio.currentTime / audio.duration) * 100 || 0;
       progressFill.style.width = pct + '%';
       currentTime.textContent = formatTime(audio.currentTime);
@@ -889,33 +1382,26 @@
 
     progressBar.addEventListener('mousedown', function(e) {
       progressDragging = true;
-      var pct = getProgressPercent(e);
-      updateProgressUI(pct);
+      updateProgressUI(getProgressPercent(e));
     });
 
     progressBar.addEventListener('touchstart', function(e) {
       e.preventDefault();
       progressDragging = true;
-      var pct = getProgressPercent(e);
-      updateProgressUI(pct);
+      updateProgressUI(getProgressPercent(e));
     }, { passive: false });
 
     document.addEventListener('mousemove', function(e) {
-      if (progressDragging) {
-        var pct = getProgressPercent(e);
-        updateProgressUI(pct);
-      }
+      if (progressDragging) updateProgressUI(getProgressPercent(e));
     });
 
     document.addEventListener('touchmove', function(e) {
-      if (progressDragging) {
-        var pct = getProgressPercent(e);
-        updateProgressUI(pct);
-      }
+      if (progressDragging) updateProgressUI(getProgressPercent(e));
     }, { passive: true });
 
     document.addEventListener('mouseup', function() {
       if (progressDragging && audio.duration) {
+        streaming.lastKnownTime = seekTime;
         audio.currentTime = seekTime;
       }
       progressDragging = false;
@@ -923,19 +1409,49 @@
 
     document.addEventListener('touchend', function() {
       if (progressDragging && audio.duration) {
+        streaming.lastKnownTime = seekTime;
         audio.currentTime = seekTime;
       }
       progressDragging = false;
     });
-    
-    // Volume
+
+    // ============================================
+    // THEME
+    // ============================================
+
+    var savedTheme = localStorage.getItem('bside-theme') || 'light';
+    applyTheme(savedTheme);
+
+    function applyTheme(t) {
+      if (t === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        themeIcon.innerHTML = '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
+        themeColorMeta.content = '#2d3436';
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+        themeIcon.innerHTML = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+        themeColorMeta.content = '#e0e5ec';
+      }
+    }
+
+    themeBtn.addEventListener('click', function() {
+      var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      var newTheme = isDark ? 'light' : 'dark';
+      applyTheme(newTheme);
+      localStorage.setItem('bside-theme', newTheme);
+    });
+
+    // ============================================
+    // VOLUME
+    // ============================================
+
     volumeNavBtn.addEventListener('click', function() { volumeOverlay.classList.add('show'); });
     volumeOverlay.addEventListener('click', function(e) {
       if (e.target === volumeOverlay) volumeOverlay.classList.remove('show');
     });
-    
+
     var volDrag = false;
-    
+
     function updateVol(e) {
       var rect = volumeSlider.getBoundingClientRect();
       var clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -945,7 +1461,7 @@
       volumeFill.style.height = (audio.volume * 100) + '%';
       updateVolIcon();
     }
-    
+
     function updateVolIcon() {
       var v = audio.volume;
       if (v === 0) {
@@ -956,20 +1472,23 @@
         volumeIcon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07"/><path d="M19.07 4.93a10 10 0 010 14.14"/>';
       }
     }
-    
+
     volumeSlider.addEventListener('mousedown', function(e) { volDrag = true; updateVol(e); });
     volumeSlider.addEventListener('touchstart', function(e) { e.preventDefault(); volDrag = true; updateVol(e); });
     document.addEventListener('mousemove', function(e) { if (volDrag) updateVol(e); });
     document.addEventListener('touchmove', function(e) { if (volDrag) { e.preventDefault(); updateVol(e); } }, { passive: false });
     document.addEventListener('mouseup', function() { volDrag = false; });
     document.addEventListener('touchend', function() { volDrag = false; });
-    
-    // Sleep Timer
+
+    // ============================================
+    // SLEEP TIMER
+    // ============================================
+
     sleepBtn.addEventListener('click', function() { sleepOverlay.classList.add('show'); });
     sleepOverlay.addEventListener('click', function(e) {
       if (e.target === sleepOverlay) sleepOverlay.classList.remove('show');
     });
-    
+
     var sleepOptions = document.querySelectorAll('.sleep-option');
     sleepOptions.forEach(function(opt) {
       opt.addEventListener('click', function() {
@@ -980,7 +1499,7 @@
         if (min > 0) opt.classList.add('selected');
       });
     });
-    
+
     function setSleep(min) {
       if (sleepTimer) clearTimeout(sleepTimer);
       if (sleepInterval) clearInterval(sleepInterval);
@@ -1001,13 +1520,14 @@
       
       sleepInterval = setInterval(updateSleepDisplay, 1000);
       sleepTimer = setTimeout(function() {
+        streaming.wasPlayingBeforeError = false;
         audio.pause();
         updatePlayIcon(false);
         isPlaying = false;
         setSleep(0);
       }, min * 60000);
     }
-    
+
     function updateSleepDisplay() {
       if (!sleepEndTime) return;
       var rem = Math.max(0, sleepEndTime - Date.now());
@@ -1016,8 +1536,11 @@
       var s = Math.floor((rem % 60000) / 1000);
       sleepCountdown.textContent = m + ':' + (s < 10 ? '0' : '') + s;
     }
-    
-    // Favorites
+
+    // ============================================
+    // FAVORITES
+    // ============================================
+
     favBtn.addEventListener('click', function() {
       var d = datePicker.value;
       var idx = favorites.indexOf(d);
@@ -1029,7 +1552,7 @@
       localStorage.setItem('bside-fav', JSON.stringify(favorites));
       updateFav();
     });
-    
+
     function updateFav() {
       var d = datePicker.value;
       if (favorites.indexOf(d) > -1) {
@@ -1038,16 +1561,16 @@
         favBtn.classList.remove('active');
       }
     }
-    
+
     menuBtn.addEventListener('click', function() {
       renderFavList();
       favOverlay.classList.add('show');
     });
-    
+
     favOverlay.addEventListener('click', function(e) {
       if (e.target === favOverlay) favOverlay.classList.remove('show');
     });
-    
+
     function renderFavList() {
       if (favorites.length === 0) {
         favList.innerHTML = '<div class="favorites-empty">Nessun preferito</div>';
@@ -1093,84 +1616,11 @@
         });
       });
     }
-    
-    // Status Messages
-    function showStatus(msg, type, withSpinner) {
-      statusMessage.className = 'status-message show ' + (type || '');
-      if (withSpinner) {
-        statusText.innerHTML = '<span class="status-spinner"></span> ' + msg;
-      } else {
-        statusText.textContent = msg;
-      }
-    }
-    
-    function hideStatus() {
-      statusMessage.classList.remove('show');
-      setTimeout(function() { statusText.innerHTML = ''; }, 300);
-    }
-    
-    // Audio Errors
-    audio.addEventListener('error', function() {
-      lastTime = audio.currentTime || 0;
-      wasPlaying = isPlaying;
-      updatePlayIcon(false);
-      isPlaying = false;
-      
-      if (!navigator.onLine) {
-        showStatus('Nessuna connessione', 'error');
-        return;
-      }
-      
-      fetch(audio.src, { method: 'HEAD' })
-        .then(function(r) {
-          if (r.status === 404) {
-            showStatus('Puntata non disponibile', 'error');
-          } else {
-            retry();
-          }
-        })
-        .catch(function() { retry(); });
-    });
-    
-    audio.addEventListener('loadeddata', function() { hideStatus(); retryCount = 0; });
-    audio.addEventListener('waiting', function() { if (isPlaying) showStatus('Buffering...', 'warning', true); });
-    audio.addEventListener('playing', function() { hideStatus(); retryCount = 0; });
-    
-    function retry() {
-      if (retryCount >= 5) {
-        showStatus('Connessione fallita', 'error');
-        return;
-      }
-      retryCount++;
-      showStatus('Riconnessione... (' + retryCount + '/5)', 'warning', true);
-      if (retryTimer) clearTimeout(retryTimer);
-      retryTimer = setTimeout(function() {
-        var src = audio.src;
-        audio.src = '';
-        audio.src = src;
-        audio.currentTime = lastTime;
-        if (wasPlaying) {
-          audio.play().then(function() {
-            isPlaying = true;
-            updatePlayIcon(true);
-          }).catch(function() { retry(); });
-        }
-      }, Math.min(5000 * retryCount, 20000));
-    }
-    
-    window.addEventListener('online', function() {
-      showStatus('Connessione ripristinata', 'success');
-      setTimeout(function() {
-        hideStatus();
-        if (wasPlaying) { retryCount = 0; retry(); }
-      }, 2000);
-    });
-    
-    window.addEventListener('offline', function() {
-      showStatus('Nessuna connessione', 'error');
-    });
-    
-    // Media Session
+
+    // ============================================
+    // MEDIA SESSION
+    // ============================================
+
     function updateMediaSession() {
       if ('mediaSession' in navigator) {
         navigator.mediaSession.metadata = new MediaMetadata({
@@ -1184,22 +1634,42 @@
         });
       }
     }
-    
+
     if ('mediaSession' in navigator) {
-      navigator.mediaSession.setActionHandler('play', function() { audio.play(); updatePlayIcon(true); isPlaying = true; });
-      navigator.mediaSession.setActionHandler('pause', function() { audio.pause(); updatePlayIcon(false); isPlaying = false; });
-      navigator.mediaSession.setActionHandler('seekbackward', function() { audio.currentTime -= 30; });
-      navigator.mediaSession.setActionHandler('seekforward', function() { audio.currentTime += 30; });
-      navigator.mediaSession.setActionHandler('seekto', function(d) { if (d.seekTime) audio.currentTime = d.seekTime; });
+      navigator.mediaSession.setActionHandler('play', function() { 
+        streaming.wasPlayingBeforeError = true;
+        audio.play(); 
+      });
+      navigator.mediaSession.setActionHandler('pause', function() { 
+        streaming.wasPlayingBeforeError = false;
+        audio.pause(); 
+      });
+      navigator.mediaSession.setActionHandler('seekbackward', function() { 
+        streaming.lastKnownTime = Math.max(0, audio.currentTime - 30);
+        audio.currentTime = streaming.lastKnownTime;
+      });
+      navigator.mediaSession.setActionHandler('seekforward', function() { 
+        streaming.lastKnownTime = audio.currentTime + 30;
+        audio.currentTime = streaming.lastKnownTime;
+      });
+      navigator.mediaSession.setActionHandler('seekto', function(d) { 
+        if (d.seekTime) {
+          streaming.lastKnownTime = d.seekTime;
+          audio.currentTime = d.seekTime;
+        }
+      });
     }
-    
-    // PWA Install
+
+    // ============================================
+    // PWA INSTALL
+    // ============================================
+
     window.addEventListener('beforeinstallprompt', function(e) {
       e.preventDefault();
       deferredPrompt = e;
       installPrompt.classList.add('show');
     });
-    
+
     installBtn.addEventListener('click', function() {
       if (deferredPrompt) {
         deferredPrompt.prompt();
@@ -1209,18 +1679,25 @@
         });
       }
     });
-    
+
     installClose.addEventListener('click', function() { installPrompt.classList.remove('show'); });
     window.addEventListener('appinstalled', function() { installPrompt.classList.remove('show'); });
-    
-    // Service Worker
+
+    // ============================================
+    // SERVICE WORKER
+    // ============================================
+
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js')
         .then(function(reg) { console.log('SW registrato:', reg.scope); })
         .catch(function(err) { console.log('SW errore:', err); });
     }
-    
-    // Init
+
+    // ============================================
+    // INIT
+    // ============================================
+
+    initStreaming();
     updatePlayer();
     updateNav();
     updateFav();
