@@ -764,12 +764,12 @@ var Engine = {
     isActive: false,
     startTime: null,
     attempt: 0,
-    maxAttempts: 50,
+    maxAttempts: 35,          
     strategy: 'seek',
     timer: null,
     watchdog: null,
-    watchdogTimeout: 12000
-  },
+    watchdogTimeout: 20000
+  },    
   
   // User intent
   intent: {
@@ -927,13 +927,17 @@ function initNetworkMonitoring() {
       
       log('Network change: ' + oldType + ' → ' + newType + ' (quality: ' + oldQuality + ' → ' + newQuality + ')', 'network');
       
-      // If network improved and we should be playing, retry immediately
+      // If network improved and we should be playing, retry with small delay
       if (Engine.intent.shouldBePlaying && newQuality > oldQuality) {
-        log('Network improved, INSTANT recovery', 'network');
-        Engine.recovery.attempt = 0;
+        log('Network improved, quick recovery', 'network');
+        Engine.recovery.attempt = Math.max(0, Engine.recovery.attempt - 2);
         clearRecoveryTimers();
         if (!isPlaying) {
-          executeRecovery();
+          setTimeout(function() {
+            if (Engine.intent.shouldBePlaying && !isPlaying) {
+              executeRecovery();
+            }
+          }, 800);
         }
       }
     });
@@ -992,13 +996,18 @@ function handleOnline() {
   showNetworkIndicator('online', 'Connesso');
   
   if (Engine.intent.shouldBePlaying && !isPlaying) {
-    log('Online + shouldBePlaying: INSTANT recovery', 'network');
+    log('Online + shouldBePlaying: quick recovery', 'network');
     Engine.recovery.attempt = 0;
     clearRecoveryTimers();
-    // Instant retry - no delay
-    executeRecovery();
+    // Piccolo delay per stabilizzare la connessione
+    setTimeout(function() {
+      if (Engine.intent.shouldBePlaying && !isPlaying) {
+        executeRecovery();
+      }
+    }, 500);
   }
 }
+
 
 function handleOffline() {
   log('NETWORK: offline', 'error');
@@ -1138,7 +1147,7 @@ function clearRecoveryTimers() {
 
 function setRecoveryWatchdog() {
   clearTimeout(Engine.recovery.watchdog);
-  var timeout = Engine.recovery.strategy === 'refetch' ? 15000 : Engine.recovery.watchdogTimeout;
+  var timeout = Engine.recovery.strategy === 'refetch' ? 20000 : Engine.recovery.watchdogTimeout;
   
   Engine.recovery.watchdog = setTimeout(function() {
     if (Engine.recovery.isActive) {
@@ -1204,35 +1213,35 @@ function calculateRecoveryDelay() {
   var baseDelay;
   
   if (attempt <= 3) {
-    // First 3: ultra aggressive
-    baseDelay = 100 + (100 * attempt); // 200ms, 300ms, 400ms
+    // Primi 3: moderatamente rapidi ma non istantanei
+    baseDelay = 800 + (200 * attempt); // 1s, 1.2s, 1.4s
   } else if (attempt <= 10) {
-    // 4-10: aggressive backoff
-    baseDelay = 500 * Math.pow(1.3, attempt - 3); // ~650ms, 845ms, 1.1s...
+    // 4-10: backoff progressivo
+    baseDelay = 1500 * Math.pow(1.3, attempt - 3); // ~1.95s, 2.5s, 3.3s...
   } else {
-    // 10+: moderate slowdown
-    baseDelay = 3000 + (attempt - 10) * 500; // 3.5s, 4s, 4.5s...
+    // 10+: rallenta ma non troppo
+    baseDelay = 5000 + (attempt - 10) * 800; // 5.8s, 6.6s, 7.4s...
   }
   
   // Adjust for network quality
   if (quality === 0) {
-    baseDelay = Math.max(baseDelay, 2000);
+    baseDelay = Math.max(baseDelay, 3000); // Offline: almeno 3s
   } else if (quality < 30) {
-    baseDelay *= 1.3;
+    baseDelay *= 1.4;
   }
   
-  return Math.min(baseDelay, 8000);
+  return Math.min(baseDelay, 12000); // Max 12s
 }
 
 function selectRecoveryStrategy() {
   var attempt = Engine.recovery.attempt;
   
-  if (attempt <= 1 && audio.readyState >= 2) {
-    Engine.recovery.strategy = 'seek';
-  } else if (attempt <= 4) {
-    Engine.recovery.strategy = 'reload';
+  if (attempt <= 2 && audio.readyState >= 2) {
+    Engine.recovery.strategy = 'seek';      // Primi 2: seek
+  } else if (attempt <= 6) {
+    Engine.recovery.strategy = 'reload';    // 3-6: reload
   } else {
-    Engine.recovery.strategy = 'refetch';
+    Engine.recovery.strategy = 'refetch';   // 7+: refetch
   }
 }
 
@@ -1504,6 +1513,7 @@ function initAudioEvents() {
     log('EVENT: canplay, readyState=' + audio.readyState, 'success');
   });
   
+  // SOLO UNA VOLTA - stalled con 4s timeout
   audio.addEventListener('stalled', function() {
     log('EVENT: stalled', 'error');
     if (Engine.intent.shouldBePlaying) {
@@ -1512,7 +1522,7 @@ function initAudioEvents() {
         if (audio.paused || audio.readyState < 3) {
           startRecovery();
         }
-      }, 2000);
+      }, 4000);
     }
   });
   
@@ -1542,27 +1552,17 @@ function initAudioEvents() {
       var bufferStatus = Engine.buffer.ahead.toFixed(1);
       showStatus('Buffering... (' + bufferStatus + 's)', 'warning', true);
       
-      // Pre-recovery after 3s of waiting
+      // Pre-recovery dopo 6s di waiting
       setTimeout(function() {
         if (Engine.intent.shouldBePlaying && (audio.paused || audio.readyState < 3)) {
           log('Waiting too long, starting pre-recovery', 'warn');
           startRecovery();
         }
-      }, 3000);
+      }, 6000);
     }
   });
   
-  audio.addEventListener('stalled', function() {
-    log('EVENT: stalled', 'error');
-    if (Engine.intent.shouldBePlaying) {
-      showStatus('Connessione lenta...', 'warning', true);
-      setTimeout(function() {
-        if (audio.paused || audio.readyState < 3) {
-          startRecovery();
-        }
-      }, 5000);
-    }
-  });
+  // NOTA: NON aggiungere un secondo listener 'stalled' qui!
   
   audio.addEventListener('progress', function() {
     updateBufferHealth();
@@ -1571,7 +1571,6 @@ function initAudioEvents() {
   audio.addEventListener('timeupdate', function() {
     if (progressDragging) return;
     
-    // Always track position
     if (!audio.paused && audio.currentTime > 0) {
       Engine.position.current = audio.currentTime;
     }
@@ -1583,7 +1582,6 @@ function initAudioEvents() {
     currentTimeEl.textContent = formatTime(audio.currentTime);
     remainingTime.textContent = '-' + formatTime(audio.duration - audio.currentTime);
     
-    // Media Session position
     if ('mediaSession' in navigator && audio.duration) {
       navigator.mediaSession.setPositionState({
         duration: audio.duration,
@@ -1593,6 +1591,14 @@ function initAudioEvents() {
     }
   });
   
+  audio.addEventListener('playing', function() {
+    log('EVENT: playing', 'success');
+    isPlaying = true;
+    updatePlayIcon(true);
+    hideStatus();
+    acquireWakeLock();
+  });
+  
   audio.addEventListener('error', function() {
     var err = audio.error;
     var codes = ['', 'ABORTED', 'NETWORK', 'DECODE', 'SRC_NOT_SUPPORTED'];
@@ -1600,7 +1606,6 @@ function initAudioEvents() {
     
     log('EVENT: error - ' + errName, 'error');
     
-    // Save position immediately
     if (Engine.position.current > 0) {
       savePositionToStorage();
     }
@@ -1608,8 +1613,7 @@ function initAudioEvents() {
     isPlaying = false;
     updatePlayIcon(false);
     
-    // Handle by error type
-    if (err && err.code === 4) { // SRC_NOT_SUPPORTED
+    if (err && err.code === 4) {
       if (Engine.recovery.isActive || !navigator.onLine) {
         log('SRC_NOT_SUPPORTED during recovery/offline, continuing...', 'warn');
         if (Engine.intent.shouldBePlaying) {
@@ -2210,7 +2214,6 @@ function cleanOldPositions() {
 }
 
 // Start the app
-init();
 init();
 </script>
 </body>
