@@ -53,13 +53,16 @@
     }
     
     .app {
-      height: 100%;
+      height: calc(100% - 40px); 
       max-width: 430px;
-      margin: 0 auto;
+      margin: 20px auto;
       display: flex;
       flex-direction: column;
       padding: 20px;
       padding-bottom: 0;
+      background: var(--bg);
+      box-shadow: var(--neu-pressed); /* effetto incassato */
+      border-radius: 30px; /* angoli arrotondati opzionali */
     }
     
     /* === DEBUG CONSOLE === */
@@ -153,6 +156,8 @@
     }
     
     /* === ARTWORK === */
+    /* === ARTWORK === */
+    /* === ARTWORK === */
     .artwork-container {
       flex: 1;
       display: flex;
@@ -161,19 +166,30 @@
       padding: 20px 0;
     }
     .artwork {
-      width: 260px;
-      height: 260px;
-      border-radius: 50%;
-      background: var(--bg);
-      box-shadow: var(--neu-convex);
+      width: auto; /* era 260px */
+      height: auto; /* era 260px */
+      border-radius: 0; /* era 50% */
+      background: transparent; /* era var(--bg) */
+      box-shadow: none; /* era var(--neu-convex) */
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       text-align: center;
+      padding: 0; /* rimuovi padding */
     }
-    .artwork h1 { font-size: 3.2rem; font-weight: 800; letter-spacing: -2px; color: var(--text); margin-bottom: 8px; }
-    .artwork p { font-size: 1rem; font-weight: 400; color: var(--text-secondary); }
+    .artwork h1 { 
+      font-size: 3.2rem; 
+      font-weight: 800; 
+      letter-spacing: -2px; 
+      color: var(--text); 
+      margin-bottom: 8px; 
+    }
+    .artwork p { 
+      font-size: 1rem; 
+      font-weight: 400; 
+      color: var(--text-secondary); 
+    }
     
     /* === TRACK INFO === */
     .track-info {
@@ -337,7 +353,7 @@
     .play-btn svg { width: 28px; height: 28px; fill: var(--bg); }
 
     /* === BOTTOM NAV === */
-    .bottom-nav {
+    /*.bottom-nav {
       background: var(--bg);
       border-radius: 24px 24px 0 0;
       box-shadow: -2px -2px 5px var(--shadow-light), 2px 2px 5px var(--shadow-dark);
@@ -346,13 +362,26 @@
       justify-content: space-around;
       align-items: center;
       margin: 0 -20px;
+    }*/
+    /* === BOTTOM NAV === */
+    .bottom-nav {
+      background: transparent; /* era var(--bg) */
+      border-radius: 24px 24px 0 0;
+      box-shadow: none; /* era -2px -2px 5px var(--shadow-light), 2px 2px 5px var(--shadow-dark) */
+      padding: 15px 30px 25px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      margin: 0 -20px;
     }
+
     .nav-item {
       width: 50px;
       height: 50px;
       border: none;
       border-radius: 14px;
-      background: transparent;
+      background: var(--bg); /* aggiungi sempre il background */
+      box-shadow: var(--neu-flat); /* aggiungi sempre l'ombra neumorfismo */
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -366,9 +395,10 @@
       gap: 2px;
       -webkit-tap-highlight-color: transparent;
     }
+
     .nav-item.active {
       background: var(--bg);
-      box-shadow: var(--neu-pressed);
+      box-shadow: var(--neu-pressed); /* mantieni l'effetto pressed quando attivo */
       color: var(--accent);
     }
     .nav-item svg { width: 22px; height: 22px; }
@@ -636,7 +666,7 @@
         </svg>
         <span class="sleep-countdown" id="sleepCountdown" style="display:none;"></span>
       </button>
-      <button class="nav-item active" id="volumeNavBtn">
+      <button class="nav-item" id="volumeNavBtn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="volumeIcon">
           <path d="M11 5L6 9H2v6h4l5 4V5z"/>
           <path d="M15.54 8.46a5 5 0 010 7.07"/>
