@@ -764,12 +764,14 @@ var Engine = {
     isActive: false,
     startTime: null,
     attempt: 0,
-    maxAttempts: 35,          
+    maxAttempts: 35,
     strategy: 'seek',
     timer: null,
     watchdog: null,
-    watchdogTimeout: 20000
-  },    
+    watchdogTimeout: 20000,
+    scheduledAt: null,        
+    expectedDelay: null       
+  },
   
   // User intent
   intent: {
@@ -1103,7 +1105,8 @@ function savePositionToStorage() {
   try {
     localStorage.setItem(key, JSON.stringify(data));
     Engine.position.lastSaved = Engine.position.current;
-    log('Position saved: ' + formatTime(data.position));
+    // removed log position save
+    // log('Position saved: ' + formatTime(data.position));
   } catch (e) {
     log('Failed to save position: ' + e.message, 'error');
   }
@@ -1198,11 +1201,19 @@ function startRecovery() {
   // Calculate adaptive delay
   var delay = calculateRecoveryDelay();
   
-  log('Recovery #' + Engine.recovery.attempt + ' in ' + delay + 'ms, pos=' + formatTime(Engine.position.current) + ', strategy=' + Engine.recovery.strategy, 'warn');
+  // LOG CON TIMESTAMP per verificare timer throttling
+  var now = new Date();
+  var expectedExec = new Date(now.getTime() + delay);
+  log('Recovery #' + Engine.recovery.attempt + ' scheduled: delay=' + delay + 'ms, expected=' + expectedExec.toLocaleTimeString('it-IT'), 'warn');
+  
   showStatus('Riconnessione (' + Engine.recovery.attempt + ')...', 'warning', true);
   
   clearRecoveryTimers();
   setRecoveryWatchdog();
+  
+  // Salva quando abbiamo schedulato
+  Engine.recovery.scheduledAt = Date.now();
+  Engine.recovery.expectedDelay = delay;
   
   Engine.recovery.timer = setTimeout(executeRecovery, delay);
 }
@@ -1246,6 +1257,19 @@ function selectRecoveryStrategy() {
 }
 
 function executeRecovery() {
+  // Calcola ritardo reale vs atteso
+  if (Engine.recovery.scheduledAt) {
+    var actualDelay = Date.now() - Engine.recovery.scheduledAt;
+    var expectedDelay = Engine.recovery.expectedDelay || 0;
+    var drift = actualDelay - expectedDelay;
+    
+    if (drift > 500) {
+      log('⚠️ TIMER DRIFT: expected=' + expectedDelay + 'ms, actual=' + actualDelay + 'ms, drift=+' + drift + 'ms', 'error');
+    } else {
+      log('Timer OK: drift=' + drift + 'ms', 'success');
+    }
+  }
+  
   // Check if still offline
   if (!navigator.onLine) {
     log('Still offline, rescheduling in 3s', 'warn');
@@ -1259,16 +1283,17 @@ function executeRecovery() {
   
   switch (Engine.recovery.strategy) {
     case 'seek':
-    executeSeekStrategy();
-    break;
+      executeSeekStrategy();
+      break;
     case 'reload':
-    executeReloadStrategy();
-    break;
+      executeReloadStrategy();
+      break;
     case 'refetch':
-    executeRefetchStrategy();
-    break;
+      executeRefetchStrategy();
+      break;
   }
 }
+
 
 function executeSeekStrategy() {
   var targetTime = Engine.position.current;
@@ -1460,7 +1485,9 @@ function initLifecycleManagement() {
 }
 
 function onAppVisible() {
-  log('App became visible');
+  var hiddenDuration = Math.round((Date.now() - Engine.lifecycle.lastActiveTime) / 1000);
+  log('=== SCREEN VISIBLE === after ' + hiddenDuration + 's, playing=' + !audio.paused + ', readyState=' + audio.readyState, 'success');
+  
   updateNetworkInfo();
   
   if (Engine.intent.shouldBePlaying) {
@@ -1473,10 +1500,9 @@ function onAppVisible() {
   var isRecovering = Engine.recovery.isActive;
   
   if (shouldBePlaying && isPaused && !isRecovering) {
-    var hiddenTime = Date.now() - Engine.lifecycle.lastActiveTime;
-    log('Was hidden for ' + Math.round(hiddenTime / 1000) + 's, should be playing but paused');
+    log('Should be playing but paused! Starting recovery...', 'warn');
     
-    if (hiddenTime > 30000) {
+    if (hiddenDuration > 30) {
       Engine.recovery.attempt = 0;
     }
     
@@ -1491,7 +1517,7 @@ function onAppVisible() {
 }
 
 function onAppHidden() {
-  log('App became hidden');
+  log('=== SCREEN HIDDEN === pos=' + formatTime(Engine.position.current) + ', playing=' + !audio.paused, 'warn');
   savePositionToStorage();
   Engine.lifecycle.lastActiveTime = Date.now();
 }
