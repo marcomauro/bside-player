@@ -15,14 +15,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
   
   <style>
-    /* ============================================
-       RESET & CSS VARIABLES
-       ============================================ */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    /* === RESET & VARIABLES === */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     
     :root {
       --bg: #e0e5ec;
@@ -47,9 +41,7 @@
       --shadow-dark: #1d2425;
     }
     
-    /* ============================================
-       BASE STYLES
-       ============================================ */
+    /* === BASE === */
     html, body {
       height: 100%;
       width: 100%;
@@ -70,15 +62,13 @@
       padding-bottom: 0;
     }
     
-    /* ============================================
-       DEBUG CONSOLE
-       ============================================ */
+    /* === DEBUG CONSOLE === */
     .debug-console {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
-      height: 150px;
+      height: 180px;
       background: rgba(0, 0, 0, 0.95);
       color: #0f0;
       font-family: monospace;
@@ -88,27 +78,12 @@
       z-index: 9999;
       display: none;
     }
-    
-    .debug-console.show {
-      display: block;
-    }
-    
-    .debug-line {
-      margin: 1px 0;
-    }
-    
-    .debug-line.error {
-      color: #f55;
-    }
-    
-    .debug-line.warn {
-      color: #fa0;
-    }
-    
-    .debug-line.success {
-      color: #5f5;
-    }
-    
+    .debug-console.show { display: block; }
+    .debug-line { margin: 1px 0; }
+    .debug-line.error { color: #f55; }
+    .debug-line.warn { color: #fa0; }
+    .debug-line.success { color: #5f5; }
+    .debug-line.network { color: #5ff; }
     .debug-toggle {
       position: fixed;
       top: 5px;
@@ -123,14 +98,9 @@
       z-index: 10000;
       cursor: pointer;
     }
+    .debug-console.show ~ .debug-toggle { top: 185px; }
     
-    .debug-console.show ~ .debug-toggle {
-      top: 155px;
-    }
-    
-    /* ============================================
-       TOP BAR
-       ============================================ */
+    /* === TOP BAR === */
     .top-bar {
       display: flex;
       justify-content: space-between;
@@ -154,19 +124,10 @@
       transition: all 0.2s;
       -webkit-tap-highlight-color: transparent;
     }
+    .icon-btn:active { box-shadow: var(--neu-pressed); }
+    .icon-btn svg { width: 20px; height: 20px; }
     
-    .icon-btn:active {
-      box-shadow: var(--neu-pressed);
-    }
-    
-    .icon-btn svg {
-      width: 20px;
-      height: 20px;
-    }
-    
-    /* ============================================
-       DATE PICKER
-       ============================================ */
+    /* === DATE PICKER === */
     .date-picker-btn {
       background: var(--bg);
       border: none;
@@ -180,36 +141,18 @@
       position: relative;
       -webkit-tap-highlight-color: transparent;
     }
-    
-    .date-picker-btn:active {
-      box-shadow: var(--neu-pressed);
-    }
-    
-    .date-picker-btn span {
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: var(--text);
-    }
-    
-    .date-picker-btn svg {
-      color: var(--text-secondary);
-      width: 18px;
-      height: 18px;
-    }
-    
+    .date-picker-btn:active { box-shadow: var(--neu-pressed); }
+    .date-picker-btn span { font-size: 0.9rem; font-weight: 600; color: var(--text); }
+    .date-picker-btn svg { color: var(--text-secondary); width: 18px; height: 18px; }
     .date-picker-btn input {
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
       opacity: 0;
       cursor: pointer;
     }
     
-    /* ============================================
-       ARTWORK
-       ============================================ */
+    /* === ARTWORK === */
     .artwork-container {
       flex: 1;
       display: flex;
@@ -217,7 +160,6 @@
       justify-content: center;
       padding: 20px 0;
     }
-    
     .artwork {
       width: 260px;
       height: 260px;
@@ -230,46 +172,20 @@
       justify-content: center;
       text-align: center;
     }
+    .artwork h1 { font-size: 3.2rem; font-weight: 800; letter-spacing: -2px; color: var(--text); margin-bottom: 8px; }
+    .artwork p { font-size: 1rem; font-weight: 400; color: var(--text-secondary); }
     
-    .artwork h1 {
-      font-size: 3.2rem;
-      font-weight: 800;
-      letter-spacing: -2px;
-      color: var(--text);
-      margin-bottom: 8px;
-    }
-    
-    .artwork p {
-      font-size: 1rem;
-      font-weight: 400;
-      color: var(--text-secondary);
-    }
-    
-    /* ============================================
-       TRACK INFO
-       ============================================ */
+    /* === TRACK INFO === */
     .track-info {
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 20px 10px;
     }
+    .track-details h2 { font-size: 1.4rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .track-details p { font-size: 0.9rem; color: var(--text-secondary); }
     
-    .track-details h2 {
-      font-size: 1.4rem;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 4px;
-    }
-    
-    .track-details p {
-      font-size: 0.9rem;
-      color: var(--text-secondary);
-    }
-    
-    /* ============================================
-       FAVORITE BUTTON
-       ============================================ */
+    /* === FAVORITE BUTTON === */
     .fav-btn {
       width: 45px;
       height: 45px;
@@ -285,31 +201,13 @@
       transition: all 0.2s;
       -webkit-tap-highlight-color: transparent;
     }
+    .fav-btn:active { box-shadow: var(--neu-pressed); }
+    .fav-btn.active { color: #e74c3c; }
+    .fav-btn.active svg { fill: #e74c3c; }
+    .fav-btn svg { width: 22px; height: 22px; }
     
-    .fav-btn:active {
-      box-shadow: var(--neu-pressed);
-    }
-    
-    .fav-btn.active {
-      color: #e74c3c;
-    }
-    
-    .fav-btn.active svg {
-      fill: #e74c3c;
-    }
-    
-    .fav-btn svg {
-      width: 22px;
-      height: 22px;
-    }
-    
-    /* ============================================
-       PROGRESS BAR
-       ============================================ */
-    .progress-section {
-      padding: 10px 10px 20px;
-    }
-    
+    /* === PROGRESS BAR === */
+    .progress-section { padding: 10px 10px 20px; }
     .progress-bar {
       width: 100%;
       height: 6px;
@@ -320,7 +218,6 @@
       cursor: pointer;
       touch-action: none;
     }
-    
     .progress-fill {
       height: 100%;
       background: var(--accent);
@@ -329,7 +226,6 @@
       position: relative;
       transition: width 0.1s linear;
     }
-    
     .progress-thumb {
       position: absolute;
       right: -8px;
@@ -341,7 +237,6 @@
       border-radius: 50%;
       box-shadow: var(--neu-flat);
     }
-    
     .time-display {
       display: flex;
       justify-content: space-between;
@@ -352,11 +247,22 @@
       font-variant-numeric: tabular-nums;
     }
     
-    /* ============================================
-       STATUS MESSAGE
-       ============================================ */
+    /* === BUFFER INDICATOR === */
+    .buffer-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      background: var(--text-secondary);
+      opacity: 0.3;
+      border-radius: 3px;
+      width: 0%;
+      transition: width 0.3s;
+    }
+    
+    /* === STATUS MESSAGE === */
     .status-message {
-      height: 24px;
+      height: 28px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -368,23 +274,17 @@
       opacity: 0;
       transition: opacity 0.3s;
     }
-    
-    .status-message.show {
-      opacity: 1;
+    .status-message.show { opacity: 1; }
+    .status-message.error { color: #e74c3c; }
+    .status-message.warning { color: #f39c12; }
+    .status-message.success { color: #27ae60; }
+    .status-message .network-badge {
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      background: var(--bg-dark);
+      border-radius: 4px;
+      opacity: 0.8;
     }
-    
-    .status-message.error {
-      color: #e74c3c;
-    }
-    
-    .status-message.warning {
-      color: #f39c12;
-    }
-    
-    .status-message.success {
-      color: #27ae60;
-    }
-    
     .status-spinner {
       display: inline-block;
       width: 12px;
@@ -394,16 +294,9 @@
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
+    @keyframes spin { to { transform: rotate(360deg); } }
     
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-    
-    /* ============================================
-       CONTROLS
-       ============================================ */
+    /* === CONTROLS === */
     .controls {
       display: flex;
       align-items: center;
@@ -411,7 +304,6 @@
       gap: 15px;
       padding: 15px 0 25px;
     }
-    
     .ctrl-btn {
       width: 50px;
       height: 50px;
@@ -430,21 +322,9 @@
       transition: all 0.15s;
       -webkit-tap-highlight-color: transparent;
     }
-    
-    .ctrl-btn:active {
-      box-shadow: var(--neu-pressed);
-    }
-    
-    .ctrl-btn:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-    
-    .ctrl-btn svg {
-      width: 18px;
-      height: 18px;
-    }
-    
+    .ctrl-btn:active { box-shadow: var(--neu-pressed); }
+    .ctrl-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .ctrl-btn svg { width: 18px; height: 18px; }
     .play-btn {
       width: 70px;
       height: 70px;
@@ -453,20 +333,10 @@
       box-shadow: -2px -2px 5px var(--shadow-light), 2px 2px 5px var(--shadow-dark);
       color: var(--bg);
     }
-    
-    .play-btn:active {
-      box-shadow: -1px -1px 3px var(--shadow-light), 1px 1px 3px var(--shadow-dark);
-    }
-    
-    .play-btn svg {
-      width: 28px;
-      height: 28px;
-      fill: var(--bg);
-    }
-    
-    /* ============================================
-       BOTTOM NAV
-       ============================================ */
+    .play-btn:active { box-shadow: -1px -1px 3px var(--shadow-light), 1px 1px 3px var(--shadow-dark); }
+    .play-btn svg { width: 28px; height: 28px; fill: var(--bg); }
+
+    /* === BOTTOM NAV === */
     .bottom-nav {
       background: var(--bg);
       border-radius: 24px 24px 0 0;
@@ -477,7 +347,6 @@
       align-items: center;
       margin: 0 -20px;
     }
-    
     .nav-item {
       width: 50px;
       height: 50px;
@@ -497,45 +366,47 @@
       gap: 2px;
       -webkit-tap-highlight-color: transparent;
     }
-    
     .nav-item.active {
       background: var(--bg);
       box-shadow: var(--neu-pressed);
       color: var(--accent);
     }
+    .nav-item svg { width: 22px; height: 22px; }
+    .sleep-countdown { font-size: 0.75rem; font-weight: 700; color: var(--accent); }
     
-    .nav-item svg {
-      width: 22px;
-      height: 22px;
-    }
-    
-    .sleep-countdown {
+    /* === NETWORK INDICATOR === */
+    .network-indicator {
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 6px 14px;
+      border-radius: 20px;
       font-size: 0.75rem;
-      font-weight: 700;
-      color: var(--accent);
+      font-weight: 600;
+      display: none;
+      align-items: center;
+      gap: 6px;
+      z-index: 1000;
+      transition: all 0.3s;
     }
+    .network-indicator.show { display: flex; }
+    .network-indicator.offline { background: #e74c3c; color: white; }
+    .network-indicator.slow { background: #f39c12; color: white; }
+    .network-indicator.online { background: #27ae60; color: white; }
     
-    /* ============================================
-       POPUPS
-       ============================================ */
+    /* === POPUPS === */
     .popup-overlay {
       display: none;
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
+      top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0, 0, 0, 0.3);
       z-index: 100;
       align-items: center;
       justify-content: center;
     }
+    .popup-overlay.show { display: flex; }
     
-    .popup-overlay.show {
-      display: flex;
-    }
-    
-    /* Volume Popup */
     .volume-popup {
       background: var(--bg);
       border-radius: 24px;
@@ -546,7 +417,6 @@
       align-items: center;
       gap: 20px;
     }
-    
     .volume-slider {
       width: 8px;
       height: 150px;
@@ -557,7 +427,6 @@
       cursor: pointer;
       touch-action: none;
     }
-    
     .volume-fill {
       position: absolute;
       bottom: 0;
@@ -565,27 +434,15 @@
       background: var(--accent);
       border-radius: 4px;
     }
+    .volume-fill .progress-thumb { top: -8px; right: 50%; transform: translateX(50%); }
+    .popup-title { font-size: 0.9rem; font-weight: 600; color: var(--text); }
     
-    .volume-fill .progress-thumb {
-      top: -8px;
-      right: 50%;
-      transform: translateX(50%);
-    }
-    
-    .popup-title {
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: var(--text);
-    }
-    
-    /* Sleep Menu */
     .sleep-menu {
       background: var(--bg);
       border-radius: 20px;
       padding: 20px;
       box-shadow: var(--neu-flat);
     }
-    
     .sleep-option {
       padding: 15px 40px;
       border-radius: 12px;
@@ -600,21 +457,10 @@
       transition: all 0.15s;
       -webkit-tap-highlight-color: transparent;
     }
+    .sleep-option:last-child { margin-bottom: 0; }
+    .sleep-option:active { box-shadow: var(--neu-pressed); }
+    .sleep-option.selected { color: var(--accent); box-shadow: var(--neu-pressed); }
     
-    .sleep-option:last-child {
-      margin-bottom: 0;
-    }
-    
-    .sleep-option:active {
-      box-shadow: var(--neu-pressed);
-    }
-    
-    .sleep-option.selected {
-      color: var(--accent);
-      box-shadow: var(--neu-pressed);
-    }
-    
-    /* Favorites Popup */
     .favorites-popup {
       background: var(--bg);
       border-radius: 20px;
@@ -623,20 +469,8 @@
       max-width: 300px;
       width: 90%;
     }
-    
-    .favorites-header {
-      font-size: 1rem;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 15px;
-      text-align: center;
-    }
-    
-    .favorites-list {
-      max-height: 250px;
-      overflow-y: auto;
-    }
-    
+    .favorites-header { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 15px; text-align: center; }
+    .favorites-list { max-height: 250px; overflow-y: auto; }
     .fav-item {
       display: flex;
       justify-content: space-between;
@@ -652,44 +486,18 @@
       color: var(--text);
       -webkit-tap-highlight-color: transparent;
     }
+    .fav-item:active { box-shadow: var(--neu-pressed); }
+    .fav-item-del { background: none; border: none; color: var(--text-secondary); cursor: pointer; padding: 5px; }
+    .fav-item-del:hover { color: #e74c3c; }
+    .fav-item-del svg { width: 16px; height: 16px; }
+    .favorites-empty { text-align: center; color: var(--text-secondary); font-size: 0.9rem; padding: 20px; }
     
-    .fav-item:active {
-      box-shadow: var(--neu-pressed);
-    }
-    
-    .fav-item-del {
-      background: none;
-      border: none;
-      color: var(--text-secondary);
-      cursor: pointer;
-      padding: 5px;
-    }
-    
-    .fav-item-del:hover {
-      color: #e74c3c;
-    }
-    
-    .fav-item-del svg {
-      width: 16px;
-      height: 16px;
-    }
-    
-    .favorites-empty {
-      text-align: center;
-      color: var(--text-secondary);
-      font-size: 0.9rem;
-      padding: 20px;
-    }
-    
-    /* ============================================
-       INSTALL PROMPT
-       ============================================ */
+    /* === INSTALL PROMPT === */
     .install-prompt {
       display: none;
       position: fixed;
       bottom: 100px;
-      left: 20px;
-      right: 20px;
+      left: 20px; right: 20px;
       background: var(--bg);
       color: var(--text);
       padding: 20px;
@@ -698,17 +506,8 @@
       box-shadow: var(--neu-flat);
       z-index: 1000;
     }
-    
-    .install-prompt.show {
-      display: block;
-    }
-    
-    .install-prompt p {
-      margin-bottom: 16px;
-      font-size: 0.95rem;
-      font-weight: 500;
-    }
-    
+    .install-prompt.show { display: block; }
+    .install-prompt p { margin-bottom: 16px; font-size: 0.95rem; font-weight: 500; }
     .install-btn {
       background: var(--accent);
       color: var(--bg);
@@ -720,7 +519,6 @@
       cursor: pointer;
       margin-right: 10px;
     }
-    
     .install-close {
       background: var(--bg);
       color: var(--text-secondary);
@@ -733,20 +531,23 @@
       box-shadow: var(--neu-flat);
     }
     
-    /* ============================================
-       MISC
-       ============================================ */
-    audio {
-      display: none;
-    }
+    audio { display: none; }
   </style>
 </head>
 
 <body>
+  <!-- DEBUG CONSOLE -->
   <div class="debug-console" id="debugConsole"></div>
   <button class="debug-toggle" id="debugToggle">🔧</button>
+  
+  <!-- NETWORK INDICATOR -->
+  <div class="network-indicator" id="networkIndicator">
+    <span id="networkIcon">📶</span>
+    <span id="networkText">Online</span>
+  </div>
 
   <div class="app">
+    <!-- TOP BAR -->
     <div class="top-bar">
       <div class="date-picker-btn" id="datePickerBtn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -767,6 +568,7 @@
       </button>
     </div>
 
+    <!-- ARTWORK -->
     <div class="artwork-container">
       <div class="artwork">
         <h1>B-SIDE</h1>
@@ -774,6 +576,7 @@
       </div>
     </div>
 
+    <!-- TRACK INFO -->
     <div class="track-info">
       <div class="track-details">
         <h2 id="episodeDate">--/--/----</h2>
@@ -786,8 +589,10 @@
       </button>
     </div>
 
+    <!-- PROGRESS SECTION -->
     <div class="progress-section">
       <div class="progress-bar" id="progressBar">
+        <div class="buffer-bar" id="bufferBar"></div>
         <div class="progress-fill" id="progressFill">
           <div class="progress-thumb"></div>
         </div>
@@ -801,6 +606,7 @@
       </div>
     </div>
 
+    <!-- CONTROLS -->
     <div class="controls">
       <button class="ctrl-btn" id="prevDay">
         <svg viewBox="0 0 24 24" fill="currentColor">
@@ -821,6 +627,7 @@
       </button>
     </div>
 
+    <!-- BOTTOM NAV -->
     <div class="bottom-nav">
       <button class="nav-item" id="sleepBtn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="sleepIcon">
@@ -852,7 +659,7 @@
     </div>
   </div>
   
-<!-- POPUP OVERLAYS -->
+  <!-- POPUP OVERLAYS -->
   <div class="popup-overlay" id="volumeOverlay">
     <div class="volume-popup">
       <span class="popup-title">Volume</span>
@@ -866,6 +673,7 @@
 
   <div class="popup-overlay" id="sleepOverlay">
     <div class="sleep-menu">
+      <div class="sleep-option" data-min="15">15 min</div>
       <div class="sleep-option" data-min="30">30 min</div>
       <div class="sleep-option" data-min="60">60 min</div>
       <div class="sleep-option" data-min="90">90 min</div>
@@ -887,48 +695,97 @@
   </div>
   
   <audio id="audio" preload="auto"></audio>
+  <!-- BLOCCO 3: Inserisci subito dopo </audio> del blocco 2 -->
 
-<script>
-
+  <script>
 // ============================================
 // DEBUG SYSTEM
 // ============================================
+var DEBUG_ENABLED = true;
 var debugConsole = document.getElementById('debugConsole');
 var debugToggle = document.getElementById('debugToggle');
 var debugLogs = [];
-var MAX_LOGS = 100;
-var DEBUG_ENABLED = true;
+var MAX_LOGS = 150;
 
-debugToggle.onclick = function() {
-  debugConsole.classList.toggle('show');
-};
+debugToggle.onclick = function() { debugConsole.classList.toggle('show'); };
 
-function dbg(msg, type) {
+function log(msg, type) {
   if (!DEBUG_ENABLED) return;
-  
   type = type || 'info';
   var t = new Date();
   var ts = t.toLocaleTimeString('it-IT') + '.' + String(t.getMilliseconds()).padStart(3, '0');
   var line = '[' + ts + '] ' + msg;
-  
-  debugLogs.push({
-    t: line,
-    y: type
-  });
-  
-  if (debugLogs.length > MAX_LOGS) {
-    debugLogs.shift();
-  }
-  
+  debugLogs.push({ t: line, y: type });
+  if (debugLogs.length > MAX_LOGS) debugLogs.shift();
   var h = '';
   for (var i = 0; i < debugLogs.length; i++) {
     h += '<div class="debug-line ' + debugLogs[i].y + '">' + debugLogs[i].t + '</div>';
   }
-  
   debugConsole.innerHTML = h;
   debugConsole.scrollTop = debugConsole.scrollHeight;
   console.log('[' + type.toUpperCase() + ']', msg);
 }
+
+// ============================================
+// STREAMING ENGINE - STATO CENTRALIZZATO
+// ============================================
+var Engine = {
+  // Audio element
+  audio: null,
+  currentUrl: '',
+  
+  // Position tracking
+  position: {
+    current: 0,
+    lastSaved: 0,
+    saveInterval: null
+  },
+  
+  // Buffer health
+  buffer: {
+    ahead: 0,
+    minHealthy: 10,
+    isHealthy: false,
+    percent: 0
+  },
+  
+  // Network state
+  network: {
+    isOnline: navigator.onLine,
+    type: null,
+    downlink: null,
+    rtt: null,
+    saveData: false,
+    quality: 100
+  },
+  
+  // Recovery system
+  recovery: {
+    isActive: false,
+    startTime: null,
+    attempt: 0,
+    maxAttempts: 30,
+    strategy: 'seek',
+    timer: null,
+    watchdog: null,
+    watchdogTimeout: 25000
+  },
+  
+  // User intent
+  intent: {
+    shouldBePlaying: false,
+    pausedByUser: false,
+    pausedBySystem: false
+  },
+  
+  // App lifecycle
+  lifecycle: {
+    isVisible: true,
+    isActive: true,
+    wakeLock: null,
+    lastActiveTime: Date.now()
+  }
+};
 
 // ============================================
 // DOM ELEMENTS
@@ -940,6 +797,7 @@ var dateDisplay = document.getElementById('dateDisplay');
 var episodeDate = document.getElementById('episodeDate');
 var progressBar = document.getElementById('progressBar');
 var progressFill = document.getElementById('progressFill');
+var bufferBar = document.getElementById('bufferBar');
 var currentTimeEl = document.getElementById('currentTime');
 var remainingTime = document.getElementById('remainingTime');
 var playBtn = document.getElementById('playBtn');
@@ -966,13 +824,11 @@ var menuBtn = document.getElementById('menuBtn');
 var statusMessage = document.getElementById('statusMessage');
 var statusText = document.getElementById('statusText');
 var themeColorMeta = document.getElementById('themeColor');
-var installPrompt = document.getElementById('installPrompt');
-var installBtn = document.getElementById('installBtn');
-var installClose = document.getElementById('installClose');
+var networkIndicator = document.getElementById('networkIndicator');
+var networkIcon = document.getElementById('networkIcon');
+var networkText = document.getElementById('networkText');
 
-// ============================================
-// APP STATE
-// ============================================
+// State
 var isPlaying = false;
 var sleepTimer = null;
 var sleepEndTime = null;
@@ -983,25 +839,8 @@ var progressDragging = false;
 var seekTime = 0;
 var volDrag = false;
 
-// ============================================
-// STREAMING STATE
-// ============================================
-var streaming = {
-  lastKnownTime: 0,
-  currentSrc: '',
-  wasPlayingBeforeError: false,
-  isRecovering: false,
-  recoveryStartTime: null,
-  retryCount: 0,
-  maxRetries: 20,
-  baseRetryDelay: 1000,
-  maxRetryDelay: 8000,
-  retryTimer: null,
-  watchdogTimer: null,
-  watchdogTimeout: 20000,
-  isOnline: navigator.onLine,
-  wakeLock: null
-};
+// Initialize engine reference
+Engine.audio = audio;
 
 // ============================================
 // UTILITY FUNCTIONS
@@ -1023,410 +862,753 @@ function buildUrl(d) {
   return 'https://media.capital.it/' + p[0] + '/' + p[1] + '/' + p[2] + '/episodes/bertallot/bertallot_' + p[0] + p[1] + p[2] + '_220000.mp3';
 }
 
+function updatePlayIcon(playing) {
+  playIcon.innerHTML = playing 
+  ? '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>' 
+  : '<polygon points="6,4 20,12 6,20"/>';
+}
+
+// ============================================
+// STATUS & UI
+// ============================================
 function showStatus(msg, type, spin) {
+  var html = '';
+  if (spin) html += '<span class="status-spinner"></span> ';
+  html += msg;
+  
+  // Add network badge if relevant
+  if ((type === 'warning' || type === 'error') && Engine.network.type) {
+    html += ' <span class="network-badge">' + Engine.network.type.toUpperCase() + '</span>';
+  }
+  
+  statusText.innerHTML = html;
   statusMessage.className = 'status-message show ' + (type || '');
-  statusText.innerHTML = spin ? '<span class="status-spinner"></span> ' + msg : msg;
 }
 
 function hideStatus() {
   statusMessage.classList.remove('show');
-  setTimeout(function() {
-    statusText.innerHTML = '';
-  }, 300);
 }
 
-function updatePlayIcon(playing) {
-  playIcon.innerHTML = playing 
-    ? '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>' 
-    : '<polygon points="6,4 20,12 6,20"/>';
-}
-
-function clearRetryTimer() {
-  if (streaming.retryTimer) {
-    clearTimeout(streaming.retryTimer);
-    streaming.retryTimer = null;
+function showNetworkIndicator(type, text) {
+  networkIndicator.className = 'network-indicator show ' + type;
+  networkText.textContent = text;
+  networkIcon.textContent = type === 'offline' ? '📵' : (type === 'slow' ? '📶' : '✓');
+  
+  // Auto-hide success after 2s
+  if (type === 'online') {
+    setTimeout(function() {
+      networkIndicator.classList.remove('show');
+    }, 2000);
   }
 }
 
-function clearWatchdog() {
-  if (streaming.watchdogTimer) {
-    clearTimeout(streaming.watchdogTimer);
-    streaming.watchdogTimer = null;
-  }
+function hideNetworkIndicator() {
+  networkIndicator.classList.remove('show');
 }
 
-function setWatchdog() {
-  clearWatchdog();
-  streaming.watchdogTimer = setTimeout(function() {
-    if (streaming.isRecovering) {
-      dbg('WATCHDOG: timeout, forzo riavvio', 'error');
-      streaming.isRecovering = false;
-      startRecovery();
-    }
-  }, streaming.watchdogTimeout);
-}
 // ============================================
-// AUDIO EVENTS
+// NETWORK MONITORING
 // ============================================
-audio.addEventListener('loadstart', function() {
-  dbg('EVENT: loadstart');
-});
-
-audio.addEventListener('loadedmetadata', function() {
-  dbg('EVENT: loadedmetadata, dur=' + formatTime(audio.duration));
-  remainingTime.textContent = '-' + formatTime(audio.duration);
-});
-
-audio.addEventListener('canplay', function() {
-  dbg('EVENT: canplay, ready=' + audio.readyState, 'success');
-  if (streaming.wasPlayingBeforeError && !streaming.isRecovering) {
-    dbg('canplay: wasPlaying=true, resume...', 'warn');
-    attemptResume();
-  }
-});
-
-audio.addEventListener('playing', function() {
-  dbg('EVENT: playing OK', 'success');
-  isPlaying = true;
-  streaming.isRecovering = false;
-  streaming.wasPlayingBeforeError = false;
-  streaming.retryCount = 0;
-  streaming.recoveryStartTime = null;
-  clearWatchdog();
-  clearRetryTimer();
-  hideStatus();
-  updatePlayIcon(true);
-  acquireWakeLock();
-});
-
-audio.addEventListener('pause', function() {
-  dbg('EVENT: pause, recovering=' + streaming.isRecovering);
-  isPlaying = false;
-  updatePlayIcon(false);
-  if (!streaming.isRecovering && !streaming.wasPlayingBeforeError) {
-    releaseWakeLock();
-  }
-});
-
-audio.addEventListener('ended', function() {
-  dbg('EVENT: ended');
-  isPlaying = false;
-  streaming.wasPlayingBeforeError = false;
-  streaming.isRecovering = false;
-  clearWatchdog();
-  clearRetryTimer();
-  updatePlayIcon(false);
-  releaseWakeLock();
-});
-
-audio.addEventListener('waiting', function() {
-  dbg('EVENT: waiting', 'warn');
-  if (isPlaying || streaming.wasPlayingBeforeError) {
-    showStatus('Buffering...', 'warning', true);
-  }
-});
-
-audio.addEventListener('stalled', function() {
-  dbg('EVENT: stalled', 'error');
-  if (isPlaying || streaming.wasPlayingBeforeError) {
-    showStatus('Connessione lenta...', 'warning', true);
-    scheduleRecoveryCheck(5000);
-  }
-});
-
-audio.addEventListener('error', function() {
-  var err = audio.error;
-  var codes = ['', 'ABORTED', 'NETWORK', 'DECODE', 'SRC_NOT_SUPPORTED'];
-  var name = err ? codes[err.code] || 'UNKNOWN' : 'NO_ERROR';
+function initNetworkMonitoring() {
+  updateNetworkInfo();
   
-  dbg('EVENT: error - ' + name, 'error');
+  window.addEventListener('online', handleOnline);
+  window.addEventListener('offline', handleOffline);
   
-  // Salva stato PRIMA di tutto
-  if (isPlaying || streaming.wasPlayingBeforeError) {
-    streaming.wasPlayingBeforeError = true;
-    if (audio.currentTime > 0) {
-      streaming.lastKnownTime = audio.currentTime;
-      dbg('Salvata pos: ' + formatTime(streaming.lastKnownTime), 'warn');
-    }
-  }
-  
-  isPlaying = false;
-  updatePlayIcon(false);
-  
-  // Avvia recovery se necessario
-  if (streaming.wasPlayingBeforeError) {
-    // FIX: SRC_NOT_SUPPORTED durante recovery (offline) - continua a provare
-    if (err && err.code === 4) {
-      if (streaming.isRecovering || !navigator.onLine) {
-        // Siamo in recovery o offline - continua a provare
-        dbg('SRC_NOT_SUPPORTED durante recovery/offline, continuo', 'warn');
-        // NON resettare wasPlayingBeforeError
-      } else {
-        // Non siamo in recovery e siamo online - puntata veramente non disponibile
-        showStatus('Puntata non disponibile', 'error');
-        streaming.wasPlayingBeforeError = false;
+  // Network Information API
+  if ('connection' in navigator) {
+    var conn = navigator.connection;
+    conn.addEventListener('change', function() {
+      var oldType = Engine.network.type;
+      var oldQuality = Engine.network.quality;
+      updateNetworkInfo();
+      var newType = Engine.network.type;
+      var newQuality = Engine.network.quality;
+      
+      log('Network change: ' + oldType + ' → ' + newType + ' (quality: ' + oldQuality + ' → ' + newQuality + ')', 'network');
+      
+      // If network improved and we should be playing, retry immediately
+      if (Engine.intent.shouldBePlaying && newQuality > oldQuality && Engine.recovery.isActive) {
+        log('Network improved, resetting recovery attempts', 'network');
+        Engine.recovery.attempt = Math.max(0, Engine.recovery.attempt - 3);
       }
-    }
-    // Avvia/continua recovery per tutti gli altri errori
-    if (streaming.wasPlayingBeforeError) {
-      startRecovery();
-    }
-  }
-});
-
-audio.addEventListener('timeupdate', function() {
-  if (progressDragging) return;
-  
-  if (isPlaying && audio.currentTime > 0) {
-    streaming.lastKnownTime = audio.currentTime;
-  }
-  
-  var pct = (audio.currentTime / audio.duration) * 100 || 0;
-  progressFill.style.width = pct + '%';
-  currentTimeEl.textContent = formatTime(audio.currentTime);
-  remainingTime.textContent = '-' + formatTime(audio.duration - audio.currentTime);
-  
-  if ('mediaSession' in navigator && audio.duration) {
-    navigator.mediaSession.setPositionState({
-      duration: audio.duration,
-      playbackRate: audio.playbackRate,
-      position: audio.currentTime
     });
   }
-});
+}
 
-// ============================================
-// NETWORK EVENTS
-// ============================================
-window.addEventListener('online', function() {
-  dbg('NETWORK: online', 'success');
-  streaming.isOnline = true;
-  if (streaming.wasPlayingBeforeError) {
-    dbg('Online+wasPlaying: recovery', 'warn');
-    streaming.retryCount = 0;
+function updateNetworkInfo() {
+  var conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  
+  Engine.network.isOnline = navigator.onLine;
+  
+  if (conn) {
+    Engine.network.type = conn.effectiveType;
+    Engine.network.downlink = conn.downlink;
+    Engine.network.rtt = conn.rtt;
+    Engine.network.saveData = conn.saveData;
+  }
+  
+  Engine.network.quality = calculateNetworkQuality();
+}
+
+function calculateNetworkQuality() {
+  if (!navigator.onLine) return 0;
+  
+  var type = Engine.network.type;
+  var downlink = Engine.network.downlink;
+  var rtt = Engine.network.rtt;
+  
+  // Base quality from connection type
+  var quality = 100;
+  if (type === 'slow-2g') quality = 10;
+  else if (type === '2g') quality = 30;
+  else if (type === '3g') quality = 60;
+  else if (type === '4g') quality = 90;
+  
+  // Adjust for actual bandwidth
+  if (downlink !== null && downlink !== undefined) {
+    if (downlink < 0.5) quality = Math.min(quality, 20);
+    else if (downlink < 1) quality = Math.min(quality, 40);
+    else if (downlink < 2) quality = Math.min(quality, 60);
+  }
+  
+  // Adjust for latency
+  if (rtt !== null && rtt !== undefined) {
+    if (rtt > 500) quality = Math.min(quality, 30);
+    else if (rtt > 300) quality = Math.min(quality, 50);
+  }
+  
+  return quality;
+}
+
+function handleOnline() {
+  log('NETWORK: online', 'success');
+  Engine.network.isOnline = true;
+  updateNetworkInfo();
+  showNetworkIndicator('online', 'Connesso');
+  
+  if (Engine.intent.shouldBePlaying && !isPlaying) {
+    log('Online + shouldBePlaying: starting recovery', 'network');
+    Engine.recovery.attempt = 0;
     startRecovery();
   }
-});
+}
 
-window.addEventListener('offline', function() {
-  dbg('NETWORK: offline', 'error');
-  streaming.isOnline = false;
-  if (isPlaying) {
-    streaming.wasPlayingBeforeError = true;
-    streaming.lastKnownTime = audio.currentTime;
-    dbg('Salvata pos offline: ' + formatTime(streaming.lastKnownTime), 'warn');
-  }
-  showStatus('Offline', 'error');
-});
-
-// ============================================
-// VISIBILITY (CRITICAL FOR SCREEN LOCK)
-// ============================================
-document.addEventListener('visibilitychange', function() {
-  dbg('VISIBILITY: ' + document.visibilityState);
-  if (document.visibilityState === 'visible') {
-    checkAndRecover();
-  }
-});
-
-window.addEventListener('focus', function() {
-  dbg('WINDOW: focus');
-  checkAndRecover();
-});
-
-window.addEventListener('pageshow', function() {
-  dbg('WINDOW: pageshow');
-  checkAndRecover();
-});
-
-function checkAndRecover() {
-  dbg('checkAndRecover: wasPlaying=' + streaming.wasPlayingBeforeError + ', recovering=' + streaming.isRecovering + ', paused=' + audio.paused);
+function handleOffline() {
+  log('NETWORK: offline', 'error');
+  Engine.network.isOnline = false;
+  Engine.network.quality = 0;
   
-  if (streaming.isRecovering && streaming.recoveryStartTime) {
-    var elapsed = Date.now() - streaming.recoveryStartTime;
-    dbg('Recovery in corso da ' + Math.round(elapsed / 1000) + 's', 'warn');
-    if (elapsed > 15000) {
-      dbg('Recovery bloccato, forzo riavvio', 'error');
-      streaming.isRecovering = false;
-      streaming.retryCount = 0;
-      startRecovery();
-      return;
+  showNetworkIndicator('offline', 'Offline');
+  
+  if (isPlaying || Engine.intent.shouldBePlaying) {
+    Engine.intent.shouldBePlaying = true;
+    Engine.position.current = audio.currentTime || Engine.position.current;
+    savePositionToStorage();
+    log('Saved position for offline: ' + formatTime(Engine.position.current), 'warn');
+  }
+  
+  showStatus('Offline - in attesa di connessione...', 'error');
+}
+
+// ============================================
+// BUFFER MONITORING
+// ============================================
+function updateBufferHealth() {
+  var buffered = audio.buffered;
+  var currentTime = audio.currentTime;
+  var duration = audio.duration;
+  
+  // Calculate seconds buffered ahead
+  var ahead = 0;
+  for (var i = 0; i < buffered.length; i++) {
+    if (buffered.start(i) <= currentTime && buffered.end(i) > currentTime) {
+      ahead = buffered.end(i) - currentTime;
+      break;
     }
   }
   
-  if (streaming.wasPlayingBeforeError && audio.paused && !streaming.isRecovering) {
-    dbg('Dovrei essere in play, avvio recovery', 'warn');
-    startRecovery();
+  Engine.buffer.ahead = ahead;
+  
+  // Adaptive threshold based on network
+  var minHealthy = getAdaptiveBufferThreshold();
+  Engine.buffer.minHealthy = minHealthy;
+  Engine.buffer.isHealthy = ahead >= minHealthy;
+  
+  // Update buffer bar UI
+  if (duration > 0) {
+    var bufferEnd = 0;
+    for (var j = 0; j < buffered.length; j++) {
+      if (buffered.end(j) > bufferEnd) {
+        bufferEnd = buffered.end(j);
+      }
+    }
+    Engine.buffer.percent = (bufferEnd / duration) * 100;
+    bufferBar.style.width = Engine.buffer.percent + '%';
   }
+}
+
+function getAdaptiveBufferThreshold() {
+  var quality = Engine.network.quality;
+  if (quality < 30) return 20;  // Bad network: want 20s buffer
+  if (quality < 60) return 15;  // Medium: 15s
+  return 10;                     // Good: 10s
+}
+
+// ============================================
+// POSITION TRACKING
+// ============================================
+function initPositionTracking() {
+  // Save to localStorage every 15 seconds
+  Engine.position.saveInterval = setInterval(function() {
+    if (Engine.position.current > 0 && Math.abs(Engine.position.current - Engine.position.lastSaved) > 5) {
+      savePositionToStorage();
+    }
+  }, 15000);
+  
+  // Save on exit
+  window.addEventListener('beforeunload', savePositionToStorage);
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'hidden') {
+      savePositionToStorage();
+    }
+  });
+}
+
+function savePositionToStorage() {
+  if (Engine.position.current <= 0) return;
+  
+  var key = 'bside-pos-' + datePicker.value;
+  var data = {
+    position: Engine.position.current,
+    duration: audio.duration || 0,
+    timestamp: Date.now()
+  };
+  
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+    Engine.position.lastSaved = Engine.position.current;
+    log('Position saved: ' + formatTime(data.position));
+  } catch (e) {
+    log('Failed to save position: ' + e.message, 'error');
+  }
+}
+
+function loadPositionFromStorage() {
+  var key = 'bside-pos-' + datePicker.value;
+  
+  try {
+    var saved = localStorage.getItem(key);
+    if (saved) {
+      var data = JSON.parse(saved);
+      // Check if not too old (7 days)
+      var age = Date.now() - data.timestamp;
+      if (age < 7 * 24 * 60 * 60 * 1000) {
+        Engine.position.current = data.position;
+        Engine.position.lastSaved = data.position;
+        log('Position restored: ' + formatTime(data.position), 'success');
+        return data.position;
+      }
+    }
+  } catch (e) {
+    log('Failed to load position: ' + e.message, 'error');
+  }
+  return 0;
 }
 
 // ============================================
 // RECOVERY SYSTEM
 // ============================================
-function scheduleRecoveryCheck(delay) {
-  setTimeout(function() {
-    if ((isPlaying || streaming.wasPlayingBeforeError) && (audio.paused || audio.readyState < 3)) {
-      dbg('Recovery check: necessario', 'warn');
+function clearRecoveryTimers() {
+  if (Engine.recovery.timer) {
+    clearTimeout(Engine.recovery.timer);
+    Engine.recovery.timer = null;
+  }
+  if (Engine.recovery.watchdog) {
+    clearTimeout(Engine.recovery.watchdog);
+    Engine.recovery.watchdog = null;
+  }
+}
+
+function setRecoveryWatchdog() {
+  clearTimeout(Engine.recovery.watchdog);
+  var timeout = Engine.recovery.strategy === 'refetch' ? 30000 : Engine.recovery.watchdogTimeout;
+  
+  Engine.recovery.watchdog = setTimeout(function() {
+    if (Engine.recovery.isActive) {
+      log('WATCHDOG: timeout triggered, forcing restart', 'error');
+      Engine.recovery.isActive = false;
       startRecovery();
     }
-  }, delay);
+  }, timeout);
 }
 
 function startRecovery() {
-  if (!streaming.wasPlayingBeforeError) {
-    dbg('startRecovery: wasPlaying=false, skip');
+  // Skip if user paused
+  if (Engine.intent.pausedByUser) {
+    log('Recovery skipped: user paused');
     return;
   }
   
-  if (streaming.isRecovering && streaming.recoveryStartTime) {
-    var elapsed = Date.now() - streaming.recoveryStartTime;
-    if (elapsed < 3000) {
-      dbg('Recovery in corso da ' + elapsed + 'ms, aspetto');
+  // Skip if not supposed to be playing
+  if (!Engine.intent.shouldBePlaying) {
+    log('Recovery skipped: not supposed to be playing');
+    return;
+  }
+  
+  // Avoid concurrent recovery
+  if (Engine.recovery.isActive && Engine.recovery.startTime) {
+    var elapsed = Date.now() - Engine.recovery.startTime;
+    if (elapsed < 2000) {
+      log('Recovery already in progress (' + elapsed + 'ms), skipping');
       return;
     }
-    dbg('Recovery precedente bloccato, riavvio');
   }
   
-  if (streaming.retryCount >= streaming.maxRetries) {
-    dbg('Max retry (' + streaming.maxRetries + ')', 'error');
-    showStatus('Riconnessione fallita. Premi Play.', 'error');
-    streaming.isRecovering = false;
+  // Check max attempts
+  if (Engine.recovery.attempt >= Engine.recovery.maxAttempts) {
+    log('Max recovery attempts reached (' + Engine.recovery.maxAttempts + ')', 'error');
+    showStatus('Connessione persa. Tocca Play per riprovare.', 'error');
+    Engine.intent.shouldBePlaying = false;
+    Engine.recovery.isActive = false;
+    clearRecoveryTimers();
     return;
   }
   
-  streaming.isRecovering = true;
-  streaming.recoveryStartTime = Date.now();
-  streaming.retryCount++;
+  // Start recovery
+  Engine.recovery.isActive = true;
+  Engine.recovery.startTime = Date.now();
+  Engine.recovery.attempt++;
   
-  var delay = Math.min(
-    streaming.baseRetryDelay * Math.pow(1.5, streaming.retryCount - 1),
-    streaming.maxRetryDelay
-  );
+  // Calculate adaptive delay
+  var delay = calculateRecoveryDelay();
   
-  dbg('Recovery #' + streaming.retryCount + ' in ' + delay + 'ms, pos=' + formatTime(streaming.lastKnownTime), 'warn');
-  showStatus('Riconnessione (' + streaming.retryCount + ')...', 'warning', true);
+  log('Recovery #' + Engine.recovery.attempt + ' in ' + delay + 'ms, pos=' + formatTime(Engine.position.current) + ', strategy=' + Engine.recovery.strategy, 'warn');
+  showStatus('Riconnessione (' + Engine.recovery.attempt + ')...', 'warning', true);
   
-  clearRetryTimer();
-  setWatchdog();
+  clearRecoveryTimers();
+  setRecoveryWatchdog();
   
-  streaming.retryTimer = setTimeout(executeRecovery, delay);
+  Engine.recovery.timer = setTimeout(executeRecovery, delay);
+}
+
+function calculateRecoveryDelay() {
+  var attempt = Engine.recovery.attempt;
+  var quality = Engine.network.quality;
+  var baseDelay;
+  
+  if (attempt <= 3) {
+    // First 3: aggressive (network probably ok)
+    baseDelay = 300 + (200 * attempt); // 500ms, 700ms, 900ms
+  } else if (attempt <= 10) {
+    // 4-10: moderate backoff
+    baseDelay = 1000 * Math.pow(1.4, attempt - 3); // ~1.4s, 2s, 2.7s...
+  } else {
+    // 10+: slow down (probably long outage)
+    baseDelay = 5000 + (attempt - 10) * 1000; // 6s, 7s, 8s...
+  }
+  
+  // Adjust for network quality
+  if (quality === 0) {
+    baseDelay = Math.max(baseDelay, 3000);
+  } else if (quality < 30) {
+    baseDelay *= 1.5;
+  }
+  
+  return Math.min(baseDelay, 15000);
+}
+
+function selectRecoveryStrategy() {
+  var attempt = Engine.recovery.attempt;
+  
+  if (attempt <= 2 && audio.readyState >= 2) {
+    Engine.recovery.strategy = 'seek';
+  } else if (attempt <= 8) {
+    Engine.recovery.strategy = 'reload';
+  } else {
+    Engine.recovery.strategy = 'refetch';
+  }
 }
 
 function executeRecovery() {
-  dbg('executeRecovery: lastKnownTime=' + formatTime(streaming.lastKnownTime));
-  
+  // Check if still offline
   if (!navigator.onLine) {
-    dbg('Ancora offline, riprovo tra 3s', 'warn');
-    showStatus('Offline, attendo...', 'error');
-    streaming.retryTimer = setTimeout(startRecovery, 3000);
+    log('Still offline, rescheduling in 3s', 'warn');
+    showStatus('Offline, attendo connessione...', 'error');
+    Engine.recovery.timer = setTimeout(startRecovery, 3000);
     return;
   }
   
-  var savedTime = streaming.lastKnownTime;
-  var url = streaming.currentSrc;
+  selectRecoveryStrategy();
+  log('Executing recovery strategy: ' + Engine.recovery.strategy);
   
-  if (streaming.retryCount <= 2) {
-    dbg('Strategia 1: seek+play');
-    try {
-      if (savedTime > 0 && audio.duration && savedTime < audio.duration) {
-        audio.currentTime = savedTime;
-      }
-      attemptResume();
-    } catch (e) {
-      dbg('Seek fallito: ' + e.message, 'error');
-      streaming.retryCount = 3;
-      startRecovery();
+  switch (Engine.recovery.strategy) {
+    case 'seek':
+    executeSeekStrategy();
+    break;
+    case 'reload':
+    executeReloadStrategy();
+    break;
+    case 'refetch':
+    executeRefetchStrategy();
+    break;
+  }
+}
+
+function executeSeekStrategy() {
+  var targetTime = Engine.position.current;
+  
+  try {
+    if (targetTime > 0 && audio.duration && targetTime < audio.duration - 1) {
+      audio.currentTime = targetTime;
     }
-    return;
+    attemptPlay();
+  } catch (e) {
+    log('Seek strategy failed: ' + e.message, 'error');
+    Engine.recovery.strategy = 'reload';
+    setTimeout(executeRecovery, 500);
   }
+}
+
+function executeReloadStrategy() {
+  var targetTime = Engine.position.current;
   
-  dbg('Strategia 2: ricarica sorgente');
   audio.pause();
+  audio.load();
   
-  var bustUrl = url + (url.includes('?') ? '&' : '?') + '_t=' + Date.now();
-  audio.src = bustUrl;
+  var loadTimeout = setTimeout(onLoadError, 15000);
   
-  var loadTimeout = setTimeout(function() {
-    dbg('Timeout caricamento', 'error');
-    audio.removeEventListener('canplay', onCP);
-    audio.removeEventListener('error', onER);
-    startRecovery();
-  }, 15000);
-  
-  function onCP() {
+  function onCanPlay() {
     clearTimeout(loadTimeout);
-    audio.removeEventListener('canplay', onCP);
-    audio.removeEventListener('error', onER);
-    dbg('Sorgente ricaricata, seek a ' + formatTime(savedTime), 'success');
+    audio.removeEventListener('canplay', onCanPlay);
+    audio.removeEventListener('error', onLoadError);
     
-    if (savedTime > 0 && audio.duration && savedTime < audio.duration - 1) {
-      audio.currentTime = savedTime;
-      dbg('Posizione ripristinata: ' + formatTime(audio.currentTime));
+    if (targetTime > 0 && audio.duration && targetTime < audio.duration - 1) {
+      audio.currentTime = targetTime;
+      log('Position restored: ' + formatTime(targetTime));
     }
-    attemptResume();
+    attemptPlay();
   }
   
-  function onER() {
+  function onLoadError() {
     clearTimeout(loadTimeout);
-    audio.removeEventListener('canplay', onCP);
-    audio.removeEventListener('error', onER);
-    dbg('Errore ricaricamento', 'error');
+    audio.removeEventListener('canplay', onCanPlay);
+    audio.removeEventListener('error', onLoadError);
+    log('Reload strategy failed', 'error');
     setTimeout(startRecovery, 1000);
   }
   
-  audio.addEventListener('canplay', onCP);
-  audio.addEventListener('error', onER);
+  audio.addEventListener('canplay', onCanPlay);
+  audio.addEventListener('error', onLoadError);
+}
+
+function executeRefetchStrategy() {
+  var targetTime = Engine.position.current;
+  
+  audio.pause();
+  var bustUrl = Engine.currentUrl + (Engine.currentUrl.includes('?') ? '&' : '?') + '_t=' + Date.now();
+  audio.src = bustUrl;
+  
+  var loadTimeout = setTimeout(onLoadError, 20000);
+  
+  function onCanPlay() {
+    clearTimeout(loadTimeout);
+    audio.removeEventListener('canplay', onCanPlay);
+    audio.removeEventListener('error', onLoadError);
+    
+    if (targetTime > 0 && audio.duration && targetTime < audio.duration - 1) {
+      audio.currentTime = targetTime;
+      log('Position restored after refetch: ' + formatTime(targetTime));
+    }
+    attemptPlay();
+  }
+  
+  function onLoadError() {
+    clearTimeout(loadTimeout);
+    audio.removeEventListener('canplay', onCanPlay);
+    audio.removeEventListener('error', onLoadError);
+    log('Refetch strategy failed', 'error');
+    setTimeout(startRecovery, 1000);
+  }
+  
+  audio.addEventListener('canplay', onCanPlay);
+  audio.addEventListener('error', onLoadError);
   audio.load();
 }
 
-function attemptResume() {
-  dbg('attemptResume: paused=' + audio.paused + ', ready=' + audio.readyState);
-  var p = audio.play();
-  if (p) {
-    p.then(function() {
-      dbg('Resume SUCCESS', 'success');
+function attemptPlay() {
+  var playPromise = audio.play();
+  
+  if (playPromise) {
+    playPromise.then(function() {
+      log('Playback resumed successfully', 'success');
+      onRecoverySuccess();
     }).catch(function(err) {
-      dbg('Resume FAILED: ' + err.name + ' - ' + err.message, 'error');
       if (err.name === 'NotAllowedError') {
+        log('Autoplay blocked, waiting for user', 'warn');
         showStatus('Tocca Play per riprendere', 'warning');
-        streaming.isRecovering = false;
-        clearWatchdog();
+        Engine.recovery.isActive = false;
+        Engine.intent.pausedBySystem = true;
+        clearRecoveryTimers();
       } else if (err.name !== 'AbortError') {
+        log('Play failed: ' + err.message, 'error');
         setTimeout(startRecovery, 1000);
       }
     });
   }
 }
 
+function onRecoverySuccess() {
+  Engine.recovery.isActive = false;
+  Engine.recovery.attempt = 0;
+  Engine.recovery.startTime = null;
+  Engine.recovery.strategy = 'seek';
+  Engine.intent.pausedBySystem = false;
+  
+  clearRecoveryTimers();
+  hideStatus();
+  hideNetworkIndicator();
+  acquireWakeLock();
+}
+</script>
+<script>
 // ============================================
 // WAKE LOCK
 // ============================================
 async function acquireWakeLock() {
-  if (!('wakeLock' in navigator)) return;
+  if (!('wakeLock' in navigator)) return false;
+  if (!Engine.lifecycle.isVisible) return false;
+  if (Engine.lifecycle.wakeLock) return true;
   
   try {
-    if (!streaming.wakeLock) {
-      streaming.wakeLock = await navigator.wakeLock.request('screen');
-      dbg('Wake lock acquisito');
-      
-      streaming.wakeLock.addEventListener('release', function() {
-        dbg('Wake lock rilasciato');
-        streaming.wakeLock = null;
-        if (isPlaying && document.visibilityState === 'visible') {
-          acquireWakeLock();
-        }
-      });
-    }
+    Engine.lifecycle.wakeLock = await navigator.wakeLock.request('screen');
+    log('Wake lock acquired', 'success');
+    
+    Engine.lifecycle.wakeLock.addEventListener('release', function() {
+      log('Wake lock released');
+      Engine.lifecycle.wakeLock = null;
+      if (Engine.intent.shouldBePlaying && Engine.lifecycle.isVisible) {
+        setTimeout(acquireWakeLock, 1000);
+      }
+    });
+    return true;
   } catch (e) {
-    dbg('Wake lock errore: ' + e.message, 'warn');
+    log('Wake lock failed: ' + e.message, 'warn');
+    return false;
   }
 }
 
 function releaseWakeLock() {
-  if (streaming.wakeLock) {
-    streaming.wakeLock.release();
-    streaming.wakeLock = null;
+  if (Engine.lifecycle.wakeLock) {
+    Engine.lifecycle.wakeLock.release();
+    Engine.lifecycle.wakeLock = null;
   }
+}
+
+// ============================================
+// LIFECYCLE MANAGEMENT
+// ============================================
+function initLifecycleManagement() {
+  document.addEventListener('visibilitychange', function() {
+    Engine.lifecycle.isVisible = document.visibilityState === 'visible';
+    log('Visibility: ' + (Engine.lifecycle.isVisible ? 'visible' : 'hidden'));
+    
+    if (Engine.lifecycle.isVisible) {
+      onAppVisible();
+    } else {
+      onAppHidden();
+    }
+  });
+  
+  window.addEventListener('focus', function() {
+    Engine.lifecycle.isActive = true;
+    Engine.lifecycle.lastActiveTime = Date.now();
+    onAppVisible();
+  });
+  
+  window.addEventListener('blur', function() {
+    Engine.lifecycle.isActive = false;
+  });
+  
+  window.addEventListener('pageshow', function() {
+    log('Page show event');
+    onAppVisible();
+  });
+  
+  // iOS audio interruption handling
+  audio.addEventListener('pause', function() {
+    if (!Engine.intent.pausedByUser && Engine.intent.shouldBePlaying) {
+      log('Unexpected pause detected (possible interruption)');
+      Engine.intent.pausedBySystem = true;
+    }
+  });
+}
+
+function onAppVisible() {
+  log('App became visible');
+  updateNetworkInfo();
+  
+  if (Engine.intent.shouldBePlaying) {
+    acquireWakeLock();
+  }
+  
+  // Check if we need to recover
+  var shouldBePlaying = Engine.intent.shouldBePlaying;
+  var isPaused = audio.paused;
+  var isRecovering = Engine.recovery.isActive;
+  
+  if (shouldBePlaying && isPaused && !isRecovering) {
+    var hiddenTime = Date.now() - Engine.lifecycle.lastActiveTime;
+    log('Was hidden for ' + Math.round(hiddenTime / 1000) + 's, should be playing but paused');
+    
+    if (hiddenTime > 30000) {
+      Engine.recovery.attempt = 0;
+    }
+    
+    startRecovery();
+  }
+  
+  // Sync position
+  if (audio.currentTime > 0 && Math.abs(audio.currentTime - Engine.position.current) > 2) {
+    log('Position drift: audio=' + formatTime(audio.currentTime) + ', saved=' + formatTime(Engine.position.current));
+    Engine.position.current = audio.currentTime;
+  }
+}
+
+function onAppHidden() {
+  log('App became hidden');
+  savePositionToStorage();
+  Engine.lifecycle.lastActiveTime = Date.now();
+}
+
+// ============================================
+// AUDIO EVENTS
+// ============================================
+function initAudioEvents() {
+  audio.addEventListener('loadstart', function() {
+    log('EVENT: loadstart');
+  });
+  
+  audio.addEventListener('loadedmetadata', function() {
+    log('EVENT: loadedmetadata, duration=' + formatTime(audio.duration));
+    remainingTime.textContent = '-' + formatTime(audio.duration);
+  });
+  
+  audio.addEventListener('canplay', function() {
+    log('EVENT: canplay, readyState=' + audio.readyState, 'success');
+  });
+  
+  audio.addEventListener('playing', function() {
+    log('EVENT: playing', 'success');
+    isPlaying = true;
+    Engine.intent.pausedBySystem = false;
+    Engine.recovery.isActive = false;
+    Engine.recovery.attempt = 0;
+    clearRecoveryTimers();
+    updatePlayIcon(true);
+    hideStatus();
+    acquireWakeLock();
+  });
+  
+  audio.addEventListener('pause', function() {
+    log('EVENT: pause');
+    isPlaying = false;
+    updatePlayIcon(false);
+    
+    if (!Engine.recovery.isActive && !Engine.intent.pausedByUser) {
+      releaseWakeLock();
+    }
+  });
+  
+  audio.addEventListener('ended', function() {
+    log('EVENT: ended');
+    isPlaying = false;
+    Engine.intent.shouldBePlaying = false;
+    Engine.position.current = 0;
+    updatePlayIcon(false);
+    releaseWakeLock();
+    clearRecoveryTimers();
+  });
+  
+  audio.addEventListener('waiting', function() {
+    log('EVENT: waiting (buffering)', 'warn');
+    if (Engine.intent.shouldBePlaying) {
+      var bufferStatus = Engine.buffer.ahead.toFixed(1);
+      showStatus('Buffering... (' + bufferStatus + 's)', 'warning', true);
+    }
+  });
+  
+  audio.addEventListener('stalled', function() {
+    log('EVENT: stalled', 'error');
+    if (Engine.intent.shouldBePlaying) {
+      showStatus('Connessione lenta...', 'warning', true);
+      setTimeout(function() {
+        if (audio.paused || audio.readyState < 3) {
+          startRecovery();
+        }
+      }, 5000);
+    }
+  });
+  
+  audio.addEventListener('progress', function() {
+    updateBufferHealth();
+  });
+  
+  audio.addEventListener('timeupdate', function() {
+    if (progressDragging) return;
+    
+    // Always track position
+    if (!audio.paused && audio.currentTime > 0) {
+      Engine.position.current = audio.currentTime;
+    }
+    
+    updateBufferHealth();
+    
+    var pct = (audio.currentTime / audio.duration) * 100 || 0;
+    progressFill.style.width = pct + '%';
+    currentTimeEl.textContent = formatTime(audio.currentTime);
+    remainingTime.textContent = '-' + formatTime(audio.duration - audio.currentTime);
+    
+    // Media Session position
+    if ('mediaSession' in navigator && audio.duration) {
+      navigator.mediaSession.setPositionState({
+        duration: audio.duration,
+        playbackRate: audio.playbackRate,
+        position: audio.currentTime
+      });
+    }
+  });
+  
+  audio.addEventListener('error', function() {
+    var err = audio.error;
+    var codes = ['', 'ABORTED', 'NETWORK', 'DECODE', 'SRC_NOT_SUPPORTED'];
+    var errName = err ? codes[err.code] || 'UNKNOWN' : 'NO_ERROR';
+    
+    log('EVENT: error - ' + errName, 'error');
+    
+    // Save position immediately
+    if (Engine.position.current > 0) {
+      savePositionToStorage();
+    }
+    
+    isPlaying = false;
+    updatePlayIcon(false);
+    
+    // Handle by error type
+    if (err && err.code === 4) { // SRC_NOT_SUPPORTED
+      if (Engine.recovery.isActive || !navigator.onLine) {
+        log('SRC_NOT_SUPPORTED during recovery/offline, continuing...', 'warn');
+        if (Engine.intent.shouldBePlaying) {
+          startRecovery();
+        }
+      } else {
+        showStatus('Puntata non disponibile', 'error');
+        Engine.intent.shouldBePlaying = false;
+      }
+    } else if (Engine.intent.shouldBePlaying) {
+      startRecovery();
+    }
+  });
 }
 
 // ============================================
@@ -1434,75 +1616,79 @@ function releaseWakeLock() {
 // ============================================
 playBtn.addEventListener('click', function() {
   if (isPlaying) {
-    dbg('USER: STOP');
-    streaming.wasPlayingBeforeError = false;
-    streaming.isRecovering = false;
-    streaming.lastKnownTime = audio.currentTime;
-    clearRetryTimer();
-    clearWatchdog();
+    // STOP
+    log('USER: STOP');
+    Engine.intent.shouldBePlaying = false;
+    Engine.intent.pausedByUser = true;
+    Engine.recovery.isActive = false;
+    Engine.position.current = audio.currentTime;
+    clearRecoveryTimers();
     audio.pause();
     hideStatus();
+    savePositionToStorage();
   } else {
-    dbg('USER: PLAY, lastKnownTime=' + formatTime(streaming.lastKnownTime));
+    // PLAY
+    log('USER: PLAY, savedPos=' + formatTime(Engine.position.current));
     
-    var targetTime = streaming.lastKnownTime;
-    streaming.wasPlayingBeforeError = true;
-    streaming.isRecovering = false;
-    streaming.retryCount = 0;
-    clearRetryTimer();
-    clearWatchdog();
+    Engine.intent.shouldBePlaying = true;
+    Engine.intent.pausedByUser = false;
+    Engine.intent.pausedBySystem = false;
+    Engine.recovery.isActive = false;
+    Engine.recovery.attempt = 0;
+    clearRecoveryTimers();
+    
+    var targetTime = Engine.position.current;
     showStatus('Avvio...', 'warning', true);
     
     if (!audio.src || audio.error || audio.readyState === 0) {
-      dbg('Ricarico sorgente...');
+      // Need to load
+      log('Loading audio source...');
       var url = buildUrl(datePicker.value);
-      streaming.currentSrc = url;
+      Engine.currentUrl = url;
       audio.src = url;
       
-      function onCPM() {
-        audio.removeEventListener('canplay', onCPM);
-        audio.removeEventListener('error', onERM);
+      function onReady() {
+        audio.removeEventListener('canplay', onReady);
+        audio.removeEventListener('error', onLoadErr);
         
         if (targetTime > 0 && audio.duration && targetTime < audio.duration - 1) {
-          dbg('Ripristino pos: ' + formatTime(targetTime));
           audio.currentTime = targetTime;
+          log('Restored position: ' + formatTime(targetTime));
         }
         
         audio.play().catch(function(e) {
-          dbg('Play dopo load fallito: ' + e.message, 'error');
+          log('Play after load failed: ' + e.message, 'error');
           showStatus('Errore. Riprova.', 'error');
-          streaming.wasPlayingBeforeError = false;
+          Engine.intent.shouldBePlaying = false;
         });
       }
       
-      function onERM() {
-        audio.removeEventListener('canplay', onCPM);
-        audio.removeEventListener('error', onERM);
-        dbg('Errore caricamento', 'error');
+      function onLoadErr() {
+        audio.removeEventListener('canplay', onReady);
+        audio.removeEventListener('error', onLoadErr);
+        log('Load error', 'error');
         showStatus('Errore caricamento', 'error');
-        streaming.wasPlayingBeforeError = false;
+        Engine.intent.shouldBePlaying = false;
       }
       
-      audio.addEventListener('canplay', onCPM);
-      audio.addEventListener('error', onERM);
+      audio.addEventListener('canplay', onReady);
+      audio.addEventListener('error', onLoadErr);
       audio.load();
     } else {
-      dbg('Audio già caricato');
-      
+      // Already loaded
       if (targetTime > 0 && audio.duration && targetTime < audio.duration - 1) {
-        dbg('Ripristino pos: ' + formatTime(targetTime));
         audio.currentTime = targetTime;
       }
       
       audio.play().catch(function(e) {
-        dbg('Play fallito: ' + e.message, 'error');
-        
+        log('Play failed: ' + e.message, 'error');
         if (e.name === 'NotAllowedError') {
           showStatus('Tocca di nuovo Play', 'warning');
-          streaming.wasPlayingBeforeError = false;
+          Engine.intent.shouldBePlaying = false;
         } else {
+          // Try reload
           var url = buildUrl(datePicker.value);
-          streaming.currentSrc = url;
+          Engine.currentUrl = url;
           audio.src = url + '?_t=' + Date.now();
           
           audio.addEventListener('canplay', function onR() {
@@ -1512,7 +1698,6 @@ playBtn.addEventListener('click', function() {
             }
             audio.play();
           });
-          
           audio.load();
         }
       });
@@ -1520,16 +1705,16 @@ playBtn.addEventListener('click', function() {
   }
 });
 
-/// ============================================
-// DATE PICKER
 // ============================================
-datePickerBtn.addEventListener('click', function() {
-  datePicker.showPicker();
-});
-
+// DATE PICKER & NAVIGATION
+// ============================================
 var today = new Date();
 datePicker.value = today.toISOString().split('T')[0];
 datePicker.max = datePicker.value;
+
+datePickerBtn.addEventListener('click', function() {
+  datePicker.showPicker();
+});
 
 datePicker.addEventListener('change', function() {
   updatePlayer();
@@ -1542,15 +1727,15 @@ function updatePlayer() {
   var d = datePicker.value;
   var url = buildUrl(d);
   
-  dbg('updatePlayer: ' + d);
+  log('updatePlayer: ' + d);
   
-  clearRetryTimer();
-  clearWatchdog();
-  streaming.currentSrc = url;
-  streaming.lastKnownTime = 0;
-  streaming.retryCount = 0;
-  streaming.isRecovering = false;
-  streaming.wasPlayingBeforeError = false;
+  clearRecoveryTimers();
+  Engine.currentUrl = url;
+  Engine.position.current = loadPositionFromStorage();
+  Engine.position.lastSaved = Engine.position.current;
+  Engine.recovery.attempt = 0;
+  Engine.recovery.isActive = false;
+  Engine.intent.shouldBePlaying = false;
   
   audio.src = url;
   episodeDate.textContent = formatDate(d);
@@ -1558,7 +1743,8 @@ function updatePlayer() {
   isPlaying = false;
   updatePlayIcon(false);
   progressFill.style.width = '0%';
-  currentTimeEl.textContent = '0:00';
+  bufferBar.style.width = '0%';
+  currentTimeEl.textContent = formatTime(Engine.position.current);
   remainingTime.textContent = '-0:00';
   hideStatus();
 }
@@ -1585,29 +1771,24 @@ function changeDay(delta) {
   }
 }
 
-prevDay.addEventListener('click', function() {
-  changeDay(-1);
-});
-
-nextDay.addEventListener('click', function() {
-  changeDay(1);
-});
+prevDay.addEventListener('click', function() { changeDay(-1); });
+nextDay.addEventListener('click', function() { changeDay(1); });
 
 // ============================================
 // SKIP BUTTONS
 // ============================================
 skipBack.addEventListener('click', function() {
   var t = Math.max(0, audio.currentTime - 30);
-  streaming.lastKnownTime = t;
+  Engine.position.current = t;
   audio.currentTime = t;
-  dbg('Skip back: ' + formatTime(t));
+  log('Skip back: ' + formatTime(t));
 });
 
 skipForward.addEventListener('click', function() {
   var t = audio.currentTime + 30;
-  streaming.lastKnownTime = t;
+  Engine.position.current = t;
   audio.currentTime = t;
-  dbg('Skip fwd: ' + formatTime(t));
+  log('Skip forward: ' + formatTime(t));
 });
 
 // ============================================
@@ -1640,36 +1821,32 @@ progressBar.addEventListener('touchstart', function(e) {
 }, {passive: false});
 
 document.addEventListener('mousemove', function(e) {
-  if (progressDragging) {
-    updateProgressUI(getProgressPct(e));
-  }
+  if (progressDragging) updateProgressUI(getProgressPct(e));
 });
 
 document.addEventListener('touchmove', function(e) {
-  if (progressDragging) {
-    updateProgressUI(getProgressPct(e));
-  }
+  if (progressDragging) updateProgressUI(getProgressPct(e));
 }, {passive: true});
 
 document.addEventListener('mouseup', function() {
   if (progressDragging && audio.duration) {
-    streaming.lastKnownTime = seekTime;
+    Engine.position.current = seekTime;
     audio.currentTime = seekTime;
-    dbg('Seek: ' + formatTime(seekTime));
+    log('Seek to: ' + formatTime(seekTime));
   }
   progressDragging = false;
 });
 
 document.addEventListener('touchend', function() {
   if (progressDragging && audio.duration) {
-    streaming.lastKnownTime = seekTime;
+    Engine.position.current = seekTime;
     audio.currentTime = seekTime;
-    dbg('Seek: ' + formatTime(seekTime));
+    log('Seek to: ' + formatTime(seekTime));
   }
   progressDragging = false;
 });
 
-// ============================================
+  // ============================================
 // THEME
 // ============================================
 var savedTheme = localStorage.getItem('bside-theme') || 'light';
@@ -1727,37 +1904,12 @@ function updateVolIcon() {
   }
 }
 
-volumeSlider.addEventListener('mousedown', function(e) {
-  volDrag = true;
-  updateVol(e);
-});
-
-volumeSlider.addEventListener('touchstart', function(e) {
-  e.preventDefault();
-  volDrag = true;
-  updateVol(e);
-});
-
-document.addEventListener('mousemove', function(e) {
-  if (volDrag) {
-    updateVol(e);
-  }
-});
-
-document.addEventListener('touchmove', function(e) {
-  if (volDrag) {
-    e.preventDefault();
-    updateVol(e);
-  }
-}, {passive: false});
-
-document.addEventListener('mouseup', function() {
-  volDrag = false;
-});
-
-document.addEventListener('touchend', function() {
-  volDrag = false;
-});
+volumeSlider.addEventListener('mousedown', function(e) { volDrag = true; updateVol(e); });
+volumeSlider.addEventListener('touchstart', function(e) { e.preventDefault(); volDrag = true; updateVol(e); });
+document.addEventListener('mousemove', function(e) { if (volDrag) updateVol(e); });
+document.addEventListener('touchmove', function(e) { if (volDrag) { e.preventDefault(); updateVol(e); } }, {passive: false});
+document.addEventListener('mouseup', function() { volDrag = false; });
+document.addEventListener('touchend', function() { volDrag = false; });
 
 // ============================================
 // SLEEP TIMER
@@ -1778,12 +1930,8 @@ sleepOptions.forEach(function(opt) {
     var min = parseInt(opt.getAttribute('data-min'));
     setSleep(min);
     sleepOverlay.classList.remove('show');
-    sleepOptions.forEach(function(o) {
-      o.classList.remove('selected');
-    });
-    if (min > 0) {
-      opt.classList.add('selected');
-    }
+    sleepOptions.forEach(function(o) { o.classList.remove('selected'); });
+    if (min > 0) opt.classList.add('selected');
   });
 });
 
@@ -1808,23 +1956,19 @@ function setSleep(min) {
   sleepInterval = setInterval(updateSleepDisplay, 1000);
   
   sleepTimer = setTimeout(function() {
-    streaming.wasPlayingBeforeError = false;
+    Engine.intent.shouldBePlaying = false;
     audio.pause();
     updatePlayIcon(false);
     isPlaying = false;
     setSleep(0);
+    log('Sleep timer triggered - playback stopped');
   }, min * 60000);
 }
 
 function updateSleepDisplay() {
   if (!sleepEndTime) return;
-  
   var rem = Math.max(0, sleepEndTime - Date.now());
-  if (rem === 0) {
-    setSleep(0);
-    return;
-  }
-  
+  if (rem === 0) { setSleep(0); return; }
   var m = Math.floor(rem / 60000);
   var s = Math.floor((rem % 60000) / 1000);
   sleepCountdown.textContent = m + ':' + (s < 10 ? '0' : '') + s;
@@ -1872,14 +2016,11 @@ function renderFavList() {
   for (var i = 0; i < favorites.length; i++) {
     var d = favorites[i];
     h += '<div class="fav-item" data-date="' + d + '">' +
-         '<span>' + formatDate(d) + '</span>' +
-         '<button class="fav-item-del" data-date="' + d + '">' +
-         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
-         '<line x1="18" y1="6" x2="6" y2="18"/>' +
-         '<line x1="6" y1="6" x2="18" y2="18"/>' +
-         '</svg>' +
-         '</button>' +
-         '</div>';
+    '<span>' + formatDate(d) + '</span>' +
+    '<button class="fav-item-del" data-date="' + d + '">' +
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+    '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>' +
+    '</svg></button></div>';
   }
   favList.innerHTML = h;
   
@@ -1901,9 +2042,7 @@ function renderFavList() {
       e.stopPropagation();
       var d = btn.getAttribute('data-date');
       var idx = favorites.indexOf(d);
-      if (idx > -1) {
-        favorites.splice(idx, 1);
-      }
+      if (idx > -1) favorites.splice(idx, 1);
       localStorage.setItem('bside-fav', JSON.stringify(favorites));
       updateFav();
       renderFavList();
@@ -1912,7 +2051,7 @@ function renderFavList() {
 }
 
 // ============================================
-// MEDIA SESSION
+// MEDIA SESSION API
 // ============================================
 function updateMediaSession() {
   if ('mediaSession' in navigator) {
@@ -1921,8 +2060,8 @@ function updateMediaSession() {
       artist: 'Alessio Bertallot',
       album: 'B-SIDE - Radio Capital',
       artwork: [
-        {src: 'icon-192.png', sizes: '192x192', type: 'image/png'},
-        {src: 'icon-512.png', sizes: '512x512', type: 'image/png'}
+      {src: 'icon-192.png', sizes: '192x192', type: 'image/png'},
+      {src: 'icon-512.png', sizes: '512x512', type: 'image/png'}
       ]
     });
   }
@@ -1930,9 +2069,9 @@ function updateMediaSession() {
 
 if ('mediaSession' in navigator) {
   navigator.mediaSession.setActionHandler('play', function() {
-    dbg('MediaSession: play');
-    streaming.wasPlayingBeforeError = true;
-    var t = streaming.lastKnownTime;
+    log('MediaSession: play');
+    Engine.intent.shouldBePlaying = true;
+    var t = Engine.position.current;
     if (t > 0 && audio.duration && t < audio.duration) {
       audio.currentTime = t;
     }
@@ -1940,31 +2079,29 @@ if ('mediaSession' in navigator) {
   });
   
   navigator.mediaSession.setActionHandler('pause', function() {
-    dbg('MediaSession: pause');
-    streaming.lastKnownTime = audio.currentTime;
-    streaming.wasPlayingBeforeError = false;
+    log('MediaSession: pause');
+    Engine.position.current = audio.currentTime;
+    Engine.intent.shouldBePlaying = false;
+    Engine.intent.pausedByUser = true;
     audio.pause();
   });
   
   navigator.mediaSession.setActionHandler('seekbackward', function() {
     var t = Math.max(0, audio.currentTime - 30);
-    streaming.lastKnownTime = t;
+    Engine.position.current = t;
     audio.currentTime = t;
-    dbg('MediaSession: seekback->' + formatTime(t));
   });
   
   navigator.mediaSession.setActionHandler('seekforward', function() {
     var t = audio.currentTime + 30;
-    streaming.lastKnownTime = t;
+    Engine.position.current = t;
     audio.currentTime = t;
-    dbg('MediaSession: seekfwd->' + formatTime(t));
   });
   
   navigator.mediaSession.setActionHandler('seekto', function(d) {
     if (d.seekTime) {
-      streaming.lastKnownTime = d.seekTime;
+      Engine.position.current = d.seekTime;
       audio.currentTime = d.seekTime;
-      dbg('MediaSession: seekto->' + formatTime(d.seekTime));
     }
   });
 }
@@ -1975,25 +2112,25 @@ if ('mediaSession' in navigator) {
 window.addEventListener('beforeinstallprompt', function(e) {
   e.preventDefault();
   deferredPrompt = e;
-  installPrompt.classList.add('show');
+  document.getElementById('installPrompt').classList.add('show');
 });
 
-installBtn.addEventListener('click', function() {
+document.getElementById('installBtn').addEventListener('click', function() {
   if (deferredPrompt) {
     deferredPrompt.prompt();
     deferredPrompt.userChoice.then(function() {
       deferredPrompt = null;
-      installPrompt.classList.remove('show');
+      document.getElementById('installPrompt').classList.remove('show');
     });
   }
 });
 
-installClose.addEventListener('click', function() {
-  installPrompt.classList.remove('show');
+document.getElementById('installClose').addEventListener('click', function() {
+  document.getElementById('installPrompt').classList.remove('show');
 });
 
 window.addEventListener('appinstalled', function() {
-  installPrompt.classList.remove('show');
+  document.getElementById('installPrompt').classList.remove('show');
 });
 
 // ============================================
@@ -2001,22 +2138,66 @@ window.addEventListener('appinstalled', function() {
 // ============================================
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').then(function(r) {
-    dbg('SW registrato: ' + r.scope);
+    log('Service Worker registered: ' + r.scope, 'success');
   }).catch(function(e) {
-    dbg('SW errore: ' + e, 'error');
+    log('Service Worker error: ' + e, 'error');
   });
 }
 
 // ============================================
-// INIT
+// INITIALIZATION
 // ============================================
-dbg('B-SIDE Player inizializzato', 'success');
-updatePlayer();
-updateNav();
-updateFav();
-updateVolIcon();
-updateMediaSession();
+function init() {
+  log('=== B-SIDE Player v5 Initializing ===', 'success');
+  
+  // Initialize all subsystems
+  initNetworkMonitoring();
+  initPositionTracking();
+  initLifecycleManagement();
+  initAudioEvents();
+  
+  // Initial UI state
+  updatePlayer();
+  updateNav();
+  updateFav();
+  updateVolIcon();
+  updateMediaSession();
+  
+  // Clean old saved positions (every 7 days)
+  cleanOldPositions();
+  
+  log('=== Initialization complete ===', 'success');
+  log('Network: ' + (Engine.network.type || 'unknown') + ', quality: ' + Engine.network.quality, 'network');
+}
 
+function cleanOldPositions() {
+  var maxAge = 30 * 24 * 60 * 60 * 1000;
+  var now = Date.now();
+  var keysToRemove = [];
+  
+  for (var i = 0; i < localStorage.length; i++) {
+    var key = localStorage.key(i);
+    if (key && key.startsWith('bside-pos-')) {
+      try {
+        var data = JSON.parse(localStorage.getItem(key));
+        if (now - data.timestamp > maxAge) {
+          keysToRemove.push(key);
+        }
+      } catch (e) {
+        keysToRemove.push(key);
+      }
+    }
+  }
+  
+  keysToRemove.forEach(function(k) {
+    localStorage.removeItem(k);
+    log('Cleaned old position: ' + k);
+  });
+}
+
+// Start the app
+init();
+init();
 </script>
 </body>
 </html>
