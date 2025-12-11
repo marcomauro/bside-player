@@ -811,8 +811,13 @@ var Engine = {
     timer: null,
     watchdog: null,
     watchdogTimeout: 20000,
-    scheduledAt: null,        
-    expectedDelay: null       
+    scheduledAt: null,
+    expectedDelay: null,
+    // nuova proprietà per event-driven recovery
+    lastEventTime: 0,           // Timestamp ultimo evento audio
+    lastRecoveryTime: 0,        // Timestamp ultimo recovery eseguito
+    minEventInterval: 2000,     // Minimo intervallo tra recovery (ms)
+    eventDrivenEnabled: true    // Abilita recovery da eventi
   },
   
   // User intent
@@ -1190,6 +1195,119 @@ function clearRecoveryTimers() {
   }
 }
 
+// ============================================
+// Nuova funzione per recovery immediato da eventi
+// ============================================
+function triggerEventDrivenRecovery(eventType) {
+  // Skip se disabilitato
+  if (!Engine.recovery.eventDrivenEnabled) return false;
+  
+  // Skip se non dovremmo riprodurre
+  if (!Engine.intent.shouldBePlaying || Engine.intent.pausedByUser) {
+    return false;
+  }
+  
+  var now = Date.now();
+  var timeSinceLastRecovery = now - Engine.recovery.lastRecoveryTime;
+  var timeSinceLastEvent = now - Engine.recovery.lastEventTime;
+  
+  // Calcola intervallo minimo basato sui tentativi (backoff)
+  var minInterval = Engine.recovery.minEventInterval;
+  if (Engine.recovery.attempt > 3) {
+    minInterval = Math.min(minInterval * Math.pow(1.3, Engine.recovery.attempt - 3), 10000);
+  }
+  
+  // Evita recovery troppo frequenti
+  if (timeSinceLastRecovery < minInterval) {
+    log('Event-driven recovery throttled: ' + timeSinceLastRecovery + 'ms < ' + minInterval + 'ms');
+    return false;
+  }
+  
+  // Evita reazione a eventi troppo ravvicinati
+  if (timeSinceLastEvent < 500) {
+    log('Event too soon after last: ' + timeSinceLastEvent + 'ms');
+    return false;
+  }
+  
+  Engine.recovery.lastEventTime = now;
+  
+  // Se schermo nascosto, usa recovery diretto (no timer)
+  if (!Engine.lifecycle.isVisible) {
+    log('📱 SCREEN LOCKED: Event-driven recovery from ' + eventType, 'warn');
+    executeEventDrivenRecovery(eventType);
+    return true;
+  }
+  
+  // Se schermo visibile, usa il sistema normale (con timer)
+  return false;
+}
+
+// ============================================
+// Nuova funzione per eseguire recovery senza timer
+// ============================================
+
+function executeEventDrivenRecovery(eventType) {
+  // Verifica rete
+  if (!navigator.onLine) {
+    log('Event-driven recovery: offline, skipping', 'warn');
+    return;
+  }
+  
+  // Verifica stato audio
+  if (!audio.paused && audio.readyState >= 3) {
+    log('Event-driven recovery: audio already playing', 'success');
+    return;
+  }
+  
+  // Incrementa tentativo
+  Engine.recovery.attempt++;
+  Engine.recovery.lastRecoveryTime = Date.now();
+  
+  // Check max attempts
+  if (Engine.recovery.attempt >= Engine.recovery.maxAttempts) {
+    log('Event-driven: max attempts reached', 'error');
+    return;
+  }
+  
+  log('Event-driven recovery #' + Engine.recovery.attempt + ' from ' + eventType, 'warn');
+  
+  // Seleziona strategia
+  selectRecoveryStrategy();
+  
+  var targetTime = Engine.position.current;
+  
+  // Esegui strategia appropriata
+  switch (Engine.recovery.strategy) {
+    case 'seek':
+      try {
+        if (targetTime > 0 && audio.duration && targetTime < audio.duration - 1) {
+          audio.currentTime = targetTime;
+        }
+        audio.play().then(function() {
+          log('Event-driven seek+play succeeded', 'success');
+          onRecoverySuccess();
+        }).catch(function(e) {
+          log('Event-driven seek+play failed: ' + e.message, 'error');
+        });
+      } catch (e) {
+        log('Event-driven seek failed: ' + e.message, 'error');
+      }
+      break;
+      
+    case 'reload':
+      audio.load();
+      // Il listener canplay gestirà il resto
+      break;
+      
+    case 'refetch':
+      var bustUrl = Engine.currentUrl + (Engine.currentUrl.includes('?') ? '&' : '?') + '_t=' + Date.now();
+      audio.src = bustUrl;
+      audio.load();
+      // Il listener canplay gestirà il resto
+      break;
+  }
+}
+
 function setRecoveryWatchdog() {
   clearTimeout(Engine.recovery.watchdog);
   var timeout = Engine.recovery.strategy === 'refetch' ? 20000 : Engine.recovery.watchdogTimeout;
@@ -1445,12 +1563,15 @@ function onRecoverySuccess() {
   Engine.recovery.attempt = 0;
   Engine.recovery.startTime = null;
   Engine.recovery.strategy = 'seek';
+  Engine.recovery.lastRecoveryTime = Date.now();
   Engine.intent.pausedBySystem = false;
   
   clearRecoveryTimers();
   hideStatus();
   hideNetworkIndicator();
   acquireWakeLock();
+  
+  log('Recovery successful, state reset', 'success');
 }
 </script>
 <script>
@@ -1579,19 +1700,43 @@ function initAudioEvents() {
   
   audio.addEventListener('canplay', function() {
     log('EVENT: canplay, readyState=' + audio.readyState, 'success');
+    
+    // Se stavamo facendo recovery e ora possiamo riprodurre
+    if (Engine.intent.shouldBePlaying && audio.paused) {
+      var targetTime = Engine.position.current;
+      if (targetTime > 0 && audio.duration && targetTime < audio.duration - 1) {
+        audio.currentTime = targetTime;
+        log('Position restored on canplay: ' + formatTime(targetTime));
+      }
+      
+      audio.play().then(function() {
+        log('Auto-play on canplay succeeded', 'success');
+        onRecoverySuccess();
+      }).catch(function(e) {
+        log('Auto-play on canplay failed: ' + e.message, 'warn');
+      });
+    }
   });
   
-  // SOLO UNA VOLTA - stalled con 4s timeout
+  // STALLED: evento chiave per recovery a schermo bloccato
   audio.addEventListener('stalled', function() {
     log('EVENT: stalled', 'error');
-    if (Engine.intent.shouldBePlaying) {
-      showStatus('Connessione lenta...', 'warning', true);
-      setTimeout(function() {
-        if (audio.paused || audio.readyState < 3) {
-          startRecovery();
-        }
-      }, 4000);
+    
+    if (!Engine.intent.shouldBePlaying) return;
+    
+    showStatus('Connessione lenta...', 'warning', true);
+    
+    // Prova prima event-driven (per schermo bloccato)
+    if (triggerEventDrivenRecovery('stalled')) {
+      return; // Event-driven ha gestito
     }
+    
+    // Altrimenti usa timer (schermo acceso)
+    setTimeout(function() {
+      if (Engine.intent.shouldBePlaying && (audio.paused || audio.readyState < 3)) {
+        startRecovery();
+      }
+    }, 4000);
   });
   
   audio.addEventListener('pause', function() {
@@ -1614,23 +1759,66 @@ function initAudioEvents() {
     clearRecoveryTimers();
   });
   
+  // WAITING: evento chiave per recovery a schermo bloccato
   audio.addEventListener('waiting', function() {
     log('EVENT: waiting (buffering)', 'warn');
-    if (Engine.intent.shouldBePlaying) {
-      var bufferStatus = Engine.buffer.ahead.toFixed(1);
-      showStatus('Buffering... (' + bufferStatus + 's)', 'warning', true);
-      
-      // Pre-recovery dopo 6s di waiting
-      setTimeout(function() {
-        if (Engine.intent.shouldBePlaying && (audio.paused || audio.readyState < 3)) {
-          log('Waiting too long, starting pre-recovery', 'warn');
-          startRecovery();
-        }
-      }, 6000);
+    
+    if (!Engine.intent.shouldBePlaying) return;
+    
+    var bufferStatus = Engine.buffer.ahead.toFixed(1);
+    showStatus('Buffering... (' + bufferStatus + 's)', 'warning', true);
+    
+    // Prova prima event-driven (per schermo bloccato)
+    if (triggerEventDrivenRecovery('waiting')) {
+      return; // Event-driven ha gestito
     }
+    
+    // Altrimenti usa timer (schermo acceso)
+    setTimeout(function() {
+      if (Engine.intent.shouldBePlaying && (audio.paused || audio.readyState < 3)) {
+        log('Waiting too long, starting pre-recovery', 'warn');
+        startRecovery();
+      }
+    }, 6000);
   });
   
-  // NOTA: NON aggiungere un secondo listener 'stalled' qui!
+  // ERROR: evento chiave per recovery a schermo bloccato
+  audio.addEventListener('error', function() {
+    var err = audio.error;
+    var codes = ['', 'ABORTED', 'NETWORK', 'DECODE', 'SRC_NOT_SUPPORTED'];
+    var errName = err ? codes[err.code] || 'UNKNOWN' : 'NO_ERROR';
+    
+    log('EVENT: error - ' + errName, 'error');
+    
+    if (Engine.position.current > 0) {
+      savePositionToStorage();
+    }
+    
+    isPlaying = false;
+    updatePlayIcon(false);
+    
+    if (!Engine.intent.shouldBePlaying) return;
+    
+    // Per errori di rete, prova event-driven
+    if (err && (err.code === 2 || err.code === 4)) { // NETWORK o SRC_NOT_SUPPORTED
+      if (triggerEventDrivenRecovery('error-' + errName)) {
+        return;
+      }
+    }
+    
+    // Fallback al sistema normale
+    if (err && err.code === 4) {
+      if (Engine.recovery.isActive || !navigator.onLine) {
+        log('SRC_NOT_SUPPORTED during recovery/offline, continuing...', 'warn');
+        startRecovery();
+      } else {
+        showStatus('Puntata non disponibile', 'error');
+        Engine.intent.shouldBePlaying = false;
+      }
+    } else {
+      startRecovery();
+    }
+  });
   
   audio.addEventListener('progress', function() {
     updateBufferHealth();
@@ -1665,35 +1853,10 @@ function initAudioEvents() {
     updatePlayIcon(true);
     hideStatus();
     acquireWakeLock();
-  });
-  
-  audio.addEventListener('error', function() {
-    var err = audio.error;
-    var codes = ['', 'ABORTED', 'NETWORK', 'DECODE', 'SRC_NOT_SUPPORTED'];
-    var errName = err ? codes[err.code] || 'UNKNOWN' : 'NO_ERROR';
     
-    log('EVENT: error - ' + errName, 'error');
-    
-    if (Engine.position.current > 0) {
-      savePositionToStorage();
-    }
-    
-    isPlaying = false;
-    updatePlayIcon(false);
-    
-    if (err && err.code === 4) {
-      if (Engine.recovery.isActive || !navigator.onLine) {
-        log('SRC_NOT_SUPPORTED during recovery/offline, continuing...', 'warn');
-        if (Engine.intent.shouldBePlaying) {
-          startRecovery();
-        }
-      } else {
-        showStatus('Puntata non disponibile', 'error');
-        Engine.intent.shouldBePlaying = false;
-      }
-    } else if (Engine.intent.shouldBePlaying) {
-      startRecovery();
-    }
+    // Reset recovery state on successful play
+    Engine.recovery.attempt = 0;
+    Engine.recovery.isActive = false;
   });
 }
 
