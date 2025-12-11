@@ -50,19 +50,31 @@
       color: var(--text);
       overflow: hidden;
       -webkit-font-smoothing: antialiased;
+      padding: 0; /* assicurati che non ci sia padding */
+      margin: 0;
     }
     
     .app {
-      height: calc(100% - 40px); 
+      height: calc(100% - 20px); /* riduco per vedere i bordi verticali */
       max-width: 430px;
-      margin: 20px auto;
+      margin: 10px auto; /* margine verticale per vedere top e bottom */
       display: flex;
       flex-direction: column;
-      padding: 20px;
+      padding: 15px; /* ridotto da 20px per più spazio */
       padding-bottom: 0;
       background: var(--bg);
       box-shadow: var(--neu-pressed); /* effetto incassato */
       border-radius: 30px; /* angoli arrotondati opzionali */
+    }
+
+    /* Ottimizzazione per smartphone piccoli */
+    @media (max-width: 375px) {
+      .app {
+        padding: 12px;
+        padding-bottom: 0;
+        margin: 8px auto;
+        height: calc(100% - 16px);
+      }
     }
     
     /* === DEBUG CONSOLE === */
