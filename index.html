@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#e0e5ec" id="themeColor">
+  <meta name="theme-color" content="#f0f2f5" id="themeColor">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="B-SIDE">
@@ -15,66 +15,93 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
   
   <style>
-    /* === RESET & VARIABLES === */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
     :root {
-      --bg: #e0e5ec;
-      --bg-dark: #d1d9e6;
-      --text: #1a1a1a;
-      --text-secondary: #5a6170;
-      --accent: #1a1a1a;
-      --shadow-light: #ffffff;
-      --shadow-dark: #a3b1c6;
-      --neu-flat: -1px -1px 2px var(--shadow-light), 1px 1px 2px var(--shadow-dark);
-      --neu-pressed: inset -1px -1px 2px var(--shadow-light), inset 1px 1px 2px var(--shadow-dark);
-      --neu-convex: -1px -1px 3px var(--shadow-light), 1px 1px 3px var(--shadow-dark);
+      --bg-gradient: linear-gradient(135deg, #f0f2f5 0%, #e8eaed 50%, #d8dce3 100%);
+      --glass-bg: rgba(255, 255, 255, 0.4);
+      --glass-bg-solid: rgba(255, 255, 255, 0.6);
+      --glass-border: rgba(255, 255, 255, 0.6);
+      --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      --text: #1a1a2e;
+      --text-secondary: rgba(26, 26, 46, 0.6);
+      --accent: #1a1a2e;
+      --blur: 20px;
+      --play-btn-bg: #1a1a2e;
+      --play-btn-color: #ffffff;
     }
     
     [data-theme="dark"] {
-      --bg: #2d3436;
-      --bg-dark: #232526;
+      --bg-gradient: linear-gradient(135deg, #0a0a12 0%, #12121f 50%, #1a1a2e 100%);
+      --glass-bg: rgba(255, 255, 255, 0.08);
+      --glass-bg-solid: rgba(255, 255, 255, 0.12);
+      --glass-border: rgba(255, 255, 255, 0.12);
+      --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
       --text: #ffffff;
-      --text-secondary: #a0a0a0;
+      --text-secondary: rgba(255, 255, 255, 0.6);
       --accent: #ffffff;
-      --shadow-light: #3d4447;
-      --shadow-dark: #1d2425;
+      --play-btn-bg: #ffffff;
+      --play-btn-color: #1a1a2e;
     }
     
-    /* === BASE === */
     html, body {
       height: 100%;
       width: 100%;
       font-family: 'Inter', -apple-system, sans-serif;
-      background: var(--bg);
+      background: var(--bg-gradient);
+      background-attachment: fixed;
       color: var(--text);
       overflow: hidden;
       -webkit-font-smoothing: antialiased;
-      padding: 0; /* assicurati che non ci sia padding */
-      margin: 0;
     }
     
     .app {
-      height: calc(100% - 20px); /* riduco per vedere i bordi verticali */
+      height: calc(100% - 20px);
       max-width: 430px;
-      margin: 10px auto; /* margine verticale per vedere top e bottom */
+      margin: 10px auto;
       display: flex;
       flex-direction: column;
-      padding: 15px; /* ridotto da 20px per più spazio */
-      padding-bottom: 0;
-      background: var(--bg);
-      box-shadow: var(--neu-pressed); /* effetto incassato */
-      border-radius: 30px; /* angoli arrotondati opzionali */
+      padding: 15px;
+      padding-bottom: 15px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(var(--blur));
+      -webkit-backdrop-filter: blur(var(--blur));
+      border-radius: 30px;
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
     }
 
-    /* Ottimizzazione per smartphone piccoli */
     @media (max-width: 375px) {
       .app {
         padding: 12px;
-        padding-bottom: 0;
         margin: 8px auto;
         height: calc(100% - 16px);
       }
+    }
+    
+    /* === GLASS BUTTON BASE === */
+    .glass-btn {
+      background: var(--glass-bg);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
+      transition: all 0.3s ease;
+    }
+    
+    .glass-btn:hover {
+      background: var(--glass-bg-solid);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    }
+    
+    .glass-btn:active {
+      transform: translateY(0);
+      background: var(--glass-bg);
+    }
+    
+    [data-theme="dark"] .glass-btn:hover {
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
     }
     
     /* === DEBUG CONSOLE === */
@@ -128,35 +155,28 @@
       width: 45px;
       height: 45px;
       border: none;
-      border-radius: 12px;
-      background: var(--bg);
-      box-shadow: var(--neu-flat);
+      border-radius: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       color: var(--text);
-      transition: all 0.2s;
       -webkit-tap-highlight-color: transparent;
     }
-    .icon-btn:active { box-shadow: var(--neu-pressed); }
     .icon-btn svg { width: 20px; height: 20px; }
     
     /* === DATE PICKER === */
     .date-picker-btn {
-      background: var(--bg);
       border: none;
-      border-radius: 12px;
+      border-radius: 14px;
       padding: 10px 16px;
       display: flex;
       align-items: center;
       gap: 10px;
       cursor: pointer;
-      box-shadow: var(--neu-flat);
       position: relative;
       -webkit-tap-highlight-color: transparent;
     }
-    .date-picker-btn:active { box-shadow: var(--neu-pressed); }
     .date-picker-btn span { font-size: 0.9rem; font-weight: 600; color: var(--text); }
     .date-picker-btn svg { color: var(--text-secondary); width: 18px; height: 18px; }
     .date-picker-btn input {
@@ -168,8 +188,6 @@
     }
     
     /* === ARTWORK === */
-    /* === ARTWORK === */
-    /* === ARTWORK === */
     .artwork-container {
       flex: 1;
       display: flex;
@@ -178,29 +196,23 @@
       padding: 20px 0;
     }
     .artwork {
-      width: auto; /* era 260px */
-      height: auto; /* era 260px */
-      border-radius: 0; /* era 50% */
-      background: transparent; /* era var(--bg) */
-      box-shadow: none; /* era var(--neu-convex) */
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 0; /* rimuovi padding */
     }
     .artwork h1 { 
-      font-size: 3.2rem; 
+      font-size: 3.5rem; 
       font-weight: 800; 
       letter-spacing: -2px; 
-      color: var(--text); 
+      color: var(--text);
       margin-bottom: 8px; 
     }
     .artwork p { 
       font-size: 1rem; 
       font-weight: 400; 
-      color: var(--text-secondary); 
+      color: var(--text-secondary);
     }
     
     /* === TRACK INFO === */
@@ -219,17 +231,13 @@
       height: 45px;
       border: none;
       border-radius: 50%;
-      background: var(--bg);
-      box-shadow: var(--neu-flat);
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       color: var(--text-secondary);
-      transition: all 0.2s;
       -webkit-tap-highlight-color: transparent;
     }
-    .fav-btn:active { box-shadow: var(--neu-pressed); }
     .fav-btn.active { color: #e74c3c; }
     .fav-btn.active svg { fill: #e74c3c; }
     .fav-btn svg { width: 22px; height: 22px; }
@@ -239,12 +247,12 @@
     .progress-bar {
       width: 100%;
       height: 6px;
-      background: var(--bg);
+      background: var(--glass-bg-solid);
       border-radius: 3px;
-      box-shadow: var(--neu-pressed);
       position: relative;
       cursor: pointer;
       touch-action: none;
+      overflow: hidden;
     }
     .progress-fill {
       height: 100%;
@@ -261,9 +269,19 @@
       transform: translateY(-50%);
       width: 16px;
       height: 16px;
-      background: var(--bg);
+      background: var(--accent);
       border-radius: 50%;
-      box-shadow: var(--neu-flat);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+    .buffer-bar {
+      position: absolute;
+      top: 0; left: 0;
+      height: 100%;
+      background: var(--text-secondary);
+      opacity: 0.3;
+      border-radius: 3px;
+      width: 0%;
+      transition: width 0.3s;
     }
     .time-display {
       display: flex;
@@ -273,19 +291,6 @@
       font-weight: 500;
       color: var(--text-secondary);
       font-variant-numeric: tabular-nums;
-    }
-    
-    /* === BUFFER INDICATOR === */
-    .buffer-bar {
-      position: absolute;
-      top: 0;
-      left: 0;
-      height: 100%;
-      background: var(--text-secondary);
-      opacity: 0.3;
-      border-radius: 3px;
-      width: 0%;
-      transition: width 0.3s;
     }
     
     /* === STATUS MESSAGE === */
@@ -309,14 +314,13 @@
     .status-message .network-badge {
       font-size: 0.65rem;
       padding: 2px 6px;
-      background: var(--bg-dark);
+      background: var(--glass-bg-solid);
       border-radius: 4px;
       opacity: 0.8;
     }
     .status-spinner {
       display: inline-block;
-      width: 12px;
-      height: 12px;
+      width: 12px; height: 12px;
       border: 2px solid currentColor;
       border-top-color: transparent;
       border-radius: 50%;
@@ -336,9 +340,7 @@
       width: 50px;
       height: 50px;
       border: none;
-      border-radius: 14px;
-      background: var(--bg);
-      box-shadow: var(--neu-flat);
+      border-radius: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -347,72 +349,53 @@
       font-family: 'Inter', sans-serif;
       font-size: 0.85rem;
       font-weight: 600;
-      transition: all 0.15s;
       -webkit-tap-highlight-color: transparent;
     }
-    .ctrl-btn:active { box-shadow: var(--neu-pressed); }
     .ctrl-btn:disabled { opacity: 0.4; cursor: not-allowed; }
     .ctrl-btn svg { width: 18px; height: 18px; }
+    
     .play-btn {
       width: 70px;
       height: 70px;
       border-radius: 50%;
-      background: var(--accent);
-      box-shadow: -2px -2px 5px var(--shadow-light), 2px 2px 5px var(--shadow-dark);
-      color: var(--bg);
+      background: var(--play-btn-bg);
+      border: none;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      color: var(--play-btn-color);
     }
-    .play-btn:active { box-shadow: -1px -1px 3px var(--shadow-light), 1px 1px 3px var(--shadow-dark); }
-    .play-btn svg { width: 28px; height: 28px; fill: var(--bg); }
+    .play-btn:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 15px 50px rgba(0,0,0,0.25);
+    }
+    .play-btn:active { transform: translateY(0) scale(0.98); }
+    .play-btn svg { width: 28px; height: 28px; fill: currentColor; }
 
     /* === BOTTOM NAV === */
-    /*.bottom-nav {
-      background: var(--bg);
-      border-radius: 24px 24px 0 0;
-      box-shadow: -2px -2px 5px var(--shadow-light), 2px 2px 5px var(--shadow-dark);
-      padding: 15px 30px 25px;
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      margin: 0 -20px;
-    }*/
-    /* === BOTTOM NAV === */
     .bottom-nav {
-      background: transparent; /* era var(--bg) */
-      border-radius: 24px 24px 0 0;
-      box-shadow: none; /* era -2px -2px 5px var(--shadow-light), 2px 2px 5px var(--shadow-dark) */
-      padding: 15px 30px 25px;
+      padding: 15px 30px 10px;
       display: flex;
       justify-content: space-around;
       align-items: center;
-      margin: 0 -20px;
     }
 
     .nav-item {
       width: 50px;
       height: 50px;
       border: none;
-      border-radius: 14px;
-      background: var(--bg); /* aggiungi sempre il background */
-      box-shadow: var(--neu-flat); /* aggiungi sempre l'ombra neumorfismo */
+      border-radius: 16px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       color: var(--text-secondary);
-      transition: all 0.2s;
       font-family: 'Inter', sans-serif;
       font-size: 0.7rem;
       font-weight: 600;
       gap: 2px;
       -webkit-tap-highlight-color: transparent;
     }
-
-    .nav-item.active {
-      background: var(--bg);
-      box-shadow: var(--neu-pressed); /* mantieni l'effetto pressed quando attivo */
-      color: var(--accent);
-    }
+    .nav-item.active { color: var(--accent); }
     .nav-item svg { width: 22px; height: 22px; }
     .sleep-countdown { font-size: 0.75rem; font-weight: 700; color: var(--accent); }
     
@@ -430,30 +413,39 @@
       align-items: center;
       gap: 6px;
       z-index: 1000;
-      transition: all 0.3s;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
     }
     .network-indicator.show { display: flex; }
-    .network-indicator.offline { background: #e74c3c; color: white; }
-    .network-indicator.slow { background: #f39c12; color: white; }
-    .network-indicator.online { background: #27ae60; color: white; }
+    .network-indicator.offline { background: rgba(231,76,60,0.9); color: white; }
+    .network-indicator.slow { background: rgba(243,156,18,0.9); color: white; }
+    .network-indicator.online { background: rgba(39,174,96,0.9); color: white; }
     
     /* === POPUPS === */
     .popup-overlay {
       display: none;
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.3);
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
       z-index: 100;
       align-items: center;
       justify-content: center;
     }
     .popup-overlay.show { display: flex; }
     
+    .volume-popup, .sleep-menu, .favorites-popup {
+      background: var(--glass-bg-solid);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
+    }
+    
     .volume-popup {
-      background: var(--bg);
       border-radius: 24px;
       padding: 30px;
-      box-shadow: var(--neu-flat);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -462,9 +454,8 @@
     .volume-slider {
       width: 8px;
       height: 150px;
-      background: var(--bg);
+      background: var(--glass-bg);
       border-radius: 4px;
-      box-shadow: var(--neu-pressed);
       position: relative;
       cursor: pointer;
       touch-action: none;
@@ -480,34 +471,37 @@
     .popup-title { font-size: 0.9rem; font-weight: 600; color: var(--text); }
     
     .sleep-menu {
-      background: var(--bg);
       border-radius: 20px;
       padding: 20px;
-      box-shadow: var(--neu-flat);
     }
     .sleep-option {
       padding: 15px 40px;
       border-radius: 12px;
-      background: var(--bg);
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
       margin-bottom: 10px;
       text-align: center;
       cursor: pointer;
       font-size: 0.95rem;
       font-weight: 500;
       color: var(--text);
-      box-shadow: var(--neu-flat);
-      transition: all 0.15s;
+      transition: all 0.2s;
       -webkit-tap-highlight-color: transparent;
     }
     .sleep-option:last-child { margin-bottom: 0; }
-    .sleep-option:active { box-shadow: var(--neu-pressed); }
-    .sleep-option.selected { color: var(--accent); box-shadow: var(--neu-pressed); }
+    .sleep-option:hover {
+      background: var(--glass-bg-solid);
+      transform: translateY(-2px);
+    }
+    .sleep-option:active, .sleep-option.selected { 
+      background: var(--glass-bg-solid);
+      color: var(--accent);
+      transform: translateY(0);
+    }
     
     .favorites-popup {
-      background: var(--bg);
       border-radius: 20px;
       padding: 20px;
-      box-shadow: var(--neu-flat);
       max-width: 300px;
       width: 90%;
     }
@@ -520,15 +514,23 @@
       padding: 12px 15px;
       margin-bottom: 8px;
       border-radius: 12px;
-      background: var(--bg);
-      box-shadow: var(--neu-flat);
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
       cursor: pointer;
       font-size: 0.9rem;
       font-weight: 500;
       color: var(--text);
+      transition: all 0.2s;
       -webkit-tap-highlight-color: transparent;
     }
-    .fav-item:active { box-shadow: var(--neu-pressed); }
+    .fav-item:hover {
+      background: var(--glass-bg-solid);
+      transform: translateY(-2px);
+    }
+    .fav-item:active { 
+      background: var(--glass-bg-solid);
+      transform: translateY(0);
+    }
     .fav-item-del { background: none; border: none; color: var(--text-secondary); cursor: pointer; padding: 5px; }
     .fav-item-del:hover { color: #e74c3c; }
     .fav-item-del svg { width: 16px; height: 16px; }
@@ -540,19 +542,22 @@
       position: fixed;
       bottom: 100px;
       left: 20px; right: 20px;
-      background: var(--bg);
+      background: var(--glass-bg-solid);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      border: 1px solid var(--glass-border);
       color: var(--text);
       padding: 20px;
       border-radius: 20px;
       text-align: center;
-      box-shadow: var(--neu-flat);
+      box-shadow: var(--glass-shadow);
       z-index: 1000;
     }
     .install-prompt.show { display: block; }
     .install-prompt p { margin-bottom: 16px; font-size: 0.95rem; font-weight: 500; }
     .install-btn {
       background: var(--accent);
-      color: var(--bg);
+      color: var(--play-btn-color);
       border: none;
       padding: 12px 28px;
       border-radius: 50px;
@@ -560,17 +565,26 @@
       font-weight: 600;
       cursor: pointer;
       margin-right: 10px;
+      transition: all 0.3s ease;
+    }
+    .install-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
     }
     .install-close {
-      background: var(--bg);
-      color: var(--text-secondary);
-      border: none;
+      background: var(--glass-bg);
+      color: var(--text);
+      border: 1px solid var(--glass-border);
       padding: 12px 20px;
       border-radius: 50px;
       font-size: 0.9rem;
       font-weight: 500;
       cursor: pointer;
-      box-shadow: var(--neu-flat);
+      transition: all 0.3s ease;
+    }
+    .install-close:hover {
+      background: var(--glass-bg-solid);
+      transform: translateY(-2px);
     }
     
     audio { display: none; }
@@ -591,7 +605,7 @@
   <div class="app">
     <!-- TOP BAR -->
     <div class="top-bar">
-      <div class="date-picker-btn" id="datePickerBtn">
+      <div class="date-picker-btn glass-btn" id="datePickerBtn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
           <line x1="16" y1="2" x2="16" y2="6"/>
@@ -601,7 +615,7 @@
         <span id="dateDisplay">--/--/----</span>
         <input type="date" id="datePicker">
       </div>
-      <button class="icon-btn" id="menuBtn">
+      <button class="icon-btn glass-btn" id="menuBtn">
         <svg viewBox="0 0 24 24" fill="currentColor">
           <circle cx="12" cy="5" r="2"/>
           <circle cx="12" cy="12" r="2"/>
@@ -624,7 +638,7 @@
         <h2 id="episodeDate">--/--/----</h2>
         <p>Radio Capital</p>
       </div>
-      <button class="fav-btn" id="favBtn">
+      <button class="fav-btn glass-btn" id="favBtn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
         </svg>
@@ -650,19 +664,19 @@
 
     <!-- CONTROLS -->
     <div class="controls">
-      <button class="ctrl-btn" id="prevDay">
+      <button class="ctrl-btn glass-btn" id="prevDay">
         <svg viewBox="0 0 24 24" fill="currentColor">
           <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
         </svg>
       </button>
-      <button class="ctrl-btn" id="skipBack">-30</button>
+      <button class="ctrl-btn glass-btn" id="skipBack">-30</button>
       <button class="ctrl-btn play-btn" id="playBtn">
         <svg viewBox="0 0 24 24" id="playIcon">
           <polygon points="6,4 20,12 6,20"/>
         </svg>
       </button>
-      <button class="ctrl-btn" id="skipForward">+30</button>
-      <button class="ctrl-btn" id="nextDay">
+      <button class="ctrl-btn glass-btn" id="skipForward">+30</button>
+      <button class="ctrl-btn glass-btn" id="nextDay">
         <svg viewBox="0 0 24 24" fill="currentColor">
           <path d="M16 6h2v12h-2zM6 18l8.5-6L6 6z"/>
         </svg>
@@ -671,21 +685,21 @@
 
     <!-- BOTTOM NAV -->
     <div class="bottom-nav">
-      <button class="nav-item" id="sleepBtn">
+      <button class="nav-item glass-btn" id="sleepBtn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="sleepIcon">
           <circle cx="12" cy="12" r="10"/>
           <polyline points="12 6 12 12 16 14"/>
         </svg>
         <span class="sleep-countdown" id="sleepCountdown" style="display:none;"></span>
       </button>
-      <button class="nav-item" id="volumeNavBtn">
+      <button class="nav-item glass-btn" id="volumeNavBtn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="volumeIcon">
           <path d="M11 5L6 9H2v6h4l5 4V5z"/>
           <path d="M15.54 8.46a5 5 0 010 7.07"/>
           <path d="M19.07 4.93a10 10 0 010 14.14"/>
         </svg>
       </button>
-      <button class="nav-item" id="themeBtn">
+      <button class="nav-item glass-btn" id="themeBtn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="themeIcon">
           <circle cx="12" cy="12" r="5"/>
           <line x1="12" y1="1" x2="12" y2="3"/>
@@ -737,7 +751,6 @@
   </div>
   
   <audio id="audio" preload="auto"></audio>
-  <!-- BLOCCO 3: Inserisci subito dopo </audio> del blocco 2 -->
 
   <script>
 // ============================================
@@ -772,68 +785,18 @@ function log(msg, type) {
 // STREAMING ENGINE - STATO CENTRALIZZATO
 // ============================================
 var Engine = {
-  // Audio element
   audio: null,
   currentUrl: '',
-  
-  // Position tracking
-  position: {
-    current: 0,
-    lastSaved: 0,
-    saveInterval: null
-  },
-  
-  // Buffer health
-  buffer: {
-    ahead: 0,
-    minHealthy: 10,
-    isHealthy: false,
-    percent: 0
-  },
-  
-  // Network state
-  network: {
-    isOnline: navigator.onLine,
-    type: null,
-    downlink: null,
-    rtt: null,
-    saveData: false,
-    quality: 100
-  },
-  
-  // Recovery system
+  position: { current: 0, lastSaved: 0, saveInterval: null },
+  buffer: { ahead: 0, minHealthy: 10, isHealthy: false, percent: 0 },
+  network: { isOnline: navigator.onLine, type: null, downlink: null, rtt: null, saveData: false, quality: 100 },
   recovery: {
-    isActive: false,
-    startTime: null,
-    attempt: 0,
-    maxAttempts: 35,
-    strategy: 'seek',
-    timer: null,
-    watchdog: null,
-    watchdogTimeout: 20000,
-    scheduledAt: null,
-    expectedDelay: null,
-    // nuova proprietà per event-driven recovery
-    lastEventTime: 0,           // Timestamp ultimo evento audio
-    lastRecoveryTime: 0,        // Timestamp ultimo recovery eseguito
-    minEventInterval: 2000,     // Minimo intervallo tra recovery (ms)
-    eventDrivenEnabled: true    // Abilita recovery da eventi
+    isActive: false, startTime: null, attempt: 0, maxAttempts: 35, strategy: 'seek',
+    timer: null, watchdog: null, watchdogTimeout: 20000, scheduledAt: null, expectedDelay: null,
+    lastEventTime: 0, lastRecoveryTime: 0, minEventInterval: 2000, eventDrivenEnabled: true
   },
-  
-  // User intent
-  intent: {
-    shouldBePlaying: false,
-    pausedByUser: false,
-    pausedBySystem: false
-  },
-  
-  // App lifecycle
-  lifecycle: {
-    isVisible: true,
-    isActive: true,
-    wakeLock: null,
-    lastActiveTime: Date.now()
-  }
+  intent: { shouldBePlaying: false, pausedByUser: false, pausedBySystem: false },
+  lifecycle: { isVisible: true, isActive: true, wakeLock: null, lastActiveTime: Date.now() }
 };
 
 // ============================================
@@ -877,7 +840,6 @@ var networkIndicator = document.getElementById('networkIndicator');
 var networkIcon = document.getElementById('networkIcon');
 var networkText = document.getElementById('networkText');
 
-// State
 var isPlaying = false;
 var sleepTimer = null;
 var sleepEndTime = null;
@@ -888,7 +850,6 @@ var progressDragging = false;
 var seekTime = 0;
 var volDrag = false;
 
-// Initialize engine reference
 Engine.audio = audio;
 
 // ============================================
@@ -924,70 +885,39 @@ function showStatus(msg, type, spin) {
   var html = '';
   if (spin) html += '<span class="status-spinner"></span> ';
   html += msg;
-  
-  // Add network badge if relevant
   if ((type === 'warning' || type === 'error') && Engine.network.type) {
     html += ' <span class="network-badge">' + Engine.network.type.toUpperCase() + '</span>';
   }
-  
   statusText.innerHTML = html;
   statusMessage.className = 'status-message show ' + (type || '');
 }
 
-function hideStatus() {
-  statusMessage.classList.remove('show');
-}
+function hideStatus() { statusMessage.classList.remove('show'); }
 
 function showNetworkIndicator(type, text) {
   networkIndicator.className = 'network-indicator show ' + type;
   networkText.textContent = text;
-  networkIcon.textContent = type === 'offline' ? '📵' : (type === 'slow' ? '📶' : '✓');
-  
-  // Auto-hide success after 2s
-  if (type === 'online') {
-    setTimeout(function() {
-      networkIndicator.classList.remove('show');
-    }, 2000);
-  }
+  networkIcon.textContent = type === 'offline' ? '📵' : (type === 'slow' ? '📶' : '✔');
+  if (type === 'online') setTimeout(function() { networkIndicator.classList.remove('show'); }, 2000);
 }
 
-function hideNetworkIndicator() {
-  networkIndicator.classList.remove('show');
-}
+function hideNetworkIndicator() { networkIndicator.classList.remove('show'); }
 
 // ============================================
 // NETWORK MONITORING
 // ============================================
 function initNetworkMonitoring() {
   updateNetworkInfo();
-  
   window.addEventListener('online', handleOnline);
   window.addEventListener('offline', handleOffline);
-  
-  // Network Information API
   if ('connection' in navigator) {
-    var conn = navigator.connection;
-    conn.addEventListener('change', function() {
-      var oldType = Engine.network.type;
+    navigator.connection.addEventListener('change', function() {
       var oldQuality = Engine.network.quality;
       updateNetworkInfo();
-      var newType = Engine.network.type;
-      var newQuality = Engine.network.quality;
-      
-      log('Network change: ' + oldType + ' → ' + newType + ' (quality: ' + oldQuality + ' → ' + newQuality + ')', 'network');
-      
-      // If network improved and we should be playing, retry with small delay
-      if (Engine.intent.shouldBePlaying && newQuality > oldQuality) {
-        log('Network improved, quick recovery', 'network');
+      if (Engine.intent.shouldBePlaying && Engine.network.quality > oldQuality) {
         Engine.recovery.attempt = Math.max(0, Engine.recovery.attempt - 2);
         clearRecoveryTimers();
-        if (!isPlaying) {
-          setTimeout(function() {
-            if (Engine.intent.shouldBePlaying && !isPlaying) {
-              executeRecovery();
-            }
-          }, 800);
-        }
+        if (!isPlaying) setTimeout(function() { if (Engine.intent.shouldBePlaying && !isPlaying) executeRecovery(); }, 800);
       }
     });
   }
@@ -995,869 +925,208 @@ function initNetworkMonitoring() {
 
 function updateNetworkInfo() {
   var conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-  
   Engine.network.isOnline = navigator.onLine;
-  
-  if (conn) {
-    Engine.network.type = conn.effectiveType;
-    Engine.network.downlink = conn.downlink;
-    Engine.network.rtt = conn.rtt;
-    Engine.network.saveData = conn.saveData;
-  }
-  
+  if (conn) { Engine.network.type = conn.effectiveType; Engine.network.downlink = conn.downlink; Engine.network.rtt = conn.rtt; Engine.network.saveData = conn.saveData; }
   Engine.network.quality = calculateNetworkQuality();
 }
 
 function calculateNetworkQuality() {
   if (!navigator.onLine) return 0;
-  
-  var type = Engine.network.type;
-  var downlink = Engine.network.downlink;
-  var rtt = Engine.network.rtt;
-  
-  // Base quality from connection type
-  var quality = 100;
-  if (type === 'slow-2g') quality = 10;
-  else if (type === '2g') quality = 30;
-  else if (type === '3g') quality = 60;
-  else if (type === '4g') quality = 90;
-  
-  // Adjust for actual bandwidth
-  if (downlink !== null && downlink !== undefined) {
-    if (downlink < 0.5) quality = Math.min(quality, 20);
-    else if (downlink < 1) quality = Math.min(quality, 40);
-    else if (downlink < 2) quality = Math.min(quality, 60);
-  }
-  
-  // Adjust for latency
-  if (rtt !== null && rtt !== undefined) {
-    if (rtt > 500) quality = Math.min(quality, 30);
-    else if (rtt > 300) quality = Math.min(quality, 50);
-  }
-  
+  var type = Engine.network.type, downlink = Engine.network.downlink, rtt = Engine.network.rtt, quality = 100;
+  if (type === 'slow-2g') quality = 10; else if (type === '2g') quality = 30; else if (type === '3g') quality = 60; else if (type === '4g') quality = 90;
+  if (downlink !== null && downlink !== undefined) { if (downlink < 0.5) quality = Math.min(quality, 20); else if (downlink < 1) quality = Math.min(quality, 40); else if (downlink < 2) quality = Math.min(quality, 60); }
+  if (rtt !== null && rtt !== undefined) { if (rtt > 500) quality = Math.min(quality, 30); else if (rtt > 300) quality = Math.min(quality, 50); }
   return quality;
 }
 
 function handleOnline() {
-  log('NETWORK: online', 'success');
-  Engine.network.isOnline = true;
-  updateNetworkInfo();
-  showNetworkIndicator('online', 'Connesso');
-  
-  if (Engine.intent.shouldBePlaying && !isPlaying) {
-    log('Online + shouldBePlaying: quick recovery', 'network');
-    Engine.recovery.attempt = 0;
-    clearRecoveryTimers();
-    // Piccolo delay per stabilizzare la connessione
-    setTimeout(function() {
-      if (Engine.intent.shouldBePlaying && !isPlaying) {
-        executeRecovery();
-      }
-    }, 500);
-  }
+  Engine.network.isOnline = true; updateNetworkInfo(); showNetworkIndicator('online', 'Connesso');
+  if (Engine.intent.shouldBePlaying && !isPlaying) { Engine.recovery.attempt = 0; clearRecoveryTimers(); setTimeout(function() { if (Engine.intent.shouldBePlaying && !isPlaying) executeRecovery(); }, 500); }
 }
 
-
 function handleOffline() {
-  log('NETWORK: offline', 'error');
-  Engine.network.isOnline = false;
-  Engine.network.quality = 0;
-  
-  showNetworkIndicator('offline', 'Offline');
-  
-  if (isPlaying || Engine.intent.shouldBePlaying) {
-    Engine.intent.shouldBePlaying = true;
-    Engine.position.current = audio.currentTime || Engine.position.current;
-    savePositionToStorage();
-    log('Saved position for offline: ' + formatTime(Engine.position.current), 'warn');
-  }
-  
+  Engine.network.isOnline = false; Engine.network.quality = 0; showNetworkIndicator('offline', 'Offline');
+  if (isPlaying || Engine.intent.shouldBePlaying) { Engine.intent.shouldBePlaying = true; Engine.position.current = audio.currentTime || Engine.position.current; savePositionToStorage(); }
   showStatus('Offline - in attesa di connessione...', 'error');
 }
 
 // ============================================
-// BUFFER MONITORING
+// BUFFER & POSITION
 // ============================================
 function updateBufferHealth() {
-  var buffered = audio.buffered;
-  var currentTime = audio.currentTime;
-  var duration = audio.duration;
-  
-  // Calculate seconds buffered ahead
-  var ahead = 0;
-  for (var i = 0; i < buffered.length; i++) {
-    if (buffered.start(i) <= currentTime && buffered.end(i) > currentTime) {
-      ahead = buffered.end(i) - currentTime;
-      break;
-    }
-  }
-  
-  Engine.buffer.ahead = ahead;
-  
-  // Adaptive threshold based on network
-  var minHealthy = getAdaptiveBufferThreshold();
-  Engine.buffer.minHealthy = minHealthy;
-  Engine.buffer.isHealthy = ahead >= minHealthy;
-  
-  // Update buffer bar UI
-  if (duration > 0) {
-    var bufferEnd = 0;
-    for (var j = 0; j < buffered.length; j++) {
-      if (buffered.end(j) > bufferEnd) {
-        bufferEnd = buffered.end(j);
-      }
-    }
-    Engine.buffer.percent = (bufferEnd / duration) * 100;
-    bufferBar.style.width = Engine.buffer.percent + '%';
-  }
+  var buffered = audio.buffered, currentTime = audio.currentTime, duration = audio.duration, ahead = 0;
+  for (var i = 0; i < buffered.length; i++) { if (buffered.start(i) <= currentTime && buffered.end(i) > currentTime) { ahead = buffered.end(i) - currentTime; break; } }
+  Engine.buffer.ahead = ahead; Engine.buffer.minHealthy = Engine.network.quality < 30 ? 20 : (Engine.network.quality < 60 ? 15 : 10);
+  Engine.buffer.isHealthy = ahead >= Engine.buffer.minHealthy;
+  if (duration > 0) { var bufferEnd = 0; for (var j = 0; j < buffered.length; j++) { if (buffered.end(j) > bufferEnd) bufferEnd = buffered.end(j); } Engine.buffer.percent = (bufferEnd / duration) * 100; bufferBar.style.width = Engine.buffer.percent + '%'; }
 }
 
-function getAdaptiveBufferThreshold() {
-  var quality = Engine.network.quality;
-  if (quality < 30) return 20;  // Bad network: want 20s buffer
-  if (quality < 60) return 15;  // Medium: 15s
-  return 10;                     // Good: 10s
-}
-
-// ============================================
-// POSITION TRACKING
-// ============================================
 function initPositionTracking() {
-  // Save to localStorage every 15 seconds
-  Engine.position.saveInterval = setInterval(function() {
-    if (Engine.position.current > 0 && Math.abs(Engine.position.current - Engine.position.lastSaved) > 5) {
-      savePositionToStorage();
-    }
-  }, 15000);
-  
-  // Save on exit
+  Engine.position.saveInterval = setInterval(function() { if (Engine.position.current > 0 && Math.abs(Engine.position.current - Engine.position.lastSaved) > 5) savePositionToStorage(); }, 15000);
   window.addEventListener('beforeunload', savePositionToStorage);
-  document.addEventListener('visibilitychange', function() {
-    if (document.visibilityState === 'hidden') {
-      savePositionToStorage();
-    }
-  });
+  document.addEventListener('visibilitychange', function() { if (document.visibilityState === 'hidden') savePositionToStorage(); });
 }
 
 function savePositionToStorage() {
   if (Engine.position.current <= 0) return;
-  
-  var key = 'bside-pos-' + datePicker.value;
-  var data = {
-    position: Engine.position.current,
-    duration: audio.duration || 0,
-    timestamp: Date.now()
-  };
-  
-  try {
-    localStorage.setItem(key, JSON.stringify(data));
-    Engine.position.lastSaved = Engine.position.current;
-    // removed log position save
-    // log('Position saved: ' + formatTime(data.position));
-  } catch (e) {
-    log('Failed to save position: ' + e.message, 'error');
-  }
+  try { localStorage.setItem('bside-pos-' + datePicker.value, JSON.stringify({ position: Engine.position.current, duration: audio.duration || 0, timestamp: Date.now() })); Engine.position.lastSaved = Engine.position.current; } catch (e) {}
 }
 
 function loadPositionFromStorage() {
-  var key = 'bside-pos-' + datePicker.value;
-  
-  try {
-    var saved = localStorage.getItem(key);
-    if (saved) {
-      var data = JSON.parse(saved);
-      // Check if not too old (7 days)
-      var age = Date.now() - data.timestamp;
-      if (age < 7 * 24 * 60 * 60 * 1000) {
-        Engine.position.current = data.position;
-        Engine.position.lastSaved = data.position;
-        log('Position restored: ' + formatTime(data.position), 'success');
-        return data.position;
-      }
-    }
-  } catch (e) {
-    log('Failed to load position: ' + e.message, 'error');
-  }
+  try { var saved = localStorage.getItem('bside-pos-' + datePicker.value); if (saved) { var data = JSON.parse(saved); if (Date.now() - data.timestamp < 7 * 24 * 60 * 60 * 1000) { Engine.position.current = data.position; Engine.position.lastSaved = data.position; return data.position; } } } catch (e) {}
   return 0;
 }
 
 // ============================================
 // RECOVERY SYSTEM
 // ============================================
-function clearRecoveryTimers() {
-  if (Engine.recovery.timer) {
-    clearTimeout(Engine.recovery.timer);
-    Engine.recovery.timer = null;
-  }
-  if (Engine.recovery.watchdog) {
-    clearTimeout(Engine.recovery.watchdog);
-    Engine.recovery.watchdog = null;
-  }
-}
+function clearRecoveryTimers() { if (Engine.recovery.timer) { clearTimeout(Engine.recovery.timer); Engine.recovery.timer = null; } if (Engine.recovery.watchdog) { clearTimeout(Engine.recovery.watchdog); Engine.recovery.watchdog = null; } }
 
-// ============================================
-// Nuova funzione per recovery immediato da eventi
-// ============================================
 function triggerEventDrivenRecovery(eventType) {
-  // Skip se disabilitato
-  if (!Engine.recovery.eventDrivenEnabled) return false;
-  
-  // Skip se non dovremmo riprodurre
-  if (!Engine.intent.shouldBePlaying || Engine.intent.pausedByUser) {
-    return false;
-  }
-  
-  var now = Date.now();
-  var timeSinceLastRecovery = now - Engine.recovery.lastRecoveryTime;
-  var timeSinceLastEvent = now - Engine.recovery.lastEventTime;
-  
-  // Calcola intervallo minimo basato sui tentativi (backoff)
-  var minInterval = Engine.recovery.minEventInterval;
-  if (Engine.recovery.attempt > 3) {
-    minInterval = Math.min(minInterval * Math.pow(1.3, Engine.recovery.attempt - 3), 10000);
-  }
-  
-  // Evita recovery troppo frequenti
-  if (timeSinceLastRecovery < minInterval) {
-    log('Event-driven recovery throttled: ' + timeSinceLastRecovery + 'ms < ' + minInterval + 'ms');
-    return false;
-  }
-  
-  // Evita reazione a eventi troppo ravvicinati
-  if (timeSinceLastEvent < 500) {
-    log('Event too soon after last: ' + timeSinceLastEvent + 'ms');
-    return false;
-  }
-  
+  if (!Engine.recovery.eventDrivenEnabled || !Engine.intent.shouldBePlaying || Engine.intent.pausedByUser) return false;
+  var now = Date.now(), timeSinceLastRecovery = now - Engine.recovery.lastRecoveryTime, minInterval = Engine.recovery.minEventInterval;
+  if (Engine.recovery.attempt > 3) minInterval = Math.min(minInterval * Math.pow(1.3, Engine.recovery.attempt - 3), 10000);
+  if (timeSinceLastRecovery < minInterval || now - Engine.recovery.lastEventTime < 500) return false;
   Engine.recovery.lastEventTime = now;
-  
-  // Se schermo nascosto, usa recovery diretto (no timer)
-  if (!Engine.lifecycle.isVisible) {
-    log('📱 SCREEN LOCKED: Event-driven recovery from ' + eventType, 'warn');
-    executeEventDrivenRecovery(eventType);
-    return true;
-  }
-  
-  // Se schermo visibile, usa il sistema normale (con timer)
+  if (!Engine.lifecycle.isVisible) { executeEventDrivenRecovery(eventType); return true; }
   return false;
 }
 
-// ============================================
-// Nuova funzione per eseguire recovery senza timer
-// ============================================
-
 function executeEventDrivenRecovery(eventType) {
-  // Verifica rete
-  if (!navigator.onLine) {
-    log('Event-driven recovery: offline, skipping', 'warn');
-    return;
-  }
-  
-  // Verifica stato audio
-  if (!audio.paused && audio.readyState >= 3) {
-    log('Event-driven recovery: audio already playing', 'success');
-    return;
-  }
-  
-  // Incrementa tentativo
-  Engine.recovery.attempt++;
-  Engine.recovery.lastRecoveryTime = Date.now();
-  
-  // Check max attempts
-  if (Engine.recovery.attempt >= Engine.recovery.maxAttempts) {
-    log('Event-driven: max attempts reached', 'error');
-    return;
-  }
-  
-  log('Event-driven recovery #' + Engine.recovery.attempt + ' from ' + eventType, 'warn');
-  
-  // Seleziona strategia
+  if (!navigator.onLine || (!audio.paused && audio.readyState >= 3)) return;
+  Engine.recovery.attempt++; Engine.recovery.lastRecoveryTime = Date.now();
+  if (Engine.recovery.attempt >= Engine.recovery.maxAttempts) return;
   selectRecoveryStrategy();
-  
   var targetTime = Engine.position.current;
-  
-  // Esegui strategia appropriata
-  switch (Engine.recovery.strategy) {
-    case 'seek':
-      try {
-        if (targetTime > 0 && audio.duration && targetTime < audio.duration - 1) {
-          audio.currentTime = targetTime;
-        }
-        audio.play().then(function() {
-          log('Event-driven seek+play succeeded', 'success');
-          onRecoverySuccess();
-        }).catch(function(e) {
-          log('Event-driven seek+play failed: ' + e.message, 'error');
-        });
-      } catch (e) {
-        log('Event-driven seek failed: ' + e.message, 'error');
-      }
-      break;
-      
-    case 'reload':
-      audio.load();
-      // Il listener canplay gestirà il resto
-      break;
-      
-    case 'refetch':
-      var bustUrl = Engine.currentUrl + (Engine.currentUrl.includes('?') ? '&' : '?') + '_t=' + Date.now();
-      audio.src = bustUrl;
-      audio.load();
-      // Il listener canplay gestirà il resto
-      break;
-  }
+  if (Engine.recovery.strategy === 'seek') { try { if (targetTime > 0 && audio.duration && targetTime < audio.duration - 1) audio.currentTime = targetTime; audio.play().then(onRecoverySuccess).catch(function(){}); } catch(e){} }
+  else if (Engine.recovery.strategy === 'reload') audio.load();
+  else { audio.src = Engine.currentUrl + (Engine.currentUrl.includes('?') ? '&' : '?') + '_t=' + Date.now(); audio.load(); }
 }
 
-function setRecoveryWatchdog() {
-  clearTimeout(Engine.recovery.watchdog);
-  var timeout = Engine.recovery.strategy === 'refetch' ? 20000 : Engine.recovery.watchdogTimeout;
-  
-  Engine.recovery.watchdog = setTimeout(function() {
-    if (Engine.recovery.isActive) {
-      log('WATCHDOG: timeout triggered, forcing restart', 'error');
-      Engine.recovery.isActive = false;
-      startRecovery();
-    }
-  }, timeout);
-}
+function setRecoveryWatchdog() { clearTimeout(Engine.recovery.watchdog); Engine.recovery.watchdog = setTimeout(function() { if (Engine.recovery.isActive) { Engine.recovery.isActive = false; startRecovery(); } }, Engine.recovery.strategy === 'refetch' ? 20000 : Engine.recovery.watchdogTimeout); }
 
 function startRecovery() {
-  // Skip if user paused
-  if (Engine.intent.pausedByUser) {
-    log('Recovery skipped: user paused');
-    return;
-  }
-  
-  // Skip if not supposed to be playing
-  if (!Engine.intent.shouldBePlaying) {
-    log('Recovery skipped: not supposed to be playing');
-    return;
-  }
-  
-  // Avoid concurrent recovery
-  if (Engine.recovery.isActive && Engine.recovery.startTime) {
-    var elapsed = Date.now() - Engine.recovery.startTime;
-    if (elapsed < 2000) {
-      log('Recovery already in progress (' + elapsed + 'ms), skipping');
-      return;
-    }
-  }
-  
-  // Check max attempts
-  if (Engine.recovery.attempt >= Engine.recovery.maxAttempts) {
-    log('Max recovery attempts reached (' + Engine.recovery.maxAttempts + ')', 'error');
-    showStatus('Connessione persa. Tocca Play per riprovare.', 'error');
-    Engine.intent.shouldBePlaying = false;
-    Engine.recovery.isActive = false;
-    clearRecoveryTimers();
-    return;
-  }
-  
-  // Start recovery
-  Engine.recovery.isActive = true;
-  Engine.recovery.startTime = Date.now();
-  Engine.recovery.attempt++;
-  
-  // Calculate adaptive delay
+  if (Engine.intent.pausedByUser || !Engine.intent.shouldBePlaying) return;
+  if (Engine.recovery.isActive && Engine.recovery.startTime && Date.now() - Engine.recovery.startTime < 2000) return;
+  if (Engine.recovery.attempt >= Engine.recovery.maxAttempts) { showStatus('Connessione persa. Tocca Play per riprovare.', 'error'); Engine.intent.shouldBePlaying = false; Engine.recovery.isActive = false; clearRecoveryTimers(); return; }
+  Engine.recovery.isActive = true; Engine.recovery.startTime = Date.now(); Engine.recovery.attempt++;
   var delay = calculateRecoveryDelay();
-  
-  // LOG CON TIMESTAMP per verificare timer throttling
-  var now = new Date();
-  var expectedExec = new Date(now.getTime() + delay);
-  log('Recovery #' + Engine.recovery.attempt + ' scheduled: delay=' + delay + 'ms, expected=' + expectedExec.toLocaleTimeString('it-IT'), 'warn');
-  
   showStatus('Riconnessione (' + Engine.recovery.attempt + ')...', 'warning', true);
-  
-  clearRecoveryTimers();
-  setRecoveryWatchdog();
-  
-  // Salva quando abbiamo schedulato
-  Engine.recovery.scheduledAt = Date.now();
-  Engine.recovery.expectedDelay = delay;
-  
+  clearRecoveryTimers(); setRecoveryWatchdog();
+  Engine.recovery.scheduledAt = Date.now(); Engine.recovery.expectedDelay = delay;
   Engine.recovery.timer = setTimeout(executeRecovery, delay);
 }
 
 function calculateRecoveryDelay() {
-  var attempt = Engine.recovery.attempt;
-  var quality = Engine.network.quality;
-  var baseDelay;
-  
-  if (attempt <= 3) {
-    // Primi 3: moderatamente rapidi ma non istantanei
-    baseDelay = 800 + (200 * attempt); // 1s, 1.2s, 1.4s
-  } else if (attempt <= 10) {
-    // 4-10: backoff progressivo
-    baseDelay = 1500 * Math.pow(1.3, attempt - 3); // ~1.95s, 2.5s, 3.3s...
-  } else {
-    // 10+: rallenta ma non troppo
-    baseDelay = 5000 + (attempt - 10) * 800; // 5.8s, 6.6s, 7.4s...
-  }
-  
-  // Adjust for network quality
-  if (quality === 0) {
-    baseDelay = Math.max(baseDelay, 3000); // Offline: almeno 3s
-  } else if (quality < 30) {
-    baseDelay *= 1.4;
-  }
-  
-  return Math.min(baseDelay, 12000); // Max 12s
+  var attempt = Engine.recovery.attempt, quality = Engine.network.quality, baseDelay;
+  if (attempt <= 3) baseDelay = 800 + (200 * attempt);
+  else if (attempt <= 10) baseDelay = 1500 * Math.pow(1.3, attempt - 3);
+  else baseDelay = 5000 + (attempt - 10) * 800;
+  if (quality === 0) baseDelay = Math.max(baseDelay, 3000);
+  else if (quality < 30) baseDelay *= 1.4;
+  return Math.min(baseDelay, 12000);
 }
 
-function selectRecoveryStrategy() {
-  var attempt = Engine.recovery.attempt;
-  
-  if (attempt <= 2 && audio.readyState >= 2) {
-    Engine.recovery.strategy = 'seek';      // Primi 2: seek
-  } else if (attempt <= 6) {
-    Engine.recovery.strategy = 'reload';    // 3-6: reload
-  } else {
-    Engine.recovery.strategy = 'refetch';   // 7+: refetch
-  }
-}
+function selectRecoveryStrategy() { var attempt = Engine.recovery.attempt; if (attempt <= 2 && audio.readyState >= 2) Engine.recovery.strategy = 'seek'; else if (attempt <= 6) Engine.recovery.strategy = 'reload'; else Engine.recovery.strategy = 'refetch'; }
 
 function executeRecovery() {
-  // Calcola ritardo reale vs atteso
-  if (Engine.recovery.scheduledAt) {
-    var actualDelay = Date.now() - Engine.recovery.scheduledAt;
-    var expectedDelay = Engine.recovery.expectedDelay || 0;
-    var drift = actualDelay - expectedDelay;
-    
-    if (drift > 500) {
-      log('⚠️ TIMER DRIFT: expected=' + expectedDelay + 'ms, actual=' + actualDelay + 'ms, drift=+' + drift + 'ms', 'error');
-    } else {
-      log('Timer OK: drift=' + drift + 'ms', 'success');
-    }
-  }
-  
-  // Check if still offline
-  if (!navigator.onLine) {
-    log('Still offline, rescheduling in 3s', 'warn');
-    showStatus('Offline, attendo connessione...', 'error');
-    Engine.recovery.timer = setTimeout(startRecovery, 3000);
-    return;
-  }
-  
+  if (!navigator.onLine) { showStatus('Offline, attendo connessione...', 'error'); Engine.recovery.timer = setTimeout(startRecovery, 3000); return; }
   selectRecoveryStrategy();
-  log('Executing recovery strategy: ' + Engine.recovery.strategy);
-  
-  switch (Engine.recovery.strategy) {
-    case 'seek':
-      executeSeekStrategy();
-      break;
-    case 'reload':
-      executeReloadStrategy();
-      break;
-    case 'refetch':
-      executeRefetchStrategy();
-      break;
-  }
+  if (Engine.recovery.strategy === 'seek') executeSeekStrategy();
+  else if (Engine.recovery.strategy === 'reload') executeReloadStrategy();
+  else executeRefetchStrategy();
 }
 
-
 function executeSeekStrategy() {
-  var targetTime = Engine.position.current;
-  
-  try {
-    if (targetTime > 0 && audio.duration && targetTime < audio.duration - 1) {
-      audio.currentTime = targetTime;
-    }
-    attemptPlay();
-  } catch (e) {
-    log('Seek strategy failed: ' + e.message, 'error');
-    Engine.recovery.strategy = 'reload';
-    setTimeout(executeRecovery, 500);
-  }
+  try { if (Engine.position.current > 0 && audio.duration && Engine.position.current < audio.duration - 1) audio.currentTime = Engine.position.current; attemptPlay(); }
+  catch (e) { Engine.recovery.strategy = 'reload'; setTimeout(executeRecovery, 500); }
 }
 
 function executeReloadStrategy() {
-  var targetTime = Engine.position.current;
-  
-  audio.pause();
-  audio.load();
-  
+  var targetTime = Engine.position.current; audio.pause(); audio.load();
   var loadTimeout = setTimeout(onLoadError, 15000);
-  
-  function onCanPlay() {
-    clearTimeout(loadTimeout);
-    audio.removeEventListener('canplay', onCanPlay);
-    audio.removeEventListener('error', onLoadError);
-    
-    if (targetTime > 0 && audio.duration && targetTime < audio.duration - 1) {
-      audio.currentTime = targetTime;
-      log('Position restored: ' + formatTime(targetTime));
-    }
-    attemptPlay();
-  }
-  
-  function onLoadError() {
-    clearTimeout(loadTimeout);
-    audio.removeEventListener('canplay', onCanPlay);
-    audio.removeEventListener('error', onLoadError);
-    log('Reload strategy failed', 'error');
-    setTimeout(startRecovery, 1000);
-  }
-  
-  audio.addEventListener('canplay', onCanPlay);
-  audio.addEventListener('error', onLoadError);
+  function onCanPlay() { clearTimeout(loadTimeout); audio.removeEventListener('canplay', onCanPlay); audio.removeEventListener('error', onLoadError); if (targetTime > 0 && audio.duration && targetTime < audio.duration - 1) audio.currentTime = targetTime; attemptPlay(); }
+  function onLoadError() { clearTimeout(loadTimeout); audio.removeEventListener('canplay', onCanPlay); audio.removeEventListener('error', onLoadError); setTimeout(startRecovery, 1000); }
+  audio.addEventListener('canplay', onCanPlay); audio.addEventListener('error', onLoadError);
 }
 
 function executeRefetchStrategy() {
-  var targetTime = Engine.position.current;
-  
-  audio.pause();
-  var bustUrl = Engine.currentUrl + (Engine.currentUrl.includes('?') ? '&' : '?') + '_t=' + Date.now();
-  audio.src = bustUrl;
-  
+  var targetTime = Engine.position.current; audio.pause(); audio.src = Engine.currentUrl + (Engine.currentUrl.includes('?') ? '&' : '?') + '_t=' + Date.now();
   var loadTimeout = setTimeout(onLoadError, 20000);
-  
-  function onCanPlay() {
-    clearTimeout(loadTimeout);
-    audio.removeEventListener('canplay', onCanPlay);
-    audio.removeEventListener('error', onLoadError);
-    
-    if (targetTime > 0 && audio.duration && targetTime < audio.duration - 1) {
-      audio.currentTime = targetTime;
-      log('Position restored after refetch: ' + formatTime(targetTime));
-    }
-    attemptPlay();
-  }
-  
-  function onLoadError() {
-    clearTimeout(loadTimeout);
-    audio.removeEventListener('canplay', onCanPlay);
-    audio.removeEventListener('error', onLoadError);
-    log('Refetch strategy failed', 'error');
-    setTimeout(startRecovery, 1000);
-  }
-  
-  audio.addEventListener('canplay', onCanPlay);
-  audio.addEventListener('error', onLoadError);
-  audio.load();
+  function onCanPlay() { clearTimeout(loadTimeout); audio.removeEventListener('canplay', onCanPlay); audio.removeEventListener('error', onLoadError); if (targetTime > 0 && audio.duration && targetTime < audio.duration - 1) audio.currentTime = targetTime; attemptPlay(); }
+  function onLoadError() { clearTimeout(loadTimeout); audio.removeEventListener('canplay', onCanPlay); audio.removeEventListener('error', onLoadError); setTimeout(startRecovery, 1000); }
+  audio.addEventListener('canplay', onCanPlay); audio.addEventListener('error', onLoadError); audio.load();
 }
 
 function attemptPlay() {
   var playPromise = audio.play();
-  
-  if (playPromise) {
-    playPromise.then(function() {
-      log('Playback resumed successfully', 'success');
-      onRecoverySuccess();
-    }).catch(function(err) {
-      if (err.name === 'NotAllowedError') {
-        log('Autoplay blocked, waiting for user', 'warn');
-        showStatus('Tocca Play per riprendere', 'warning');
-        Engine.recovery.isActive = false;
-        Engine.intent.pausedBySystem = true;
-        clearRecoveryTimers();
-      } else if (err.name !== 'AbortError') {
-        log('Play failed: ' + err.message, 'error');
-        setTimeout(startRecovery, 1000);
-      }
-    });
-  }
+  if (playPromise) playPromise.then(function() { onRecoverySuccess(); }).catch(function(err) {
+    if (err.name === 'NotAllowedError') { showStatus('Tocca Play per riprendere', 'warning'); Engine.recovery.isActive = false; Engine.intent.pausedBySystem = true; clearRecoveryTimers(); }
+    else if (err.name !== 'AbortError') setTimeout(startRecovery, 1000);
+  });
 }
 
 function onRecoverySuccess() {
-  Engine.recovery.isActive = false;
-  Engine.recovery.attempt = 0;
-  Engine.recovery.startTime = null;
-  Engine.recovery.strategy = 'seek';
-  Engine.recovery.lastRecoveryTime = Date.now();
-  Engine.intent.pausedBySystem = false;
-  
-  clearRecoveryTimers();
-  hideStatus();
-  hideNetworkIndicator();
-  acquireWakeLock();
-  
-  log('Recovery successful, state reset', 'success');
+  Engine.recovery.isActive = false; Engine.recovery.attempt = 0; Engine.recovery.startTime = null; Engine.recovery.strategy = 'seek'; Engine.recovery.lastRecoveryTime = Date.now(); Engine.intent.pausedBySystem = false;
+  clearRecoveryTimers(); hideStatus(); hideNetworkIndicator(); acquireWakeLock();
 }
 </script>
 <script>
 // ============================================
-// WAKE LOCK
+// WAKE LOCK & LIFECYCLE
 // ============================================
 async function acquireWakeLock() {
-  if (!('wakeLock' in navigator)) return false;
-  if (!Engine.lifecycle.isVisible) return false;
-  if (Engine.lifecycle.wakeLock) return true;
-  
-  try {
-    Engine.lifecycle.wakeLock = await navigator.wakeLock.request('screen');
-    log('Wake lock acquired', 'success');
-    
-    Engine.lifecycle.wakeLock.addEventListener('release', function() {
-      log('Wake lock released');
-      Engine.lifecycle.wakeLock = null;
-      if (Engine.intent.shouldBePlaying && Engine.lifecycle.isVisible) {
-        setTimeout(acquireWakeLock, 1000);
-      }
-    });
-    return true;
-  } catch (e) {
-    log('Wake lock failed: ' + e.message, 'warn');
-    return false;
-  }
+  if (!('wakeLock' in navigator) || !Engine.lifecycle.isVisible || Engine.lifecycle.wakeLock) return;
+  try { Engine.lifecycle.wakeLock = await navigator.wakeLock.request('screen'); Engine.lifecycle.wakeLock.addEventListener('release', function() { Engine.lifecycle.wakeLock = null; if (Engine.intent.shouldBePlaying && Engine.lifecycle.isVisible) setTimeout(acquireWakeLock, 1000); }); } catch(e){}
 }
 
-function releaseWakeLock() {
-  if (Engine.lifecycle.wakeLock) {
-    Engine.lifecycle.wakeLock.release();
-    Engine.lifecycle.wakeLock = null;
-  }
-}
+function releaseWakeLock() { if (Engine.lifecycle.wakeLock) { Engine.lifecycle.wakeLock.release(); Engine.lifecycle.wakeLock = null; } }
 
-// ============================================
-// LIFECYCLE MANAGEMENT
-// ============================================
 function initLifecycleManagement() {
-  document.addEventListener('visibilitychange', function() {
-    Engine.lifecycle.isVisible = document.visibilityState === 'visible';
-    log('Visibility: ' + (Engine.lifecycle.isVisible ? 'visible' : 'hidden'));
-    
-    if (Engine.lifecycle.isVisible) {
-      onAppVisible();
-    } else {
-      onAppHidden();
-    }
-  });
-  
-  window.addEventListener('focus', function() {
-    Engine.lifecycle.isActive = true;
-    Engine.lifecycle.lastActiveTime = Date.now();
-    onAppVisible();
-  });
-  
-  window.addEventListener('blur', function() {
-    Engine.lifecycle.isActive = false;
-  });
-  
-  window.addEventListener('pageshow', function() {
-    log('Page show event');
-    onAppVisible();
-  });
-  
-  // iOS audio interruption handling
-  audio.addEventListener('pause', function() {
-    if (!Engine.intent.pausedByUser && Engine.intent.shouldBePlaying) {
-      log('Unexpected pause detected (possible interruption)');
-      Engine.intent.pausedBySystem = true;
-    }
-  });
+  document.addEventListener('visibilitychange', function() { Engine.lifecycle.isVisible = document.visibilityState === 'visible'; if (Engine.lifecycle.isVisible) onAppVisible(); else onAppHidden(); });
+  window.addEventListener('focus', function() { Engine.lifecycle.isActive = true; Engine.lifecycle.lastActiveTime = Date.now(); onAppVisible(); });
+  window.addEventListener('blur', function() { Engine.lifecycle.isActive = false; });
+  window.addEventListener('pageshow', onAppVisible);
+  audio.addEventListener('pause', function() { if (!Engine.intent.pausedByUser && Engine.intent.shouldBePlaying) Engine.intent.pausedBySystem = true; });
 }
 
 function onAppVisible() {
-  var hiddenDuration = Math.round((Date.now() - Engine.lifecycle.lastActiveTime) / 1000);
-  log('=== SCREEN VISIBLE === after ' + hiddenDuration + 's, playing=' + !audio.paused + ', readyState=' + audio.readyState, 'success');
-  
-  updateNetworkInfo();
-  
-  if (Engine.intent.shouldBePlaying) {
-    acquireWakeLock();
-  }
-  
-  // Check if we need to recover
-  var shouldBePlaying = Engine.intent.shouldBePlaying;
-  var isPaused = audio.paused;
-  var isRecovering = Engine.recovery.isActive;
-  
-  if (shouldBePlaying && isPaused && !isRecovering) {
-    log('Should be playing but paused! Starting recovery...', 'warn');
-    
-    if (hiddenDuration > 30) {
-      Engine.recovery.attempt = 0;
-    }
-    
-    startRecovery();
-  }
-  
-  // Sync position
-  if (audio.currentTime > 0 && Math.abs(audio.currentTime - Engine.position.current) > 2) {
-    log('Position drift: audio=' + formatTime(audio.currentTime) + ', saved=' + formatTime(Engine.position.current));
-    Engine.position.current = audio.currentTime;
-  }
+  var hiddenDuration = Math.round((Date.now() - Engine.lifecycle.lastActiveTime) / 1000); updateNetworkInfo();
+  if (Engine.intent.shouldBePlaying) acquireWakeLock();
+  if (Engine.intent.shouldBePlaying && audio.paused && !Engine.recovery.isActive) { if (hiddenDuration > 30) Engine.recovery.attempt = 0; startRecovery(); }
+  if (audio.currentTime > 0 && Math.abs(audio.currentTime - Engine.position.current) > 2) Engine.position.current = audio.currentTime;
 }
 
-function onAppHidden() {
-  log('=== SCREEN HIDDEN === pos=' + formatTime(Engine.position.current) + ', playing=' + !audio.paused, 'warn');
-  savePositionToStorage();
-  Engine.lifecycle.lastActiveTime = Date.now();
-}
+function onAppHidden() { savePositionToStorage(); Engine.lifecycle.lastActiveTime = Date.now(); }
 
 // ============================================
 // AUDIO EVENTS
 // ============================================
 function initAudioEvents() {
-  audio.addEventListener('loadstart', function() {
-    log('EVENT: loadstart');
-  });
-  
-  audio.addEventListener('loadedmetadata', function() {
-    log('EVENT: loadedmetadata, duration=' + formatTime(audio.duration));
-    remainingTime.textContent = '-' + formatTime(audio.duration);
-  });
-  
+  audio.addEventListener('loadedmetadata', function() { remainingTime.textContent = '-' + formatTime(audio.duration); });
   audio.addEventListener('canplay', function() {
-    log('EVENT: canplay, readyState=' + audio.readyState, 'success');
-    
-    // Se stavamo facendo recovery e ora possiamo riprodurre
     if (Engine.intent.shouldBePlaying && audio.paused) {
-      var targetTime = Engine.position.current;
-      if (targetTime > 0 && audio.duration && targetTime < audio.duration - 1) {
-        audio.currentTime = targetTime;
-        log('Position restored on canplay: ' + formatTime(targetTime));
-      }
-      
-      audio.play().then(function() {
-        log('Auto-play on canplay succeeded', 'success');
-        onRecoverySuccess();
-      }).catch(function(e) {
-        log('Auto-play on canplay failed: ' + e.message, 'warn');
-      });
+      if (Engine.position.current > 0 && audio.duration && Engine.position.current < audio.duration - 1) audio.currentTime = Engine.position.current;
+      audio.play().then(onRecoverySuccess).catch(function(){});
     }
   });
-  
-  // STALLED: evento chiave per recovery a schermo bloccato
-  audio.addEventListener('stalled', function() {
-    log('EVENT: stalled', 'error');
-    
-    if (!Engine.intent.shouldBePlaying) return;
-    
-    showStatus('Connessione lenta...', 'warning', true);
-    
-    // Prova prima event-driven (per schermo bloccato)
-    if (triggerEventDrivenRecovery('stalled')) {
-      return; // Event-driven ha gestito
-    }
-    
-    // Altrimenti usa timer (schermo acceso)
-    setTimeout(function() {
-      if (Engine.intent.shouldBePlaying && (audio.paused || audio.readyState < 3)) {
-        startRecovery();
-      }
-    }, 4000);
-  });
-  
-  audio.addEventListener('pause', function() {
-    log('EVENT: pause');
-    isPlaying = false;
-    updatePlayIcon(false);
-    
-    if (!Engine.recovery.isActive && !Engine.intent.pausedByUser) {
-      releaseWakeLock();
-    }
-  });
-  
-  audio.addEventListener('ended', function() {
-    log('EVENT: ended');
-    isPlaying = false;
-    Engine.intent.shouldBePlaying = false;
-    Engine.position.current = 0;
-    updatePlayIcon(false);
-    releaseWakeLock();
-    clearRecoveryTimers();
-  });
-  
-  // WAITING: evento chiave per recovery a schermo bloccato
-  audio.addEventListener('waiting', function() {
-    log('EVENT: waiting (buffering)', 'warn');
-    
-    if (!Engine.intent.shouldBePlaying) return;
-    
-    var bufferStatus = Engine.buffer.ahead.toFixed(1);
-    showStatus('Buffering... (' + bufferStatus + 's)', 'warning', true);
-    
-    // Prova prima event-driven (per schermo bloccato)
-    if (triggerEventDrivenRecovery('waiting')) {
-      return; // Event-driven ha gestito
-    }
-    
-    // Altrimenti usa timer (schermo acceso)
-    setTimeout(function() {
-      if (Engine.intent.shouldBePlaying && (audio.paused || audio.readyState < 3)) {
-        log('Waiting too long, starting pre-recovery', 'warn');
-        startRecovery();
-      }
-    }, 6000);
-  });
-  
-  // ERROR: evento chiave per recovery a schermo bloccato
-  audio.addEventListener('error', function() {
-    var err = audio.error;
-    var codes = ['', 'ABORTED', 'NETWORK', 'DECODE', 'SRC_NOT_SUPPORTED'];
-    var errName = err ? codes[err.code] || 'UNKNOWN' : 'NO_ERROR';
-    
-    log('EVENT: error - ' + errName, 'error');
-    
-    if (Engine.position.current > 0) {
-      savePositionToStorage();
-    }
-    
-    isPlaying = false;
-    updatePlayIcon(false);
-    
-    if (!Engine.intent.shouldBePlaying) return;
-    
-    // Per errori di rete, prova event-driven
-    if (err && (err.code === 2 || err.code === 4)) { // NETWORK o SRC_NOT_SUPPORTED
-      if (triggerEventDrivenRecovery('error-' + errName)) {
-        return;
-      }
-    }
-    
-    // Fallback al sistema normale
-    if (err && err.code === 4) {
-      if (Engine.recovery.isActive || !navigator.onLine) {
-        log('SRC_NOT_SUPPORTED during recovery/offline, continuing...', 'warn');
-        startRecovery();
-      } else {
-        showStatus('Puntata non disponibile', 'error');
-        Engine.intent.shouldBePlaying = false;
-      }
-    } else {
-      startRecovery();
-    }
-  });
-  
-  audio.addEventListener('progress', function() {
-    updateBufferHealth();
-  });
-  
+  audio.addEventListener('stalled', function() { if (!Engine.intent.shouldBePlaying) return; showStatus('Connessione lenta...', 'warning', true); if (triggerEventDrivenRecovery('stalled')) return; setTimeout(function() { if (Engine.intent.shouldBePlaying && (audio.paused || audio.readyState < 3)) startRecovery(); }, 4000); });
+  audio.addEventListener('pause', function() { isPlaying = false; updatePlayIcon(false); if (!Engine.recovery.isActive && !Engine.intent.pausedByUser) releaseWakeLock(); });
+  audio.addEventListener('ended', function() { isPlaying = false; Engine.intent.shouldBePlaying = false; Engine.position.current = 0; updatePlayIcon(false); releaseWakeLock(); clearRecoveryTimers(); });
+  audio.addEventListener('waiting', function() { if (!Engine.intent.shouldBePlaying) return; showStatus('Buffering... (' + Engine.buffer.ahead.toFixed(1) + 's)', 'warning', true); if (triggerEventDrivenRecovery('waiting')) return; setTimeout(function() { if (Engine.intent.shouldBePlaying && (audio.paused || audio.readyState < 3)) startRecovery(); }, 6000); });
+  audio.addEventListener('error', function() { var err = audio.error; if (Engine.position.current > 0) savePositionToStorage(); isPlaying = false; updatePlayIcon(false); if (!Engine.intent.shouldBePlaying) return; if (err && (err.code === 2 || err.code === 4) && triggerEventDrivenRecovery('error')) return; if (err && err.code === 4 && !Engine.recovery.isActive && navigator.onLine) { showStatus('Puntata non disponibile', 'error'); Engine.intent.shouldBePlaying = false; } else startRecovery(); });
+  audio.addEventListener('progress', updateBufferHealth);
   audio.addEventListener('timeupdate', function() {
     if (progressDragging) return;
-    
-    if (!audio.paused && audio.currentTime > 0) {
-      Engine.position.current = audio.currentTime;
-    }
-    
+    if (!audio.paused && audio.currentTime > 0) Engine.position.current = audio.currentTime;
     updateBufferHealth();
-    
     var pct = (audio.currentTime / audio.duration) * 100 || 0;
     progressFill.style.width = pct + '%';
     currentTimeEl.textContent = formatTime(audio.currentTime);
     remainingTime.textContent = '-' + formatTime(audio.duration - audio.currentTime);
-    
-    if ('mediaSession' in navigator && audio.duration) {
-      navigator.mediaSession.setPositionState({
-        duration: audio.duration,
-        playbackRate: audio.playbackRate,
-        position: audio.currentTime
-      });
-    }
+    if ('mediaSession' in navigator && audio.duration) navigator.mediaSession.setPositionState({ duration: audio.duration, playbackRate: audio.playbackRate, position: audio.currentTime });
   });
-  
-  audio.addEventListener('playing', function() {
-    log('EVENT: playing', 'success');
-    isPlaying = true;
-    updatePlayIcon(true);
-    hideStatus();
-    acquireWakeLock();
-    
-    // Reset recovery state on successful play
-    Engine.recovery.attempt = 0;
-    Engine.recovery.isActive = false;
-  });
+  audio.addEventListener('playing', function() { isPlaying = true; updatePlayIcon(true); hideStatus(); acquireWakeLock(); Engine.recovery.attempt = 0; Engine.recovery.isActive = false; });
 }
 
 // ============================================
@@ -1865,90 +1134,21 @@ function initAudioEvents() {
 // ============================================
 playBtn.addEventListener('click', function() {
   if (isPlaying) {
-    // STOP
-    log('USER: STOP');
-    Engine.intent.shouldBePlaying = false;
-    Engine.intent.pausedByUser = true;
-    Engine.recovery.isActive = false;
-    Engine.position.current = audio.currentTime;
-    clearRecoveryTimers();
-    audio.pause();
-    hideStatus();
-    savePositionToStorage();
+    Engine.intent.shouldBePlaying = false; Engine.intent.pausedByUser = true; Engine.recovery.isActive = false; Engine.position.current = audio.currentTime;
+    clearRecoveryTimers(); audio.pause(); hideStatus(); savePositionToStorage();
   } else {
-    // PLAY
-    log('USER: PLAY, savedPos=' + formatTime(Engine.position.current));
-    
-    Engine.intent.shouldBePlaying = true;
-    Engine.intent.pausedByUser = false;
-    Engine.intent.pausedBySystem = false;
-    Engine.recovery.isActive = false;
-    Engine.recovery.attempt = 0;
-    clearRecoveryTimers();
-    
-    var targetTime = Engine.position.current;
-    showStatus('Avvio...', 'warning', true);
-    
+    Engine.intent.shouldBePlaying = true; Engine.intent.pausedByUser = false; Engine.intent.pausedBySystem = false; Engine.recovery.isActive = false; Engine.recovery.attempt = 0;
+    clearRecoveryTimers(); var targetTime = Engine.position.current; showStatus('Avvio...', 'warning', true);
     if (!audio.src || audio.error || audio.readyState === 0) {
-      // Need to load
-      log('Loading audio source...');
-      var url = buildUrl(datePicker.value);
-      Engine.currentUrl = url;
-      audio.src = url;
-      
-      function onReady() {
-        audio.removeEventListener('canplay', onReady);
-        audio.removeEventListener('error', onLoadErr);
-        
-        if (targetTime > 0 && audio.duration && targetTime < audio.duration - 1) {
-          audio.currentTime = targetTime;
-          log('Restored position: ' + formatTime(targetTime));
-        }
-        
-        audio.play().catch(function(e) {
-          log('Play after load failed: ' + e.message, 'error');
-          showStatus('Errore. Riprova.', 'error');
-          Engine.intent.shouldBePlaying = false;
-        });
-      }
-      
-      function onLoadErr() {
-        audio.removeEventListener('canplay', onReady);
-        audio.removeEventListener('error', onLoadErr);
-        log('Load error', 'error');
-        showStatus('Errore caricamento', 'error');
-        Engine.intent.shouldBePlaying = false;
-      }
-      
-      audio.addEventListener('canplay', onReady);
-      audio.addEventListener('error', onLoadErr);
-      audio.load();
+      var url = buildUrl(datePicker.value); Engine.currentUrl = url; audio.src = url;
+      function onReady() { audio.removeEventListener('canplay', onReady); audio.removeEventListener('error', onLoadErr); if (targetTime > 0 && audio.duration && targetTime < audio.duration - 1) audio.currentTime = targetTime; audio.play().catch(function() { showStatus('Errore. Riprova.', 'error'); Engine.intent.shouldBePlaying = false; }); }
+      function onLoadErr() { audio.removeEventListener('canplay', onReady); audio.removeEventListener('error', onLoadErr); showStatus('Errore caricamento', 'error'); Engine.intent.shouldBePlaying = false; }
+      audio.addEventListener('canplay', onReady); audio.addEventListener('error', onLoadErr); audio.load();
     } else {
-      // Already loaded
-      if (targetTime > 0 && audio.duration && targetTime < audio.duration - 1) {
-        audio.currentTime = targetTime;
-      }
-      
+      if (targetTime > 0 && audio.duration && targetTime < audio.duration - 1) audio.currentTime = targetTime;
       audio.play().catch(function(e) {
-        log('Play failed: ' + e.message, 'error');
-        if (e.name === 'NotAllowedError') {
-          showStatus('Tocca di nuovo Play', 'warning');
-          Engine.intent.shouldBePlaying = false;
-        } else {
-          // Try reload
-          var url = buildUrl(datePicker.value);
-          Engine.currentUrl = url;
-          audio.src = url + '?_t=' + Date.now();
-          
-          audio.addEventListener('canplay', function onR() {
-            audio.removeEventListener('canplay', onR);
-            if (targetTime > 0 && audio.duration) {
-              audio.currentTime = targetTime;
-            }
-            audio.play();
-          });
-          audio.load();
-        }
+        if (e.name === 'NotAllowedError') { showStatus('Tocca di nuovo Play', 'warning'); Engine.intent.shouldBePlaying = false; }
+        else { var url = buildUrl(datePicker.value); Engine.currentUrl = url; audio.src = url + '?_t=' + Date.now(); audio.addEventListener('canplay', function onR() { audio.removeEventListener('canplay', onR); if (targetTime > 0 && audio.duration) audio.currentTime = targetTime; audio.play(); }); audio.load(); }
       });
     }
   }
@@ -1957,145 +1157,40 @@ playBtn.addEventListener('click', function() {
 // ============================================
 // DATE PICKER & NAVIGATION
 // ============================================
-var today = new Date();
-datePicker.value = today.toISOString().split('T')[0];
-datePicker.max = datePicker.value;
-
-datePickerBtn.addEventListener('click', function() {
-  datePicker.showPicker();
-});
-
-datePicker.addEventListener('change', function() {
-  updatePlayer();
-  updateNav();
-  updateFav();
-  updateMediaSession();
-});
+var today = new Date(); datePicker.value = today.toISOString().split('T')[0]; datePicker.max = datePicker.value;
+datePickerBtn.addEventListener('click', function() { datePicker.showPicker(); });
+datePicker.addEventListener('change', function() { updatePlayer(); updateNav(); updateFav(); updateMediaSession(); });
 
 function updatePlayer() {
-  var d = datePicker.value;
-  var url = buildUrl(d);
-  
-  log('updatePlayer: ' + d);
-  
-  clearRecoveryTimers();
-  Engine.currentUrl = url;
-  Engine.position.current = loadPositionFromStorage();
-  Engine.position.lastSaved = Engine.position.current;
-  Engine.recovery.attempt = 0;
-  Engine.recovery.isActive = false;
-  Engine.intent.shouldBePlaying = false;
-  
-  audio.src = url;
-  episodeDate.textContent = formatDate(d);
-  dateDisplay.textContent = formatDate(d);
-  isPlaying = false;
-  updatePlayIcon(false);
-  progressFill.style.width = '0%';
-  bufferBar.style.width = '0%';
-  currentTimeEl.textContent = formatTime(Engine.position.current);
-  remainingTime.textContent = '-0:00';
-  hideStatus();
+  var d = datePicker.value, url = buildUrl(d);
+  clearRecoveryTimers(); Engine.currentUrl = url; Engine.position.current = loadPositionFromStorage(); Engine.position.lastSaved = Engine.position.current;
+  Engine.recovery.attempt = 0; Engine.recovery.isActive = false; Engine.intent.shouldBePlaying = false;
+  audio.src = url; episodeDate.textContent = formatDate(d); dateDisplay.textContent = formatDate(d);
+  isPlaying = false; updatePlayIcon(false); progressFill.style.width = '0%'; bufferBar.style.width = '0%';
+  currentTimeEl.textContent = formatTime(Engine.position.current); remainingTime.textContent = '-0:00'; hideStatus();
 }
 
-function updateNav() {
-  var curr = new Date(datePicker.value);
-  var tod = new Date();
-  curr.setHours(0, 0, 0, 0);
-  tod.setHours(0, 0, 0, 0);
-  nextDay.disabled = curr >= tod;
-}
-
-function changeDay(delta) {
-  var d = new Date(datePicker.value);
-  d.setDate(d.getDate() + delta);
-  var str = d.toISOString().split('T')[0];
-  
-  if (str <= datePicker.max) {
-    datePicker.value = str;
-    updatePlayer();
-    updateNav();
-    updateFav();
-    updateMediaSession();
-  }
-}
-
+function updateNav() { var curr = new Date(datePicker.value), tod = new Date(); curr.setHours(0,0,0,0); tod.setHours(0,0,0,0); nextDay.disabled = curr >= tod; }
+function changeDay(delta) { var d = new Date(datePicker.value); d.setDate(d.getDate() + delta); var str = d.toISOString().split('T')[0]; if (str <= datePicker.max) { datePicker.value = str; updatePlayer(); updateNav(); updateFav(); updateMediaSession(); } }
 prevDay.addEventListener('click', function() { changeDay(-1); });
 nextDay.addEventListener('click', function() { changeDay(1); });
 
 // ============================================
-// SKIP BUTTONS
+// SKIP & PROGRESS
 // ============================================
-skipBack.addEventListener('click', function() {
-  var t = Math.max(0, audio.currentTime - 30);
-  Engine.position.current = t;
-  audio.currentTime = t;
-  log('Skip back: ' + formatTime(t));
-});
+skipBack.addEventListener('click', function() { var t = Math.max(0, audio.currentTime - 30); Engine.position.current = t; audio.currentTime = t; });
+skipForward.addEventListener('click', function() { var t = audio.currentTime + 30; Engine.position.current = t; audio.currentTime = t; });
 
-skipForward.addEventListener('click', function() {
-  var t = audio.currentTime + 30;
-  Engine.position.current = t;
-  audio.currentTime = t;
-  log('Skip forward: ' + formatTime(t));
-});
+function getProgressPct(e) { var r = progressBar.getBoundingClientRect(), x = e.touches ? e.touches[0].clientX : e.clientX; return Math.max(0, Math.min(1, (x - r.left) / r.width)); }
+function updateProgressUI(pct) { progressFill.style.width = (pct * 100) + '%'; if (audio.duration) { seekTime = pct * audio.duration; currentTimeEl.textContent = formatTime(seekTime); remainingTime.textContent = '-' + formatTime(audio.duration - seekTime); } }
+progressBar.addEventListener('mousedown', function(e) { progressDragging = true; updateProgressUI(getProgressPct(e)); });
+progressBar.addEventListener('touchstart', function(e) { e.preventDefault(); progressDragging = true; updateProgressUI(getProgressPct(e)); }, {passive: false});
+document.addEventListener('mousemove', function(e) { if (progressDragging) updateProgressUI(getProgressPct(e)); });
+document.addEventListener('touchmove', function(e) { if (progressDragging) updateProgressUI(getProgressPct(e)); }, {passive: true});
+document.addEventListener('mouseup', function() { if (progressDragging && audio.duration) { Engine.position.current = seekTime; audio.currentTime = seekTime; } progressDragging = false; });
+document.addEventListener('touchend', function() { if (progressDragging && audio.duration) { Engine.position.current = seekTime; audio.currentTime = seekTime; } progressDragging = false; });
 
 // ============================================
-// PROGRESS BAR
-// ============================================
-function getProgressPct(e) {
-  var r = progressBar.getBoundingClientRect();
-  var x = e.touches ? e.touches[0].clientX : e.clientX;
-  return Math.max(0, Math.min(1, (x - r.left) / r.width));
-}
-
-function updateProgressUI(pct) {
-  progressFill.style.width = (pct * 100) + '%';
-  if (audio.duration) {
-    seekTime = pct * audio.duration;
-    currentTimeEl.textContent = formatTime(seekTime);
-    remainingTime.textContent = '-' + formatTime(audio.duration - seekTime);
-  }
-}
-
-progressBar.addEventListener('mousedown', function(e) {
-  progressDragging = true;
-  updateProgressUI(getProgressPct(e));
-});
-
-progressBar.addEventListener('touchstart', function(e) {
-  e.preventDefault();
-  progressDragging = true;
-  updateProgressUI(getProgressPct(e));
-}, {passive: false});
-
-document.addEventListener('mousemove', function(e) {
-  if (progressDragging) updateProgressUI(getProgressPct(e));
-});
-
-document.addEventListener('touchmove', function(e) {
-  if (progressDragging) updateProgressUI(getProgressPct(e));
-}, {passive: true});
-
-document.addEventListener('mouseup', function() {
-  if (progressDragging && audio.duration) {
-    Engine.position.current = seekTime;
-    audio.currentTime = seekTime;
-    log('Seek to: ' + formatTime(seekTime));
-  }
-  progressDragging = false;
-});
-
-document.addEventListener('touchend', function() {
-  if (progressDragging && audio.duration) {
-    Engine.position.current = seekTime;
-    audio.currentTime = seekTime;
-    log('Seek to: ' + formatTime(seekTime));
-  }
-  progressDragging = false;
-});
-
-  // ============================================
 // THEME
 // ============================================
 var savedTheme = localStorage.getItem('bside-theme') || 'light';
@@ -2105,54 +1200,24 @@ function applyTheme(t) {
   if (t === 'dark') {
     document.documentElement.setAttribute('data-theme', 'dark');
     themeIcon.innerHTML = '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
-    themeColorMeta.content = '#2d3436';
+    themeColorMeta.content = '#0a0a12';
   } else {
     document.documentElement.removeAttribute('data-theme');
     themeIcon.innerHTML = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
-    themeColorMeta.content = '#e0e5ec';
+    themeColorMeta.content = '#f0f2f5';
   }
 }
 
-themeBtn.addEventListener('click', function() {
-  var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-  var newTheme = isDark ? 'light' : 'dark';
-  applyTheme(newTheme);
-  localStorage.setItem('bside-theme', newTheme);
-});
+themeBtn.addEventListener('click', function() { var isDark = document.documentElement.getAttribute('data-theme') === 'dark'; var newTheme = isDark ? 'light' : 'dark'; applyTheme(newTheme); localStorage.setItem('bside-theme', newTheme); });
 
 // ============================================
 // VOLUME
 // ============================================
-volumeNavBtn.addEventListener('click', function() {
-  volumeOverlay.classList.add('show');
-});
+volumeNavBtn.addEventListener('click', function() { volumeOverlay.classList.add('show'); });
+volumeOverlay.addEventListener('click', function(e) { if (e.target === volumeOverlay) volumeOverlay.classList.remove('show'); });
 
-volumeOverlay.addEventListener('click', function(e) {
-  if (e.target === volumeOverlay) {
-    volumeOverlay.classList.remove('show');
-  }
-});
-
-function updateVol(e) {
-  var r = volumeSlider.getBoundingClientRect();
-  var y = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
-  var pct = 1 - (y / r.height);
-  audio.volume = Math.max(0, Math.min(1, pct));
-  volumeFill.style.height = (audio.volume * 100) + '%';
-  updateVolIcon();
-}
-
-function updateVolIcon() {
-  var v = audio.volume;
-  if (v === 0) {
-    volumeIcon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>';
-  } else if (v < 0.5) {
-    volumeIcon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07"/>';
-  } else {
-    volumeIcon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07"/><path d="M19.07 4.93a10 10 0 010 14.14"/>';
-  }
-}
-
+function updateVol(e) { var r = volumeSlider.getBoundingClientRect(), y = (e.touches ? e.touches[0].clientY : e.clientY) - r.top, pct = 1 - (y / r.height); audio.volume = Math.max(0, Math.min(1, pct)); volumeFill.style.height = (audio.volume * 100) + '%'; updateVolIcon(); }
+function updateVolIcon() { var v = audio.volume; if (v === 0) volumeIcon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>'; else if (v < 0.5) volumeIcon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07"/>'; else volumeIcon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07"/><path d="M19.07 4.93a10 10 0 010 14.14"/>'; }
 volumeSlider.addEventListener('mousedown', function(e) { volDrag = true; updateVol(e); });
 volumeSlider.addEventListener('touchstart', function(e) { e.preventDefault(); volDrag = true; updateVol(e); });
 document.addEventListener('mousemove', function(e) { if (volDrag) updateVol(e); });
@@ -2163,288 +1228,74 @@ document.addEventListener('touchend', function() { volDrag = false; });
 // ============================================
 // SLEEP TIMER
 // ============================================
-sleepBtn.addEventListener('click', function() {
-  sleepOverlay.classList.add('show');
-});
-
-sleepOverlay.addEventListener('click', function(e) {
-  if (e.target === sleepOverlay) {
-    sleepOverlay.classList.remove('show');
-  }
-});
+sleepBtn.addEventListener('click', function() { sleepOverlay.classList.add('show'); });
+sleepOverlay.addEventListener('click', function(e) { if (e.target === sleepOverlay) sleepOverlay.classList.remove('show'); });
 
 var sleepOptions = document.querySelectorAll('.sleep-option');
-sleepOptions.forEach(function(opt) {
-  opt.addEventListener('click', function() {
-    var min = parseInt(opt.getAttribute('data-min'));
-    setSleep(min);
-    sleepOverlay.classList.remove('show');
-    sleepOptions.forEach(function(o) { o.classList.remove('selected'); });
-    if (min > 0) opt.classList.add('selected');
-  });
-});
+sleepOptions.forEach(function(opt) { opt.addEventListener('click', function() { var min = parseInt(opt.getAttribute('data-min')); setSleep(min); sleepOverlay.classList.remove('show'); sleepOptions.forEach(function(o) { o.classList.remove('selected'); }); if (min > 0) opt.classList.add('selected'); }); });
 
 function setSleep(min) {
-  if (sleepTimer) clearTimeout(sleepTimer);
-  if (sleepInterval) clearInterval(sleepInterval);
-  
-  if (min === 0) {
-    sleepEndTime = null;
-    sleepIcon.style.display = '';
-    sleepCountdown.style.display = 'none';
-    sleepBtn.classList.remove('active');
-    return;
-  }
-  
-  sleepEndTime = Date.now() + min * 60000;
-  sleepBtn.classList.add('active');
-  sleepIcon.style.display = 'none';
-  sleepCountdown.style.display = '';
-  updateSleepDisplay();
-  
+  if (sleepTimer) clearTimeout(sleepTimer); if (sleepInterval) clearInterval(sleepInterval);
+  if (min === 0) { sleepEndTime = null; sleepIcon.style.display = ''; sleepCountdown.style.display = 'none'; sleepBtn.classList.remove('active'); return; }
+  sleepEndTime = Date.now() + min * 60000; sleepBtn.classList.add('active'); sleepIcon.style.display = 'none'; sleepCountdown.style.display = ''; updateSleepDisplay();
   sleepInterval = setInterval(updateSleepDisplay, 1000);
-  
-  sleepTimer = setTimeout(function() {
-    Engine.intent.shouldBePlaying = false;
-    audio.pause();
-    updatePlayIcon(false);
-    isPlaying = false;
-    setSleep(0);
-    log('Sleep timer triggered - playback stopped');
-  }, min * 60000);
+  sleepTimer = setTimeout(function() { Engine.intent.shouldBePlaying = false; audio.pause(); updatePlayIcon(false); isPlaying = false; setSleep(0); }, min * 60000);
 }
 
-function updateSleepDisplay() {
-  if (!sleepEndTime) return;
-  var rem = Math.max(0, sleepEndTime - Date.now());
-  if (rem === 0) { setSleep(0); return; }
-  var m = Math.floor(rem / 60000);
-  var s = Math.floor((rem % 60000) / 1000);
-  sleepCountdown.textContent = m + ':' + (s < 10 ? '0' : '') + s;
-}
+function updateSleepDisplay() { if (!sleepEndTime) return; var rem = Math.max(0, sleepEndTime - Date.now()); if (rem === 0) { setSleep(0); return; } var m = Math.floor(rem / 60000), s = Math.floor((rem % 60000) / 1000); sleepCountdown.textContent = m + ':' + (s < 10 ? '0' : '') + s; }
 
 // ============================================
 // FAVORITES
 // ============================================
-favBtn.addEventListener('click', function() {
-  var d = datePicker.value;
-  var idx = favorites.indexOf(d);
-  
-  if (idx > -1) {
-    favorites.splice(idx, 1);
-  } else {
-    favorites.unshift(d);
-  }
-  
-  localStorage.setItem('bside-fav', JSON.stringify(favorites));
-  updateFav();
-});
-
-function updateFav() {
-  favBtn.classList.toggle('active', favorites.indexOf(datePicker.value) > -1);
-}
-
-menuBtn.addEventListener('click', function() {
-  renderFavList();
-  favOverlay.classList.add('show');
-});
-
-favOverlay.addEventListener('click', function(e) {
-  if (e.target === favOverlay) {
-    favOverlay.classList.remove('show');
-  }
-});
+favBtn.addEventListener('click', function() { var d = datePicker.value, idx = favorites.indexOf(d); if (idx > -1) favorites.splice(idx, 1); else favorites.unshift(d); localStorage.setItem('bside-fav', JSON.stringify(favorites)); updateFav(); });
+function updateFav() { favBtn.classList.toggle('active', favorites.indexOf(datePicker.value) > -1); }
+menuBtn.addEventListener('click', function() { renderFavList(); favOverlay.classList.add('show'); });
+favOverlay.addEventListener('click', function(e) { if (e.target === favOverlay) favOverlay.classList.remove('show'); });
 
 function renderFavList() {
-  if (favorites.length === 0) {
-    favList.innerHTML = '<div class="favorites-empty">Nessun preferito</div>';
-    return;
-  }
-  
-  var h = '';
-  for (var i = 0; i < favorites.length; i++) {
-    var d = favorites[i];
-    h += '<div class="fav-item" data-date="' + d + '">' +
-    '<span>' + formatDate(d) + '</span>' +
-    '<button class="fav-item-del" data-date="' + d + '">' +
-    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
-    '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>' +
-    '</svg></button></div>';
-  }
+  if (favorites.length === 0) { favList.innerHTML = '<div class="favorites-empty">Nessun preferito</div>'; return; }
+  var h = ''; for (var i = 0; i < favorites.length; i++) { var d = favorites[i]; h += '<div class="fav-item" data-date="' + d + '"><span>' + formatDate(d) + '</span><button class="fav-item-del" data-date="' + d + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>'; }
   favList.innerHTML = h;
-  
-  favList.querySelectorAll('.fav-item').forEach(function(item) {
-    item.addEventListener('click', function(e) {
-      if (!e.target.closest('.fav-item-del')) {
-        datePicker.value = item.getAttribute('data-date');
-        updatePlayer();
-        updateNav();
-        updateFav();
-        updateMediaSession();
-        favOverlay.classList.remove('show');
-      }
-    });
-  });
-  
-  favList.querySelectorAll('.fav-item-del').forEach(function(btn) {
-    btn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      var d = btn.getAttribute('data-date');
-      var idx = favorites.indexOf(d);
-      if (idx > -1) favorites.splice(idx, 1);
-      localStorage.setItem('bside-fav', JSON.stringify(favorites));
-      updateFav();
-      renderFavList();
-    });
-  });
+  favList.querySelectorAll('.fav-item').forEach(function(item) { item.addEventListener('click', function(e) { if (!e.target.closest('.fav-item-del')) { datePicker.value = item.getAttribute('data-date'); updatePlayer(); updateNav(); updateFav(); updateMediaSession(); favOverlay.classList.remove('show'); } }); });
+  favList.querySelectorAll('.fav-item-del').forEach(function(btn) { btn.addEventListener('click', function(e) { e.stopPropagation(); var d = btn.getAttribute('data-date'), idx = favorites.indexOf(d); if (idx > -1) favorites.splice(idx, 1); localStorage.setItem('bside-fav', JSON.stringify(favorites)); updateFav(); renderFavList(); }); });
 }
 
 // ============================================
-// MEDIA SESSION API
+// MEDIA SESSION
 // ============================================
-function updateMediaSession() {
-  if ('mediaSession' in navigator) {
-    navigator.mediaSession.metadata = new MediaMetadata({
-      title: 'Puntata del ' + formatDate(datePicker.value),
-      artist: 'Alessio Bertallot',
-      album: 'B-SIDE - Radio Capital',
-      artwork: [
-      {src: 'icon-192.png', sizes: '192x192', type: 'image/png'},
-      {src: 'icon-512.png', sizes: '512x512', type: 'image/png'}
-      ]
-    });
-  }
-}
-
+function updateMediaSession() { if ('mediaSession' in navigator) navigator.mediaSession.metadata = new MediaMetadata({ title: 'Puntata del ' + formatDate(datePicker.value), artist: 'Alessio Bertallot', album: 'B-SIDE - Radio Capital', artwork: [{src: 'icon-192.png', sizes: '192x192', type: 'image/png'}, {src: 'icon-512.png', sizes: '512x512', type: 'image/png'}] }); }
 if ('mediaSession' in navigator) {
-  navigator.mediaSession.setActionHandler('play', function() {
-    log('MediaSession: play');
-    Engine.intent.shouldBePlaying = true;
-    var t = Engine.position.current;
-    if (t > 0 && audio.duration && t < audio.duration) {
-      audio.currentTime = t;
-    }
-    audio.play();
-  });
-  
-  navigator.mediaSession.setActionHandler('pause', function() {
-    log('MediaSession: pause');
-    Engine.position.current = audio.currentTime;
-    Engine.intent.shouldBePlaying = false;
-    Engine.intent.pausedByUser = true;
-    audio.pause();
-  });
-  
-  navigator.mediaSession.setActionHandler('seekbackward', function() {
-    var t = Math.max(0, audio.currentTime - 30);
-    Engine.position.current = t;
-    audio.currentTime = t;
-  });
-  
-  navigator.mediaSession.setActionHandler('seekforward', function() {
-    var t = audio.currentTime + 30;
-    Engine.position.current = t;
-    audio.currentTime = t;
-  });
-  
-  navigator.mediaSession.setActionHandler('seekto', function(d) {
-    if (d.seekTime) {
-      Engine.position.current = d.seekTime;
-      audio.currentTime = d.seekTime;
-    }
-  });
+  navigator.mediaSession.setActionHandler('play', function() { Engine.intent.shouldBePlaying = true; if (Engine.position.current > 0 && audio.duration && Engine.position.current < audio.duration) audio.currentTime = Engine.position.current; audio.play(); });
+  navigator.mediaSession.setActionHandler('pause', function() { Engine.position.current = audio.currentTime; Engine.intent.shouldBePlaying = false; Engine.intent.pausedByUser = true; audio.pause(); });
+  navigator.mediaSession.setActionHandler('seekbackward', function() { var t = Math.max(0, audio.currentTime - 30); Engine.position.current = t; audio.currentTime = t; });
+  navigator.mediaSession.setActionHandler('seekforward', function() { var t = audio.currentTime + 30; Engine.position.current = t; audio.currentTime = t; });
+  navigator.mediaSession.setActionHandler('seekto', function(d) { if (d.seekTime) { Engine.position.current = d.seekTime; audio.currentTime = d.seekTime; } });
 }
 
 // ============================================
 // PWA INSTALL
 // ============================================
-window.addEventListener('beforeinstallprompt', function(e) {
-  e.preventDefault();
-  deferredPrompt = e;
-  document.getElementById('installPrompt').classList.add('show');
-});
-
-document.getElementById('installBtn').addEventListener('click', function() {
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-    deferredPrompt.userChoice.then(function() {
-      deferredPrompt = null;
-      document.getElementById('installPrompt').classList.remove('show');
-    });
-  }
-});
-
-document.getElementById('installClose').addEventListener('click', function() {
-  document.getElementById('installPrompt').classList.remove('show');
-});
-
-window.addEventListener('appinstalled', function() {
-  document.getElementById('installPrompt').classList.remove('show');
-});
+window.addEventListener('beforeinstallprompt', function(e) { e.preventDefault(); deferredPrompt = e; document.getElementById('installPrompt').classList.add('show'); });
+document.getElementById('installBtn').addEventListener('click', function() { if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt.userChoice.then(function() { deferredPrompt = null; document.getElementById('installPrompt').classList.remove('show'); }); } });
+document.getElementById('installClose').addEventListener('click', function() { document.getElementById('installPrompt').classList.remove('show'); });
+window.addEventListener('appinstalled', function() { document.getElementById('installPrompt').classList.remove('show'); });
 
 // ============================================
 // SERVICE WORKER
 // ============================================
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').then(function(r) {
-    log('Service Worker registered: ' + r.scope, 'success');
-  }).catch(function(e) {
-    log('Service Worker error: ' + e, 'error');
-  });
-}
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').then(function(){}).catch(function(){});
 
 // ============================================
 // INITIALIZATION
 // ============================================
 function init() {
-  log('=== B-SIDE Player v5 Initializing ===', 'success');
-  
-  // Initialize all subsystems
-  initNetworkMonitoring();
-  initPositionTracking();
-  initLifecycleManagement();
-  initAudioEvents();
-  
-  // Initial UI state
-  updatePlayer();
-  updateNav();
-  updateFav();
-  updateVolIcon();
-  updateMediaSession();
-  
-  // Clean old saved positions (every 7 days)
-  cleanOldPositions();
-  
-  log('=== Initialization complete ===', 'success');
-  log('Network: ' + (Engine.network.type || 'unknown') + ', quality: ' + Engine.network.quality, 'network');
+  initNetworkMonitoring(); initPositionTracking(); initLifecycleManagement(); initAudioEvents();
+  updatePlayer(); updateNav(); updateFav(); updateVolIcon(); updateMediaSession();
+  var maxAge = 30 * 24 * 60 * 60 * 1000, now = Date.now(), keysToRemove = [];
+  for (var i = 0; i < localStorage.length; i++) { var key = localStorage.key(i); if (key && key.startsWith('bside-pos-')) { try { var data = JSON.parse(localStorage.getItem(key)); if (now - data.timestamp > maxAge) keysToRemove.push(key); } catch(e) { keysToRemove.push(key); } } }
+  keysToRemove.forEach(function(k) { localStorage.removeItem(k); });
 }
 
-function cleanOldPositions() {
-  var maxAge = 30 * 24 * 60 * 60 * 1000;
-  var now = Date.now();
-  var keysToRemove = [];
-  
-  for (var i = 0; i < localStorage.length; i++) {
-    var key = localStorage.key(i);
-    if (key && key.startsWith('bside-pos-')) {
-      try {
-        var data = JSON.parse(localStorage.getItem(key));
-        if (now - data.timestamp > maxAge) {
-          keysToRemove.push(key);
-        }
-      } catch (e) {
-        keysToRemove.push(key);
-      }
-    }
-  }
-  
-  keysToRemove.forEach(function(k) {
-    localStorage.removeItem(k);
-    log('Cleaned old position: ' + k);
-  });
-}
-
-// Start the app
 init();
 </script>
 </body>
