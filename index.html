@@ -796,7 +796,7 @@ var Engine = {
     lastEventTime: 0, lastRecoveryTime: 0, minEventInterval: 2000, eventDrivenEnabled: true
   },
   intent: { shouldBePlaying: false, pausedByUser: false, pausedBySystem: false },
-  lifecycle: { isVisible: true, isActive: true, wakeLock: null, lastActiveTime: Date.now() }
+  lifecycle: { isVisible: true, isActive: true, lastActiveTime: Date.now() }
 };
 
 // ============================================
@@ -1067,20 +1067,22 @@ function attemptPlay() {
 }
 
 function onRecoverySuccess() {
-  Engine.recovery.isActive = false; Engine.recovery.attempt = 0; Engine.recovery.startTime = null; Engine.recovery.strategy = 'seek'; Engine.recovery.lastRecoveryTime = Date.now(); Engine.intent.pausedBySystem = false;
-  clearRecoveryTimers(); hideStatus(); hideNetworkIndicator(); acquireWakeLock();
+  Engine.recovery.isActive = false; 
+  Engine.recovery.attempt = 0; 
+  Engine.recovery.startTime = null; 
+  Engine.recovery.strategy = 'seek'; 
+  Engine.recovery.lastRecoveryTime = Date.now(); 
+  Engine.intent.pausedBySystem = false;
+  clearRecoveryTimers(); 
+  hideStatus(); 
+  hideNetworkIndicator();
 }
+
 </script>
 <script>
 // ============================================
-// WAKE LOCK & LIFECYCLE
+// LIFECYCLE MANAGEMENT
 // ============================================
-async function acquireWakeLock() {
-  if (!('wakeLock' in navigator) || !Engine.lifecycle.isVisible || Engine.lifecycle.wakeLock) return;
-  try { Engine.lifecycle.wakeLock = await navigator.wakeLock.request('screen'); Engine.lifecycle.wakeLock.addEventListener('release', function() { Engine.lifecycle.wakeLock = null; if (Engine.intent.shouldBePlaying && Engine.lifecycle.isVisible) setTimeout(acquireWakeLock, 1000); }); } catch(e){}
-}
-
-function releaseWakeLock() { if (Engine.lifecycle.wakeLock) { Engine.lifecycle.wakeLock.release(); Engine.lifecycle.wakeLock = null; } }
 
 function initLifecycleManagement() {
   document.addEventListener('visibilitychange', function() { Engine.lifecycle.isVisible = document.visibilityState === 'visible'; if (Engine.lifecycle.isVisible) onAppVisible(); else onAppHidden(); });
@@ -1092,7 +1094,6 @@ function initLifecycleManagement() {
 
 function onAppVisible() {
   var hiddenDuration = Math.round((Date.now() - Engine.lifecycle.lastActiveTime) / 1000); updateNetworkInfo();
-  if (Engine.intent.shouldBePlaying) acquireWakeLock();
   if (Engine.intent.shouldBePlaying && audio.paused && !Engine.recovery.isActive) { if (hiddenDuration > 30) Engine.recovery.attempt = 0; startRecovery(); }
   if (audio.currentTime > 0 && Math.abs(audio.currentTime - Engine.position.current) > 2) Engine.position.current = audio.currentTime;
 }
@@ -1104,18 +1105,26 @@ function onAppHidden() { savePositionToStorage(); Engine.lifecycle.lastActiveTim
 // ============================================
 function initAudioEvents() {
   audio.addEventListener('loadedmetadata', function() { remainingTime.textContent = '-' + formatTime(audio.duration); });
+
   audio.addEventListener('canplay', function() {
     if (Engine.intent.shouldBePlaying && audio.paused) {
       if (Engine.position.current > 0 && audio.duration && Engine.position.current < audio.duration - 1) audio.currentTime = Engine.position.current;
       audio.play().then(onRecoverySuccess).catch(function(){});
     }
   });
+
   audio.addEventListener('stalled', function() { if (!Engine.intent.shouldBePlaying) return; showStatus('Connessione lenta...', 'warning', true); if (triggerEventDrivenRecovery('stalled')) return; setTimeout(function() { if (Engine.intent.shouldBePlaying && (audio.paused || audio.readyState < 3)) startRecovery(); }, 4000); });
-  audio.addEventListener('pause', function() { isPlaying = false; updatePlayIcon(false); if (!Engine.recovery.isActive && !Engine.intent.pausedByUser) releaseWakeLock(); });
-  audio.addEventListener('ended', function() { isPlaying = false; Engine.intent.shouldBePlaying = false; Engine.position.current = 0; updatePlayIcon(false); releaseWakeLock(); clearRecoveryTimers(); });
+  
+  audio.addEventListener('pause', function() { isPlaying = false; updatePlayIcon(false); });
+  
+  audio.addEventListener('ended', function() { isPlaying = false; Engine.intent.shouldBePlaying = false; Engine.position.current = 0; updatePlayIcon(false); clearRecoveryTimers(); });
+  
   audio.addEventListener('waiting', function() { if (!Engine.intent.shouldBePlaying) return; showStatus('Buffering... (' + Engine.buffer.ahead.toFixed(1) + 's)', 'warning', true); if (triggerEventDrivenRecovery('waiting')) return; setTimeout(function() { if (Engine.intent.shouldBePlaying && (audio.paused || audio.readyState < 3)) startRecovery(); }, 6000); });
+  
   audio.addEventListener('error', function() { var err = audio.error; if (Engine.position.current > 0) savePositionToStorage(); isPlaying = false; updatePlayIcon(false); if (!Engine.intent.shouldBePlaying) return; if (err && (err.code === 2 || err.code === 4) && triggerEventDrivenRecovery('error')) return; if (err && err.code === 4 && !Engine.recovery.isActive && navigator.onLine) { showStatus('Puntata non disponibile', 'error'); Engine.intent.shouldBePlaying = false; } else startRecovery(); });
+  
   audio.addEventListener('progress', updateBufferHealth);
+  
   audio.addEventListener('timeupdate', function() {
     if (progressDragging) return;
     if (!audio.paused && audio.currentTime > 0) Engine.position.current = audio.currentTime;
@@ -1126,7 +1135,7 @@ function initAudioEvents() {
     remainingTime.textContent = '-' + formatTime(audio.duration - audio.currentTime);
     if ('mediaSession' in navigator && audio.duration) navigator.mediaSession.setPositionState({ duration: audio.duration, playbackRate: audio.playbackRate, position: audio.currentTime });
   });
-  audio.addEventListener('playing', function() { isPlaying = true; updatePlayIcon(true); hideStatus(); acquireWakeLock(); Engine.recovery.attempt = 0; Engine.recovery.isActive = false; });
+  audio.addEventListener('playing', function() { isPlaying = true; updatePlayIcon(true); hideStatus(); Engine.recovery.attempt = 0; Engine.recovery.isActive = false; });
 }
 
 // ============================================
