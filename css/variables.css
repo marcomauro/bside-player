@@ -1,0 +1,32 @@
+/* ============================================
+   B-SIDE - CSS Variables (Temi Light/Dark)
+   ============================================ */
+
+:root {
+  --bg-main: #f5f5f7;
+  --player-bg: rgba(255, 255, 255, 0.85);
+  --player-border: rgba(0, 0, 0, 0.06);
+  --text-primary: #1d1d1f;
+  --text-secondary: #86868b;
+  --accent: #007aff;
+  --progress-bg: rgba(0, 0, 0, 0.08);
+  --progress-fill: #1d1d1f;
+  --control-hover: rgba(0, 0, 0, 0.05);
+  --shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+  --blur: saturate(180%) blur(20px);
+  --safe-top: env(safe-area-inset-top);
+  --safe-bottom: env(safe-area-inset-bottom);
+}
+
+[data-theme="dark"] {
+  --bg-main: #000000;
+  --player-bg: rgba(28, 28, 30, 0.85);
+  --player-border: rgba(255, 255, 255, 0.06);
+  --text-primary: #f5f5f7;
+  --text-secondary: #8e8e93;
+  --accent: #0a84ff;
+  --progress-bg: rgba(255, 255, 255, 0.12);
+  --progress-fill: #f5f5f7;
+  --control-hover: rgba(255, 255, 255, 0.08);
+  --shadow: 0 2px 20px rgba(0, 0, 0, 0.4);
+}

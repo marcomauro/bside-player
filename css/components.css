@@ -1,0 +1,489 @@
+/* ============================================
+   B-SIDE - Components (Pulsanti, Artwork, etc.)
+   ============================================ */
+
+/* Icon Button (Header) */
+.icon-btn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.icon-btn:active {
+  background: var(--control-hover);
+  transform: scale(0.95);
+}
+
+.icon-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+.icon-btn.active,
+.fav-btn.active {
+  color: #ff3b30;
+}
+
+/* Artwork */
+.artwork {
+  width: 100%;
+  max-width: 280px;
+  aspect-ratio: 1;
+  background: linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f0f1a 100%);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.artwork-title {
+  color: #fff;
+  font-size: 42px;
+  font-weight: 700;
+  letter-spacing: -1px;
+}
+
+.artwork-subtitle {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 6px;
+  letter-spacing: 2px;
+}
+
+/* Progress Bar */
+.progress-bar {
+  height: 4px;
+  background: var(--progress-bg);
+  border-radius: 2px;
+  cursor: pointer;
+  position: relative;
+  overflow: visible;
+}
+
+.buffer-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 2px;
+}
+
+[data-theme="dark"] .buffer-bar {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--progress-fill);
+  border-radius: 2px;
+  width: 0%;
+  position: relative;
+}
+
+.progress-thumb {
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  background: var(--text-primary);
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.progress-bar:active .progress-thumb,
+.progress-bar.dragging .progress-thumb {
+  opacity: 1;
+}
+
+/* Control Buttons */
+.ctrl-btn {
+  width: 52px;
+  height: 52px;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.12s ease;
+}
+
+.ctrl-btn:active {
+  transform: scale(0.9);
+  opacity: 0.7;
+}
+
+.ctrl-btn svg {
+  width: 28px;
+  height: 28px;
+  fill: currentColor;
+}
+
+.ctrl-btn.skip-btn {
+  width: 44px;
+  height: 44px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.ctrl-btn.nav-btn {
+  width: 44px;
+  height: 44px;
+}
+
+.ctrl-btn.nav-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+.play-btn {
+  width: 72px;
+  height: 72px;
+  background: var(--text-primary);
+  color: var(--bg-main);
+}
+
+.play-btn svg {
+  width: 32px;
+  height: 32px;
+}
+
+[data-theme="dark"] .play-btn {
+  color: #000;
+}
+
+/* Date Navigation */
+.date-nav-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.12s ease;
+}
+
+.date-nav-btn:active:not(:disabled) {
+  background: var(--control-hover);
+  transform: scale(0.95);
+}
+
+.date-nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.date-nav-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.date-picker-btn {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+.date-picker-btn:active {
+  background: var(--control-hover);
+}
+
+.date-display {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.date-picker-btn input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Secondary Buttons */
+.secondary-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.12s ease;
+  position: relative;
+}
+
+.secondary-btn:active {
+  background: var(--control-hover);
+  transform: scale(0.95);
+}
+
+.secondary-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.secondary-btn.active {
+  color: var(--accent);
+}
+
+.sleep-countdown {
+  font-size: 10px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+}
+
+/* Popup Overlay */
+.popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 100;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.popup-overlay.show {
+  display: flex;
+}
+
+.popup-content {
+  width: 100%;
+  max-width: 500px;
+  background: var(--player-bg);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border-radius: 16px 16px 0 0;
+  border: 1px solid var(--player-border);
+  border-bottom: none;
+  overflow: hidden;
+  animation: slideUp 0.25s ease-out;
+  padding-bottom: var(--safe-bottom);
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.popup-header {
+  padding: 20px 20px 16px;
+  text-align: center;
+  position: relative;
+}
+
+.popup-header::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 36px;
+  height: 4px;
+  background: var(--progress-bg);
+  border-radius: 2px;
+}
+
+.popup-header h3 {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Volume Slider */
+.volume-content {
+  padding: 8px 24px 32px;
+}
+
+.volume-slider-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.volume-slider-container svg {
+  width: 20px;
+  height: 20px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.volume-slider {
+  flex: 1;
+  height: 6px;
+  background: var(--progress-bg);
+  border-radius: 3px;
+  cursor: pointer;
+  position: relative;
+}
+
+.volume-fill {
+  height: 100%;
+  background: var(--progress-fill);
+  border-radius: 3px;
+  width: 100%;
+}
+
+/* Sleep Options */
+.sleep-options {
+  padding: 0 0 8px;
+}
+
+.sleep-option {
+  padding: 16px 24px;
+  font-size: 17px;
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: center;
+}
+
+.sleep-option:active {
+  background: var(--control-hover);
+}
+
+.sleep-option.selected {
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.sleep-option:last-child {
+  color: #ff3b30;
+}
+
+/* Favorites List */
+.favorites-content {
+  max-height: 50vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.fav-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  cursor: pointer;
+}
+
+.fav-item:active {
+  background: var(--control-hover);
+}
+
+.fav-item span {
+  font-size: 17px;
+  color: var(--text-primary);
+}
+
+.fav-item-del {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fav-item-del:active {
+  color: #ff3b30;
+}
+
+.fav-item-del svg {
+  width: 18px;
+  height: 18px;
+}
+
+.favorites-empty {
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 15px;
+}
+
+/* Install Prompt */
+.install-prompt {
+  position: fixed;
+  bottom: calc(16px + var(--safe-bottom));
+  left: 16px;
+  right: 16px;
+  max-width: 400px;
+  margin: 0 auto;
+  background: var(--player-bg);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border-radius: 14px;
+  border: 1px solid var(--player-border);
+  box-shadow: var(--shadow);
+  padding: 14px 16px;
+  display: none;
+  align-items: center;
+  gap: 12px;
+  z-index: 50;
+}
+
+.install-prompt.show {
+  display: flex;
+}
+
+.install-prompt p {
+  flex: 1;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.install-btn {
+  padding: 10px 16px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.install-close {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

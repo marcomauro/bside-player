@@ -8,258 +8,17 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="B-SIDE">
   <title>B-SIDE</title>
-  
+
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
   <link rel="apple-touch-icon" href="icon-192.png">
-  
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    
-    :root {
-      --bg-main: #f5f5f7;
-      --player-bg: rgba(255, 255, 255, 0.85);
-      --player-border: rgba(0, 0, 0, 0.06);
-      --text-primary: #1d1d1f;
-      --text-secondary: #86868b;
-      --accent: #007aff;
-      --progress-bg: rgba(0, 0, 0, 0.08);
-      --progress-fill: #1d1d1f;
-      --control-hover: rgba(0, 0, 0, 0.05);
-      --shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
-      --blur: saturate(180%) blur(20px);
-      --safe-top: env(safe-area-inset-top);
-      --safe-bottom: env(safe-area-inset-bottom);
-    }
-    
-    [data-theme="dark"] {
-      --bg-main: #000000;
-      --player-bg: rgba(28, 28, 30, 0.85);
-      --player-border: rgba(255, 255, 255, 0.06);
-      --text-primary: #f5f5f7;
-      --text-secondary: #8e8e93;
-      --accent: #0a84ff;
-      --progress-bg: rgba(255, 255, 255, 0.12);
-      --progress-fill: #f5f5f7;
-      --control-hover: rgba(255, 255, 255, 0.08);
-      --shadow: 0 2px 20px rgba(0, 0, 0, 0.4);
-    }
-    
-    html, body { height: 100%; overflow: hidden; }
-    
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
-      background: var(--bg-main);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      transition: background-color 0.3s ease;
-      -webkit-font-smoothing: antialiased;
-    }
 
-    .player {
-      width: 100%; height: 100%;
-      background: var(--player-bg);
-      backdrop-filter: var(--blur);
-      -webkit-backdrop-filter: var(--blur);
-      display: flex;
-      flex-direction: column;
-      padding: calc(20px + var(--safe-top)) 24px calc(20px + var(--safe-bottom));
-    }
-
-    .player-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-    }
-
-    .header-actions { display: flex; align-items: center; gap: 4px; }
-
-    .icon-btn {
-      width: 40px; height: 40px;
-      border: none; background: transparent;
-      color: var(--text-secondary);
-      border-radius: 50%; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: all 0.15s ease;
-    }
-    .icon-btn:active { background: var(--control-hover); transform: scale(0.95); }
-    .icon-btn svg { width: 22px; height: 22px; }
-    .icon-btn.active, .fav-btn.active { color: #ff3b30; }
-
-    .artwork-container {
-      flex: 1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 16px 0;
-      min-height: 0;
-    }
-
-    .artwork {
-      width: 100%; max-width: 280px;
-      aspect-ratio: 1;
-      background: linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f0f1a 100%);
-      border-radius: 20px;
-      display: flex; flex-direction: column;
-      justify-content: center; align-items: center;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-    }
-    .artwork-title { color: #fff; font-size: 42px; font-weight: 700; letter-spacing: -1px; }
-    .artwork-subtitle { color: rgba(255,255,255,0.5); font-size: 11px; font-weight: 600; margin-top: 6px; letter-spacing: 2px; }
-
-    .track-info { text-align: center; padding: 16px 0 20px; }
-    .track-title { font-size: 20px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
-    .track-artist { font-size: 16px; color: var(--text-secondary); }
-
-    .progress-container { padding: 0 0 8px; }
-    .progress-bar {
-      height: 4px; background: var(--progress-bg);
-      border-radius: 2px; cursor: pointer;
-      position: relative; overflow: visible;
-    }
-    .buffer-bar { position: absolute; top: 0; left: 0; height: 100%; background: rgba(0,0,0,0.04); border-radius: 2px; }
-    [data-theme="dark"] .buffer-bar { background: rgba(255,255,255,0.06); }
-    .progress-fill { height: 100%; background: var(--progress-fill); border-radius: 2px; width: 0%; position: relative; }
-    .progress-thumb {
-      position: absolute; right: -6px; top: 50%;
-      transform: translateY(-50%);
-      width: 14px; height: 14px;
-      background: var(--text-primary);
-      border-radius: 50%; opacity: 0;
-      transition: opacity 0.15s ease;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
-    }
-    .progress-bar:active .progress-thumb, .progress-bar.dragging .progress-thumb { opacity: 1; }
-    .time-display {
-      display: flex; justify-content: space-between;
-      margin-top: 8px; font-size: 12px; font-weight: 500;
-      color: var(--text-secondary); font-variant-numeric: tabular-nums;
-    }
-
-    .controls {
-      display: flex; align-items: center; justify-content: center;
-      padding: 12px 0 20px; gap: 24px;
-    }
-    .ctrl-btn {
-      width: 52px; height: 52px;
-      border: none; background: transparent;
-      color: var(--text-primary); border-radius: 50%;
-      cursor: pointer; display: flex;
-      align-items: center; justify-content: center;
-      transition: all 0.12s ease;
-    }
-    .ctrl-btn:active { transform: scale(0.9); opacity: 0.7; }
-    .ctrl-btn svg { width: 28px; height: 28px; fill: currentColor; }
-    .ctrl-btn.skip-btn { width: 44px; height: 44px; font-size: 14px; font-weight: 600; }
-    .ctrl-btn.nav-btn { width: 44px; height: 44px; }
-    .ctrl-btn.nav-btn svg { width: 24px; height: 24px; }
-    .play-btn { width: 72px; height: 72px; background: var(--text-primary); color: var(--bg-main); }
-    .play-btn svg { width: 32px; height: 32px; }
-    [data-theme="dark"] .play-btn { color: #000; }
-
-    .bottom-bar {
-      display: flex; align-items: center; justify-content: space-between;
-      padding-top: 8px; border-top: 1px solid var(--player-border);
-    }
-    .date-selector { display: flex; align-items: center; gap: 4px; }
-    .date-nav-btn {
-      width: 36px; height: 36px;
-      border: none; background: transparent;
-      color: var(--text-secondary); border-radius: 50%;
-      cursor: pointer; display: flex;
-      align-items: center; justify-content: center;
-      transition: all 0.12s ease;
-    }
-    .date-nav-btn:active:not(:disabled) { background: var(--control-hover); transform: scale(0.95); }
-    .date-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-    .date-nav-btn svg { width: 18px; height: 18px; }
-    .date-picker-btn { display: flex; align-items: center; cursor: pointer; padding: 8px 12px; border-radius: 8px; }
-    .date-picker-btn:active { background: var(--control-hover); }
-    .date-display { font-size: 14px; font-weight: 500; color: var(--text-primary); }
-    .date-picker-btn input { position: absolute; opacity: 0; pointer-events: none; }
-    .secondary-controls { display: flex; align-items: center; gap: 4px; }
-    .secondary-btn {
-      width: 36px; height: 36px;
-      border: none; background: transparent;
-      color: var(--text-secondary); border-radius: 50%;
-      cursor: pointer; display: flex;
-      align-items: center; justify-content: center;
-      transition: all 0.12s ease; position: relative;
-    }
-    .secondary-btn:active { background: var(--control-hover); transform: scale(0.95); }
-    .secondary-btn svg { width: 18px; height: 18px; }
-    .secondary-btn.active { color: var(--accent); }
-    .sleep-countdown { font-size: 10px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--accent); }
-
-    .popup-overlay {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.4);
-      display: none; align-items: flex-end; justify-content: center;
-      z-index: 100;
-      backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
-    }
-    .popup-overlay.show { display: flex; }
-    .popup-content {
-      width: 100%; max-width: 500px;
-      background: var(--player-bg);
-      backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
-      border-radius: 16px 16px 0 0;
-      border: 1px solid var(--player-border); border-bottom: none;
-      overflow: hidden; animation: slideUp 0.25s ease-out;
-      padding-bottom: var(--safe-bottom);
-    }
-    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-    .popup-header { padding: 20px 20px 16px; text-align: center; position: relative; }
-    .popup-header::before {
-      content: ''; position: absolute; top: 8px; left: 50%;
-      transform: translateX(-50%); width: 36px; height: 4px;
-      background: var(--progress-bg); border-radius: 2px;
-    }
-    .popup-header h3 { font-size: 17px; font-weight: 600; color: var(--text-primary); }
-    .volume-content { padding: 8px 24px 32px; }
-    .volume-slider-container { display: flex; align-items: center; gap: 12px; }
-    .volume-slider-container svg { width: 20px; height: 20px; color: var(--text-secondary); flex-shrink: 0; }
-    .volume-slider { flex: 1; height: 6px; background: var(--progress-bg); border-radius: 3px; cursor: pointer; position: relative; }
-    .volume-fill { height: 100%; background: var(--progress-fill); border-radius: 3px; width: 100%; }
-    .sleep-options { padding: 0 0 8px; }
-    .sleep-option { padding: 16px 24px; font-size: 17px; color: var(--text-primary); cursor: pointer; text-align: center; }
-    .sleep-option:active { background: var(--control-hover); }
-    .sleep-option.selected { color: var(--accent); font-weight: 500; }
-    .sleep-option:last-child { color: #ff3b30; }
-    .favorites-content { max-height: 50vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-    .fav-item { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; cursor: pointer; }
-    .fav-item:active { background: var(--control-hover); }
-    .fav-item span { font-size: 17px; color: var(--text-primary); }
-    .fav-item-del { width: 32px; height: 32px; border: none; background: transparent; color: var(--text-secondary); border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-    .fav-item-del:active { color: #ff3b30; }
-    .fav-item-del svg { width: 18px; height: 18px; }
-    .favorites-empty { padding: 48px 24px; text-align: center; color: var(--text-secondary); font-size: 15px; }
-
-    .install-prompt {
-      position: fixed; bottom: calc(16px + var(--safe-bottom)); left: 16px; right: 16px;
-      max-width: 400px; margin: 0 auto;
-      background: var(--player-bg);
-      backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
-      border-radius: 14px; border: 1px solid var(--player-border);
-      box-shadow: var(--shadow); padding: 14px 16px;
-      display: none; align-items: center; gap: 12px; z-index: 50;
-    }
-    .install-prompt.show { display: flex; }
-    .install-prompt p { flex: 1; font-size: 14px; color: var(--text-primary); }
-    .install-btn { padding: 10px 16px; background: var(--accent); color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; }
-    .install-close { width: 32px; height: 32px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; }
-
-    @media (min-width: 500px) and (min-height: 600px) {
-      body { padding: 24px; }
-      .player { max-width: 400px; max-height: 680px; height: auto; border-radius: 24px; border: 1px solid var(--player-border); box-shadow: var(--shadow); padding: 24px 28px; }
-      .artwork { max-width: 260px; }
-      .popup-content { max-width: 400px; border-radius: 16px; margin: auto auto 24px; border: 1px solid var(--player-border); }
-    }
-    @media (min-width: 768px) { .player { max-width: 420px; } .artwork { max-width: 280px; } }
-    audio { display: none; }
-  </style>
+  <!-- CSS Modules -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/responsive.css">
 </head>
 <body>
   <div class="player">
@@ -311,328 +70,57 @@
       </div>
     </div>
   </div>
-  <div class="popup-overlay" id="volumeOverlay"><div class="popup-content"><div class="popup-header"><h3>Volume</h3></div><div class="volume-content"><div class="volume-slider-container"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"/></svg><div class="volume-slider" id="volumeSlider"><div class="volume-fill" id="volumeFill"></div></div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07"/><path d="M19.07 4.93a10 10 0 010 14.14"/></svg></div></div></div></div>
-  <div class="popup-overlay" id="sleepOverlay"><div class="popup-content"><div class="popup-header"><h3>Timer Spegnimento</h3></div><div class="sleep-options"><div class="sleep-option" data-min="5">5 minuti</div><div class="sleep-option" data-min="15">15 minuti</div><div class="sleep-option" data-min="30">30 minuti</div><div class="sleep-option" data-min="45">45 minuti</div><div class="sleep-option" data-min="60">1 ora</div><div class="sleep-option" data-min="0">Disattiva</div></div></div></div>
-  <div class="popup-overlay" id="favOverlay"><div class="popup-content"><div class="popup-header"><h3>Preferiti</h3></div><div class="favorites-content" id="favList"></div></div></div>
-  <div class="install-prompt" id="installPrompt"><p>Installa B-SIDE</p><button class="install-btn" id="installBtn">Installa</button><button class="install-close" id="installClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+
+  <!-- Popup Overlays -->
+  <div class="popup-overlay" id="volumeOverlay">
+    <div class="popup-content">
+      <div class="popup-header"><h3>Volume</h3></div>
+      <div class="volume-content">
+        <div class="volume-slider-container">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"/></svg>
+          <div class="volume-slider" id="volumeSlider"><div class="volume-fill" id="volumeFill"></div></div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07"/><path d="M19.07 4.93a10 10 0 010 14.14"/></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="popup-overlay" id="sleepOverlay">
+    <div class="popup-content">
+      <div class="popup-header"><h3>Timer Spegnimento</h3></div>
+      <div class="sleep-options">
+        <div class="sleep-option" data-min="5">5 minuti</div>
+        <div class="sleep-option" data-min="15">15 minuti</div>
+        <div class="sleep-option" data-min="30">30 minuti</div>
+        <div class="sleep-option" data-min="45">45 minuti</div>
+        <div class="sleep-option" data-min="60">1 ora</div>
+        <div class="sleep-option" data-min="0">Disattiva</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="popup-overlay" id="favOverlay">
+    <div class="popup-content">
+      <div class="popup-header"><h3>Preferiti</h3></div>
+      <div class="favorites-content" id="favList"></div>
+    </div>
+  </div>
+
+  <!-- Install Prompt -->
+  <div class="install-prompt" id="installPrompt">
+    <p>Installa B-SIDE</p>
+    <button class="install-btn" id="installBtn">Installa</button>
+    <button class="install-close" id="installClose">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Audio Element -->
   <audio id="audio" preload="auto"></audio>
-  <script>
-var Engine = {
-  audio: null, currentUrl: '',
-  position: { current: 0, lastSaved: 0, saveInterval: null },
-  buffer: { ahead: 0, minHealthy: 10, isHealthy: false, percent: 0 },
-  network: { isOnline: navigator.onLine, type: null, downlink: null, rtt: null, saveData: false, quality: 100 },
-  recovery: { isActive: false, startTime: null, attempt: 0, maxAttempts: 35, strategy: 'seek', timer: null, watchdog: null, watchdogTimeout: 20000, scheduledAt: null, expectedDelay: null, lastEventTime: 0, lastRecoveryTime: 0, minEventInterval: 2000 },
-  intent: { shouldBePlaying: false, pausedByUser: false, pausedBySystem: false },
-  lifecycle: { isVisible: true, isActive: true, lastActiveTime: Date.now() }
-};
 
-var audio = document.getElementById('audio');
-var datePicker = document.getElementById('datePicker');
-var datePickerBtn = document.getElementById('datePickerBtn');
-var dateDisplay = document.getElementById('dateDisplay');
-var episodeDate = document.getElementById('episodeDate');
-var progressBar = document.getElementById('progressBar');
-var progressFill = document.getElementById('progressFill');
-var bufferBar = document.getElementById('bufferBar');
-var currentTimeEl = document.getElementById('currentTime');
-var remainingTime = document.getElementById('remainingTime');
-var playBtn = document.getElementById('playBtn');
-var playIcon = document.getElementById('playIcon');
-var prevDay = document.getElementById('prevDay');
-var nextDay = document.getElementById('nextDay');
-var prevDayNav = document.getElementById('prevDayNav');
-var nextDayNav = document.getElementById('nextDayNav');
-var skipBack = document.getElementById('skipBack');
-var skipForward = document.getElementById('skipForward');
-var favBtn = document.getElementById('favBtn');
-var sleepBtn = document.getElementById('sleepBtn');
-var sleepIcon = document.getElementById('sleepIcon');
-var sleepCountdown = document.getElementById('sleepCountdown');
-var volumeNavBtn = document.getElementById('volumeNavBtn');
-var volumeIcon = document.getElementById('volumeIcon');
-var themeBtn = document.getElementById('themeBtn');
-var themeIcon = document.getElementById('themeIcon');
-var volumeOverlay = document.getElementById('volumeOverlay');
-var volumeSlider = document.getElementById('volumeSlider');
-var volumeFill = document.getElementById('volumeFill');
-var sleepOverlay = document.getElementById('sleepOverlay');
-var favOverlay = document.getElementById('favOverlay');
-var favList = document.getElementById('favList');
-var menuBtn = document.getElementById('menuBtn');
-var themeColorMeta = document.getElementById('themeColor');
-
-var isPlaying = false, sleepTimer = null, sleepEndTime = null, sleepInterval = null;
-var favorites = JSON.parse(localStorage.getItem('bside-fav') || '[]');
-var deferredPrompt = null, progressDragging = false, seekTime = 0, volDrag = false;
-Engine.audio = audio;
-
-function formatTime(s) { if (isNaN(s) || s < 0) return '0:00'; var m = Math.floor(s / 60), sec = Math.floor(s % 60); return m + ':' + (sec < 10 ? '0' : '') + sec; }
-function formatDate(d) { var p = d.split('-'); return p[2] + '/' + p[1] + '/' + p[0]; }
-function buildUrl(d) { var p = d.split('-'); return 'https://media.capital.it/' + p[0] + '/' + p[1] + '/' + p[2] + '/episodes/bertallot/bertallot_' + p[0] + p[1] + p[2] + '_220000.mp3'; }
-function updatePlayIcon(playing) { playIcon.innerHTML = playing ? '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>' : '<polygon points="6,4 20,12 6,20"/>'; }
-
-function initNetworkMonitoring() {
-  updateNetworkInfo();
-  window.addEventListener('online', handleOnline);
-  window.addEventListener('offline', handleOffline);
-  if ('connection' in navigator) navigator.connection.addEventListener('change', function() { var oldQ = Engine.network.quality; updateNetworkInfo(); if (Engine.intent.shouldBePlaying && Engine.network.quality > oldQ) { Engine.recovery.attempt = Math.max(0, Engine.recovery.attempt - 2); clearRecoveryTimers(); if (!isPlaying) setTimeout(function() { if (Engine.intent.shouldBePlaying && !isPlaying) executeRecovery(); }, 800); } });
-}
-function updateNetworkInfo() { var conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection; Engine.network.isOnline = navigator.onLine; if (conn) { Engine.network.type = conn.effectiveType; Engine.network.downlink = conn.downlink; Engine.network.rtt = conn.rtt; Engine.network.saveData = conn.saveData; } Engine.network.quality = calculateNetworkQuality(); }
-function calculateNetworkQuality() { if (!navigator.onLine) return 0; var type = Engine.network.type, downlink = Engine.network.downlink, rtt = Engine.network.rtt, quality = 100; if (type === 'slow-2g') quality = 10; else if (type === '2g') quality = 30; else if (type === '3g') quality = 60; else if (type === '4g') quality = 90; if (downlink !== null && downlink !== undefined) { if (downlink < 0.5) quality = Math.min(quality, 20); else if (downlink < 1) quality = Math.min(quality, 40); else if (downlink < 2) quality = Math.min(quality, 60); } if (rtt !== null && rtt !== undefined) { if (rtt > 500) quality = Math.min(quality, 30); else if (rtt > 300) quality = Math.min(quality, 50); } return quality; }
-function handleOnline() { Engine.network.isOnline = true; updateNetworkInfo(); if (Engine.intent.shouldBePlaying && !isPlaying) { Engine.recovery.attempt = 0; clearRecoveryTimers(); setTimeout(function() { if (Engine.intent.shouldBePlaying && !isPlaying) executeRecovery(); }, 500); } }
-function handleOffline() { Engine.network.isOnline = false; Engine.network.quality = 0; if (isPlaying || Engine.intent.shouldBePlaying) { Engine.intent.shouldBePlaying = true; Engine.position.current = audio.currentTime || Engine.position.current; savePositionToStorage(); } }
-
-function updateBufferHealth() { var buffered = audio.buffered, currentTime = audio.currentTime, duration = audio.duration, ahead = 0; for (var i = 0; i < buffered.length; i++) { if (buffered.start(i) <= currentTime && buffered.end(i) > currentTime) { ahead = buffered.end(i) - currentTime; break; } } Engine.buffer.ahead = ahead; Engine.buffer.isHealthy = ahead >= Engine.buffer.minHealthy; if (duration > 0) { var totalBuffered = 0; for (var j = 0; j < buffered.length; j++) totalBuffered += buffered.end(j) - buffered.start(j); Engine.buffer.percent = (totalBuffered / duration) * 100; bufferBar.style.width = Engine.buffer.percent + '%'; } }
-function initPositionTracking() { Engine.position.saveInterval = setInterval(function() { if (isPlaying && audio.currentTime > 0) { Engine.position.current = audio.currentTime; if (Math.abs(audio.currentTime - Engine.position.lastSaved) > 5) savePositionToStorage(); } }, 1000); }
-function savePositionToStorage() { if (!datePicker.value || !audio.currentTime) return; var key = 'bside-pos-' + datePicker.value; var data = { position: Engine.position.current, timestamp: Date.now(), duration: audio.duration || 0 }; localStorage.setItem(key, JSON.stringify(data)); Engine.position.lastSaved = Engine.position.current; }
-function loadPositionFromStorage() { var key = 'bside-pos-' + datePicker.value; try { var data = JSON.parse(localStorage.getItem(key)); if (data && data.position > 30 && (!data.duration || data.position < data.duration - 30)) { Engine.position.current = data.position; return data.position; } } catch(e) {} Engine.position.current = 0; return 0; }
-
-function clearRecoveryTimers() { if (Engine.recovery.timer) { clearTimeout(Engine.recovery.timer); Engine.recovery.timer = null; } if (Engine.recovery.watchdog) { clearTimeout(Engine.recovery.watchdog); Engine.recovery.watchdog = null; } Engine.recovery.scheduledAt = null; Engine.recovery.expectedDelay = null; }
-function calculateRecoveryDelay() { var attempt = Engine.recovery.attempt, baseDelay; if (attempt === 0) baseDelay = 500; else if (attempt < 3) baseDelay = 1000; else if (attempt < 6) baseDelay = 2000; else if (attempt < 10) baseDelay = 3000; else if (attempt < 15) baseDelay = 5000; else if (attempt < 25) baseDelay = 8000; else baseDelay = 12000; if (Engine.network.quality < 30) baseDelay *= 1.5; else if (Engine.network.quality < 60) baseDelay *= 1.2; return Math.min(baseDelay, 15000); }
-function scheduleRecovery() { if (!Engine.intent.shouldBePlaying || Engine.recovery.attempt >= Engine.recovery.maxAttempts) return; clearRecoveryTimers(); var delay = calculateRecoveryDelay(); Engine.recovery.scheduledAt = Date.now(); Engine.recovery.expectedDelay = delay; Engine.recovery.timer = setTimeout(function() { if (Engine.intent.shouldBePlaying && !isPlaying) executeRecovery(); }, delay); }
-function executeRecovery() { if (!Engine.intent.shouldBePlaying || isPlaying || !Engine.network.isOnline) return; Engine.recovery.isActive = true; Engine.recovery.startTime = Date.now(); Engine.recovery.attempt++; var strategies = ['seek', 'play', 'reload']; Engine.recovery.strategy = strategies[Engine.recovery.attempt % strategies.length]; startWatchdog(); try { if (Engine.recovery.strategy === 'seek' && audio.duration) { var targetTime = Math.max(0, Engine.position.current - 2); audio.currentTime = targetTime; audio.play().catch(function() { scheduleRecovery(); }); } else if (Engine.recovery.strategy === 'reload') { audio.src = Engine.currentUrl; audio.load(); audio.currentTime = Engine.position.current; audio.play().catch(function() { scheduleRecovery(); }); } else { audio.play().catch(function() { scheduleRecovery(); }); } } catch(e) { scheduleRecovery(); } }
-function startWatchdog() { if (Engine.recovery.watchdog) clearTimeout(Engine.recovery.watchdog); Engine.recovery.watchdog = setTimeout(function() { if (Engine.recovery.isActive && !isPlaying && Engine.intent.shouldBePlaying) scheduleRecovery(); }, Engine.recovery.watchdogTimeout); }
-function recoverySuccess() { clearRecoveryTimers(); Engine.recovery.isActive = false; Engine.recovery.attempt = 0; Engine.recovery.lastRecoveryTime = Date.now(); }
-
-function initLifecycleManagement() { document.addEventListener('visibilitychange', function() { Engine.lifecycle.isVisible = !document.hidden; if (document.hidden) { if (isPlaying) Engine.position.current = audio.currentTime; savePositionToStorage(); } else { Engine.lifecycle.lastActiveTime = Date.now(); if (Engine.intent.shouldBePlaying && !isPlaying) setTimeout(function() { if (Engine.intent.shouldBePlaying && !isPlaying) executeRecovery(); }, 300); } }); }
-
-function initAudioEvents() {
-  audio.addEventListener('loadedmetadata', function() { 
-    remainingTime.textContent = '-' + formatTime(audio.duration); 
-  });
-  
-  audio.addEventListener('canplay', function() { 
-    if (Engine.intent.shouldBePlaying && audio.paused) {
-      if (Engine.position.current > 0 && audio.duration && Engine.position.current < audio.duration - 1) {
-        audio.currentTime = Engine.position.current;
-      }
-      audio.play().catch(function(){});
-    }
-  });
-  
-  audio.addEventListener('playing', function() { 
-    isPlaying = true; 
-    updatePlayIcon(true); 
-    recoverySuccess(); 
-    Engine.intent.pausedByUser = false; 
-    Engine.intent.pausedBySystem = false; 
-  });
-  
-  audio.addEventListener('pause', function() { 
-    isPlaying = false; 
-    updatePlayIcon(false); 
-  });
-  
-  audio.addEventListener('timeupdate', function() { 
-    if (progressDragging) return;
-    if (!audio.paused && audio.currentTime > 0) Engine.position.current = audio.currentTime;
-    updateBufferHealth();
-    var pct = (audio.currentTime / audio.duration) * 100 || 0;
-    progressFill.style.width = pct + '%';
-    currentTimeEl.textContent = formatTime(audio.currentTime);
-    remainingTime.textContent = '-' + formatTime(audio.duration - audio.currentTime);
-  });
-  
-  audio.addEventListener('stalled', function() { 
-    if (!Engine.intent.shouldBePlaying) return;
-    setTimeout(function() { 
-      if (Engine.intent.shouldBePlaying && (audio.paused || audio.readyState < 3)) scheduleRecovery(); 
-    }, 4000); 
-  });
-  
-  audio.addEventListener('waiting', function() { 
-    if (!Engine.intent.shouldBePlaying) return;
-    setTimeout(function() { 
-      if (Engine.intent.shouldBePlaying && (audio.paused || audio.readyState < 3)) scheduleRecovery(); 
-    }, 6000); 
-  });
-  
-  audio.addEventListener('error', function() { 
-    var err = audio.error;
-    if (Engine.position.current > 0) savePositionToStorage();
-    isPlaying = false; 
-    updatePlayIcon(false);
-    if (!Engine.intent.shouldBePlaying) return;
-    // Errore 4 = MEDIA_ERR_SRC_NOT_SUPPORTED (puntata non disponibile)
-    if (err && err.code === 4 && !Engine.recovery.isActive && navigator.onLine) {
-      Engine.intent.shouldBePlaying = false;
-      clearRecoveryTimers();
-      return;
-    }
-    scheduleRecovery(); 
-  });
-  
-  audio.addEventListener('ended', function() { 
-    isPlaying = false; 
-    updatePlayIcon(false); 
-    Engine.intent.shouldBePlaying = false; 
-    Engine.position.current = 0; 
-    clearRecoveryTimers();
-    localStorage.removeItem('bside-pos-' + datePicker.value); 
-  });
-}
-
-function updatePlayer() {
-  var d = datePicker.value, url = buildUrl(d);
-  clearRecoveryTimers();
-  Engine.currentUrl = url;
-  Engine.position.current = loadPositionFromStorage();
-  Engine.position.lastSaved = Engine.position.current;
-  Engine.recovery.attempt = 0;
-  Engine.recovery.isActive = false;
-  Engine.intent.shouldBePlaying = false;
-  audio.src = url;
-  episodeDate.textContent = formatDate(d);
-  dateDisplay.textContent = formatDate(d);
-  isPlaying = false;
-  updatePlayIcon(false);
-  progressFill.style.width = '0%';
-  bufferBar.style.width = '0%';
-  currentTimeEl.textContent = formatTime(Engine.position.current);
-  remainingTime.textContent = '-0:00';
-}
-datePickerBtn.addEventListener('click', function() { datePicker.showPicker(); });
-datePicker.addEventListener('change', function() { updatePlayer(); updateNav(); updateFav(); updateMediaSession(); });
-playBtn.addEventListener('click', function() {
-  if (isPlaying) {
-    Engine.intent.shouldBePlaying = false;
-    Engine.intent.pausedByUser = true;
-    Engine.recovery.isActive = false;
-    Engine.position.current = audio.currentTime;
-    clearRecoveryTimers();
-    audio.pause();
-    savePositionToStorage();
-  } else {
-    Engine.intent.shouldBePlaying = true;
-    Engine.intent.pausedByUser = false;
-    Engine.intent.pausedBySystem = false;
-    Engine.recovery.isActive = false;
-    Engine.recovery.attempt = 0;
-    clearRecoveryTimers();
-    var targetTime = Engine.position.current;
-    
-    if (!audio.src || audio.error || audio.readyState === 0) {
-      var url = buildUrl(datePicker.value);
-      Engine.currentUrl = url;
-      audio.src = url;
-      function onReady() {
-        audio.removeEventListener('canplay', onReady);
-        audio.removeEventListener('error', onLoadErr);
-        if (targetTime > 0 && audio.duration && targetTime < audio.duration - 1) audio.currentTime = targetTime;
-        audio.play().catch(function() { Engine.intent.shouldBePlaying = false; });
-      }
-      function onLoadErr() {
-        audio.removeEventListener('canplay', onReady);
-        audio.removeEventListener('error', onLoadErr);
-        Engine.intent.shouldBePlaying = false;
-        isPlaying = false;
-        updatePlayIcon(false);
-      }
-      audio.addEventListener('canplay', onReady);
-      audio.addEventListener('error', onLoadErr);
-      audio.load();
-    } else {
-      if (targetTime > 0 && audio.duration && targetTime < audio.duration - 1) audio.currentTime = targetTime;
-      audio.play().catch(function(e) {
-        if (e.name === 'NotAllowedError') {
-          Engine.intent.shouldBePlaying = false;
-        } else {
-          var url = buildUrl(datePicker.value);
-          Engine.currentUrl = url;
-          audio.src = url + '?_t=' + Date.now();
-          audio.addEventListener('canplay', function onR() {
-            audio.removeEventListener('canplay', onR);
-            if (targetTime > 0 && audio.duration) audio.currentTime = targetTime;
-            audio.play();
-          });
-          audio.load();
-        }
-      });
-    }
-  }
-});
-function updateNav() { var curr = new Date(datePicker.value), tod = new Date(); curr.setHours(0,0,0,0); tod.setHours(0,0,0,0); nextDay.disabled = curr >= tod; nextDayNav.disabled = curr >= tod; }
-function changeDay(delta) { var d = new Date(datePicker.value); d.setDate(d.getDate() + delta); var str = d.toISOString().split('T')[0]; if (str <= datePicker.max) { datePicker.value = str; updatePlayer(); updateNav(); updateFav(); updateMediaSession(); } }
-prevDay.addEventListener('click', function() { changeDay(-1); });
-nextDay.addEventListener('click', function() { changeDay(1); });
-prevDayNav.addEventListener('click', function() { changeDay(-1); });
-nextDayNav.addEventListener('click', function() { changeDay(1); });
-
-skipBack.addEventListener('click', function() { var t = Math.max(0, audio.currentTime - 30); Engine.position.current = t; audio.currentTime = t; });
-skipForward.addEventListener('click', function() { var t = audio.currentTime + 30; Engine.position.current = t; audio.currentTime = t; });
-function getProgressPct(e) { var r = progressBar.getBoundingClientRect(), x = e.touches ? e.touches[0].clientX : e.clientX; return Math.max(0, Math.min(1, (x - r.left) / r.width)); }
-function updateProgressUI(pct) { progressFill.style.width = (pct * 100) + '%'; if (audio.duration) { seekTime = pct * audio.duration; currentTimeEl.textContent = formatTime(seekTime); remainingTime.textContent = '-' + formatTime(audio.duration - seekTime); } }
-progressBar.addEventListener('mousedown', function(e) { progressDragging = true; progressBar.classList.add('dragging'); updateProgressUI(getProgressPct(e)); });
-progressBar.addEventListener('touchstart', function(e) { e.preventDefault(); progressDragging = true; progressBar.classList.add('dragging'); updateProgressUI(getProgressPct(e)); }, {passive: false});
-document.addEventListener('mousemove', function(e) { if (progressDragging) updateProgressUI(getProgressPct(e)); });
-document.addEventListener('touchmove', function(e) { if (progressDragging) updateProgressUI(getProgressPct(e)); }, {passive: true});
-document.addEventListener('mouseup', function() { if (progressDragging && audio.duration) { Engine.position.current = seekTime; audio.currentTime = seekTime; } progressDragging = false; progressBar.classList.remove('dragging'); });
-document.addEventListener('touchend', function() { if (progressDragging && audio.duration) { Engine.position.current = seekTime; audio.currentTime = seekTime; } progressDragging = false; progressBar.classList.remove('dragging'); });
-
-var savedTheme = localStorage.getItem('bside-theme') || 'light';
-applyTheme(savedTheme);
-function applyTheme(t) { if (t === 'dark') { document.documentElement.setAttribute('data-theme', 'dark'); themeIcon.innerHTML = '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>'; themeColorMeta.content = '#000000'; } else { document.documentElement.removeAttribute('data-theme'); themeIcon.innerHTML = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'; themeColorMeta.content = '#f5f5f7'; } }
-themeBtn.addEventListener('click', function() { var isDark = document.documentElement.getAttribute('data-theme') === 'dark'; var newTheme = isDark ? 'light' : 'dark'; applyTheme(newTheme); localStorage.setItem('bside-theme', newTheme); });
-
-volumeNavBtn.addEventListener('click', function() { volumeOverlay.classList.add('show'); });
-volumeOverlay.addEventListener('click', function(e) { if (e.target === volumeOverlay) volumeOverlay.classList.remove('show'); });
-function updateVol(e) { var r = volumeSlider.getBoundingClientRect(), x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left, pct = Math.max(0, Math.min(1, x / r.width)); audio.volume = pct; volumeFill.style.width = (pct * 100) + '%'; updateVolIcon(); }
-function updateVolIcon() { var v = audio.volume; if (v === 0) volumeIcon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>'; else if (v < 0.5) volumeIcon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07"/>'; else volumeIcon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07"/><path d="M19.07 4.93a10 10 0 010 14.14"/>'; }
-volumeSlider.addEventListener('mousedown', function(e) { volDrag = true; updateVol(e); });
-volumeSlider.addEventListener('touchstart', function(e) { e.preventDefault(); volDrag = true; updateVol(e); });
-document.addEventListener('mousemove', function(e) { if (volDrag) updateVol(e); });
-document.addEventListener('touchmove', function(e) { if (volDrag) { e.preventDefault(); updateVol(e); } }, {passive: false});
-document.addEventListener('mouseup', function() { volDrag = false; });
-document.addEventListener('touchend', function() { volDrag = false; });
-
-sleepBtn.addEventListener('click', function() { sleepOverlay.classList.add('show'); });
-sleepOverlay.addEventListener('click', function(e) { if (e.target === sleepOverlay) sleepOverlay.classList.remove('show'); });
-var sleepOptions = document.querySelectorAll('.sleep-option');
-sleepOptions.forEach(function(opt) { opt.addEventListener('click', function() { var min = parseInt(opt.getAttribute('data-min')); setSleep(min); sleepOverlay.classList.remove('show'); sleepOptions.forEach(function(o) { o.classList.remove('selected'); }); if (min > 0) opt.classList.add('selected'); }); });
-function setSleep(min) { if (sleepTimer) clearTimeout(sleepTimer); if (sleepInterval) clearInterval(sleepInterval); if (min === 0) { sleepEndTime = null; sleepIcon.style.display = ''; sleepCountdown.style.display = 'none'; sleepBtn.classList.remove('active'); return; } sleepEndTime = Date.now() + min * 60000; sleepBtn.classList.add('active'); sleepIcon.style.display = 'none'; sleepCountdown.style.display = ''; updateSleepDisplay(); sleepInterval = setInterval(updateSleepDisplay, 1000); sleepTimer = setTimeout(function() { Engine.intent.shouldBePlaying = false; audio.pause(); updatePlayIcon(false); isPlaying = false; setSleep(0); }, min * 60000); }
-function updateSleepDisplay() { if (!sleepEndTime) return; var rem = Math.max(0, sleepEndTime - Date.now()); if (rem === 0) { setSleep(0); return; } var m = Math.floor(rem / 60000), s = Math.floor((rem % 60000) / 1000); sleepCountdown.textContent = m + ':' + (s < 10 ? '0' : '') + s; }
-
-favBtn.addEventListener('click', function() { var d = datePicker.value, idx = favorites.indexOf(d); if (idx > -1) favorites.splice(idx, 1); else favorites.unshift(d); localStorage.setItem('bside-fav', JSON.stringify(favorites)); updateFav(); });
-function updateFav() { favBtn.classList.toggle('active', favorites.indexOf(datePicker.value) > -1); }
-menuBtn.addEventListener('click', function() { renderFavList(); favOverlay.classList.add('show'); });
-favOverlay.addEventListener('click', function(e) { if (e.target === favOverlay) favOverlay.classList.remove('show'); });
-function renderFavList() { if (favorites.length === 0) { favList.innerHTML = '<div class="favorites-empty">Nessun preferito salvato</div>'; return; } var h = ''; for (var i = 0; i < favorites.length; i++) { var d = favorites[i]; h += '<div class="fav-item" data-date="' + d + '"><span>' + formatDate(d) + '</span><button class="fav-item-del" data-date="' + d + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>'; } favList.innerHTML = h; favList.querySelectorAll('.fav-item').forEach(function(item) { item.addEventListener('click', function(e) { if (!e.target.closest('.fav-item-del')) { datePicker.value = item.getAttribute('data-date'); updatePlayer(); updateNav(); updateFav(); updateMediaSession(); favOverlay.classList.remove('show'); } }); }); favList.querySelectorAll('.fav-item-del').forEach(function(btn) { btn.addEventListener('click', function(e) { e.stopPropagation(); var d = btn.getAttribute('data-date'), idx = favorites.indexOf(d); if (idx > -1) favorites.splice(idx, 1); localStorage.setItem('bside-fav', JSON.stringify(favorites)); updateFav(); renderFavList(); }); }); }
-
-function updateMediaSession() { if ('mediaSession' in navigator) navigator.mediaSession.metadata = new MediaMetadata({ title: 'Puntata del ' + formatDate(datePicker.value), artist: 'Alessio Bertallot', album: 'B-SIDE - Radio Capital', artwork: [{src: 'icon-192.png', sizes: '192x192', type: 'image/png'}, {src: 'icon-512.png', sizes: '512x512', type: 'image/png'}] }); }
-if ('mediaSession' in navigator) { navigator.mediaSession.setActionHandler('play', function() { Engine.intent.shouldBePlaying = true; if (Engine.position.current > 0 && audio.duration && Engine.position.current < audio.duration) audio.currentTime = Engine.position.current; audio.play(); }); navigator.mediaSession.setActionHandler('pause', function() { Engine.position.current = audio.currentTime; Engine.intent.shouldBePlaying = false; Engine.intent.pausedByUser = true; audio.pause(); }); navigator.mediaSession.setActionHandler('seekbackward', function() { var t = Math.max(0, audio.currentTime - 30); Engine.position.current = t; audio.currentTime = t; }); navigator.mediaSession.setActionHandler('seekforward', function() { var t = audio.currentTime + 30; Engine.position.current = t; audio.currentTime = t; }); navigator.mediaSession.setActionHandler('seekto', function(d) { if (d.seekTime) { Engine.position.current = d.seekTime; audio.currentTime = d.seekTime; } }); }
-
-window.addEventListener('beforeinstallprompt', function(e) { e.preventDefault(); deferredPrompt = e; document.getElementById('installPrompt').classList.add('show'); });
-document.getElementById('installBtn').addEventListener('click', function() { if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt.userChoice.then(function() { deferredPrompt = null; document.getElementById('installPrompt').classList.remove('show'); }); } });
-document.getElementById('installClose').addEventListener('click', function() { document.getElementById('installPrompt').classList.remove('show'); });
-window.addEventListener('appinstalled', function() { document.getElementById('installPrompt').classList.remove('show'); });
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').then(function(){}).catch(function(){});
-
-function init() {
-  var today = new Date();
-  datePicker.value = today.toISOString().split('T')[0];
-  datePicker.max = datePicker.value;
-  initNetworkMonitoring();
-  initPositionTracking();
-  initLifecycleManagement();
-  initAudioEvents();
-  updatePlayer();
-  updateNav();
-  updateFav();
-  updateVolIcon();
-  updateMediaSession();
-  volumeFill.style.width = (audio.volume * 100) + '%';
-  var maxAge = 30 * 24 * 60 * 60 * 1000, now = Date.now(), keysToRemove = [];
-  for (var i = 0; i < localStorage.length; i++) {
-    var key = localStorage.key(i);
-    if (key && key.startsWith('bside-pos-')) {
-      try { var data = JSON.parse(localStorage.getItem(key)); if (now - data.timestamp > maxAge) keysToRemove.push(key); }
-      catch(e) { keysToRemove.push(key); }
-    }
-  }
-  keysToRemove.forEach(function(k) { localStorage.removeItem(k); });
-}
-init();
-</script>
+  <!-- JavaScript Module -->
+  <script type="module" src="js/app.js"></script>
 </body>
 </html>

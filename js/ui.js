@@ -1,0 +1,252 @@
+// ============================================
+// B-SIDE - UI (Gestione Interfaccia)
+// ============================================
+
+import { Engine, isPlaying } from './engine.js';
+import { formatTime } from './utils.js';
+
+// Riferimenti DOM - vengono inizializzati in initUI()
+export let elements = {};
+
+/**
+ * Inizializza i riferimenti agli elementi DOM
+ */
+export function initUI() {
+  elements = {
+    audio: document.getElementById('audio'),
+    datePicker: document.getElementById('datePicker'),
+    datePickerBtn: document.getElementById('datePickerBtn'),
+    dateDisplay: document.getElementById('dateDisplay'),
+    episodeDate: document.getElementById('episodeDate'),
+    progressBar: document.getElementById('progressBar'),
+    progressFill: document.getElementById('progressFill'),
+    bufferBar: document.getElementById('bufferBar'),
+    currentTime: document.getElementById('currentTime'),
+    remainingTime: document.getElementById('remainingTime'),
+    playBtn: document.getElementById('playBtn'),
+    playIcon: document.getElementById('playIcon'),
+    prevDay: document.getElementById('prevDay'),
+    nextDay: document.getElementById('nextDay'),
+    prevDayNav: document.getElementById('prevDayNav'),
+    nextDayNav: document.getElementById('nextDayNav'),
+    skipBack: document.getElementById('skipBack'),
+    skipForward: document.getElementById('skipForward'),
+    favBtn: document.getElementById('favBtn'),
+    sleepBtn: document.getElementById('sleepBtn'),
+    sleepIcon: document.getElementById('sleepIcon'),
+    sleepCountdown: document.getElementById('sleepCountdown'),
+    volumeNavBtn: document.getElementById('volumeNavBtn'),
+    volumeIcon: document.getElementById('volumeIcon'),
+    themeBtn: document.getElementById('themeBtn'),
+    themeIcon: document.getElementById('themeIcon'),
+    volumeOverlay: document.getElementById('volumeOverlay'),
+    volumeSlider: document.getElementById('volumeSlider'),
+    volumeFill: document.getElementById('volumeFill'),
+    sleepOverlay: document.getElementById('sleepOverlay'),
+    favOverlay: document.getElementById('favOverlay'),
+    favList: document.getElementById('favList'),
+    menuBtn: document.getElementById('menuBtn'),
+    themeColorMeta: document.getElementById('themeColor'),
+    installPrompt: document.getElementById('installPrompt'),
+    installBtn: document.getElementById('installBtn'),
+    installClose: document.getElementById('installClose')
+  };
+
+  // Collega audio all'Engine
+  Engine.audio = elements.audio;
+}
+
+/**
+ * Aggiorna l'icona play/pause
+ * @param {boolean} playing - Stato di riproduzione
+ */
+export function updatePlayIcon(playing) {
+  if (!elements.playIcon) return;
+
+  elements.playIcon.innerHTML = playing
+    ? '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>'
+    : '<polygon points="6,4 20,12 6,20"/>';
+}
+
+/**
+ * Aggiorna la salute del buffer
+ */
+export function updateBufferHealth() {
+  const audio = Engine.audio;
+  const buffered = audio.buffered;
+  const currentTime = audio.currentTime;
+  const duration = audio.duration;
+  let ahead = 0;
+
+  for (let i = 0; i < buffered.length; i++) {
+    if (buffered.start(i) <= currentTime && buffered.end(i) > currentTime) {
+      ahead = buffered.end(i) - currentTime;
+      break;
+    }
+  }
+
+  Engine.buffer.ahead = ahead;
+  Engine.buffer.isHealthy = ahead >= Engine.buffer.minHealthy;
+
+  if (duration > 0) {
+    let totalBuffered = 0;
+    for (let j = 0; j < buffered.length; j++) {
+      totalBuffered += buffered.end(j) - buffered.start(j);
+    }
+    Engine.buffer.percent = (totalBuffered / duration) * 100;
+    elements.bufferBar.style.width = Engine.buffer.percent + '%';
+  }
+}
+
+// Stato per il drag della progress bar
+let progressDragging = false;
+let seekTime = 0;
+
+export function getProgressDragging() {
+  return progressDragging;
+}
+
+/**
+ * Inizializza gli eventi della progress bar
+ */
+export function initProgressBar() {
+  function getProgressPct(e) {
+    const r = elements.progressBar.getBoundingClientRect();
+    const x = e.touches ? e.touches[0].clientX : e.clientX;
+    return Math.max(0, Math.min(1, (x - r.left) / r.width));
+  }
+
+  function updateProgressUI(pct) {
+    elements.progressFill.style.width = (pct * 100) + '%';
+    if (Engine.audio.duration) {
+      seekTime = pct * Engine.audio.duration;
+      elements.currentTime.textContent = formatTime(seekTime);
+      elements.remainingTime.textContent = '-' + formatTime(Engine.audio.duration - seekTime);
+    }
+  }
+
+  elements.progressBar.addEventListener('mousedown', function(e) {
+    progressDragging = true;
+    elements.progressBar.classList.add('dragging');
+    updateProgressUI(getProgressPct(e));
+  });
+
+  elements.progressBar.addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    progressDragging = true;
+    elements.progressBar.classList.add('dragging');
+    updateProgressUI(getProgressPct(e));
+  }, { passive: false });
+
+  document.addEventListener('mousemove', function(e) {
+    if (progressDragging) updateProgressUI(getProgressPct(e));
+  });
+
+  document.addEventListener('touchmove', function(e) {
+    if (progressDragging) updateProgressUI(getProgressPct(e));
+  }, { passive: true });
+
+  document.addEventListener('mouseup', function() {
+    if (progressDragging && Engine.audio.duration) {
+      Engine.position.current = seekTime;
+      Engine.audio.currentTime = seekTime;
+    }
+    progressDragging = false;
+    elements.progressBar.classList.remove('dragging');
+  });
+
+  document.addEventListener('touchend', function() {
+    if (progressDragging && Engine.audio.duration) {
+      Engine.position.current = seekTime;
+      Engine.audio.currentTime = seekTime;
+    }
+    progressDragging = false;
+    elements.progressBar.classList.remove('dragging');
+  });
+}
+
+// Stato per il drag del volume
+let volDrag = false;
+
+/**
+ * Inizializza il controllo volume
+ */
+export function initVolumeControl() {
+  function updateVol(e) {
+    const r = elements.volumeSlider.getBoundingClientRect();
+    const x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
+    const pct = Math.max(0, Math.min(1, x / r.width));
+    Engine.audio.volume = pct;
+    elements.volumeFill.style.width = (pct * 100) + '%';
+    updateVolIcon();
+  }
+
+  elements.volumeNavBtn.addEventListener('click', function() {
+    elements.volumeOverlay.classList.add('show');
+  });
+
+  elements.volumeOverlay.addEventListener('click', function(e) {
+    if (e.target === elements.volumeOverlay) {
+      elements.volumeOverlay.classList.remove('show');
+    }
+  });
+
+  elements.volumeSlider.addEventListener('mousedown', function(e) {
+    volDrag = true;
+    updateVol(e);
+  });
+
+  elements.volumeSlider.addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    volDrag = true;
+    updateVol(e);
+  });
+
+  document.addEventListener('mousemove', function(e) {
+    if (volDrag) updateVol(e);
+  });
+
+  document.addEventListener('touchmove', function(e) {
+    if (volDrag) {
+      e.preventDefault();
+      updateVol(e);
+    }
+  }, { passive: false });
+
+  document.addEventListener('mouseup', function() {
+    volDrag = false;
+  });
+
+  document.addEventListener('touchend', function() {
+    volDrag = false;
+  });
+}
+
+/**
+ * Aggiorna l'icona del volume
+ */
+export function updateVolIcon() {
+  const v = Engine.audio.volume;
+
+  if (v === 0) {
+    elements.volumeIcon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>';
+  } else if (v < 0.5) {
+    elements.volumeIcon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07"/>';
+  } else {
+    elements.volumeIcon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 010 7.07"/><path d="M19.07 4.93a10 10 0 010 14.14"/>';
+  }
+}
+
+/**
+ * Aggiorna i pulsanti di navigazione data
+ */
+export function updateNav() {
+  const curr = new Date(elements.datePicker.value);
+  const tod = new Date();
+  curr.setHours(0, 0, 0, 0);
+  tod.setHours(0, 0, 0, 0);
+
+  const isToday = curr >= tod;
+  elements.nextDay.disabled = isToday;
+  elements.nextDayNav.disabled = isToday;
+}

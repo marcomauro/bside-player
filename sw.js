@@ -2,7 +2,7 @@
 // B-SIDE Service Worker v1.0
 // ============================================
 
-const CACHE_NAME = 'bside-cache-v1';
+const CACHE_NAME = 'bside-cache-v2';
 const AUDIO_CACHE_NAME = 'bside-audio-cache-v1';
 
 // Asset statici da cachare all'installazione
@@ -12,6 +12,26 @@ const STATIC_ASSETS = [
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
+  // CSS Modules
+  './css/variables.css',
+  './css/base.css',
+  './css/layout.css',
+  './css/components.css',
+  './css/responsive.css',
+  // JavaScript Modules
+  './js/config.js',
+  './js/utils.js',
+  './js/engine.js',
+  './js/storage.js',
+  './js/network.js',
+  './js/audio.js',
+  './js/ui.js',
+  './js/theme.js',
+  './js/favorites.js',
+  './js/sleep.js',
+  './js/mediasession.js',
+  './js/install.js',
+  './js/app.js',
   'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap'
 ];
 
