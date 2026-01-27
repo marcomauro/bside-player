@@ -58,6 +58,19 @@ export function initMediaSession() {
     Engine.audio.currentTime = t;
   });
 
+  // Pulsanti ⏮ ⏭ nella lockscreen (usati come -30s / +30s)
+  navigator.mediaSession.setActionHandler('previoustrack', function() {
+    const t = Math.max(0, Engine.audio.currentTime - 30);
+    Engine.position.current = t;
+    Engine.audio.currentTime = t;
+  });
+
+  navigator.mediaSession.setActionHandler('nexttrack', function() {
+    const t = Math.min(Engine.audio.duration || Infinity, Engine.audio.currentTime + 30);
+    Engine.position.current = t;
+    Engine.audio.currentTime = t;
+  });
+
   navigator.mediaSession.setActionHandler('seekto', function(d) {
     if (d.seekTime) {
       Engine.position.current = d.seekTime;
