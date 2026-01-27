@@ -8,7 +8,7 @@ import { savePositionToStorage, loadPositionFromStorage } from './storage.js';
 import { clearRecoveryTimers, scheduleRecovery, recoverySuccess, executeRecovery } from './network.js';
 import { elements, updatePlayIcon, updateBufferHealth, getProgressDragging, updateNav } from './ui.js';
 import { updateFav } from './favorites.js';
-import { updateMediaSession } from './mediasession.js';
+import { updateMediaSession, updatePositionState } from './mediasession.js';
 
 /**
  * Inizializza il tracciamento della posizione
@@ -59,6 +59,7 @@ export function initAudioEvents() {
 
   audio.addEventListener('loadedmetadata', function() {
     elements.remainingTime.textContent = '-' + formatTime(audio.duration);
+    updatePositionState();
   });
 
   audio.addEventListener('canplay', function() {
@@ -76,6 +77,7 @@ export function initAudioEvents() {
     recoverySuccess();
     Engine.intent.pausedByUser = false;
     Engine.intent.pausedBySystem = false;
+    updatePositionState();
   });
 
   audio.addEventListener('pause', function() {
