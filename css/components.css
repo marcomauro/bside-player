@@ -487,3 +487,27 @@
   align-items: center;
   justify-content: center;
 }
+
+/* Info Options (stesso stile di sleep-options) */
+.info-options {
+  padding: 0 0 8px;
+}
+
+.info-item {
+  padding: 16px 24px;
+  font-size: 17px;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.info-item.app-title {
+  font-size: 24px;
+  font-weight: 700;
+  padding-bottom: 8px;
+}
+
+.info-item.app-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}

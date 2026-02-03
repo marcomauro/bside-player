@@ -10,6 +10,7 @@ import { initFavorites, updateFav } from './favorites.js';
 import { initSleep } from './sleep.js';
 import { initMediaSession, updateMediaSession } from './mediasession.js';
 import { initInstall, registerServiceWorker } from './install.js';
+import { initInfo } from './info.js';
 import { cleanOldPositions } from './storage.js';
 
 /**
@@ -37,6 +38,7 @@ function init() {
   initSleep();
   initMediaSession();
   initInstall();
+  initInfo();
 
   // Aggiorna stato iniziale
   updatePlayer();

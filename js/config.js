@@ -2,6 +2,9 @@
 // B-SIDE - Config (Costanti e Configurazione)
 // ============================================
 
+export const APP_VERSION = '2.0.0';
+export const APP_BUILD_DATE = '2025-02-03';
+
 export const MEDIA_BASE_URL = 'https://media.capital.it';
 export const STORAGE_KEYS = {
   THEME: 'bside-theme',
