@@ -7,10 +7,11 @@
   .player {
     display: grid;
     grid-template-columns: 35% 1fr;
-    grid-template-rows: auto auto 1fr auto;
+    grid-template-rows: auto auto auto 1fr auto;
     grid-template-areas:
       "header header"
       "artwork info"
+      "artwork progress"
       "artwork controls"
       "bottom bottom";
     padding: calc(8px + var(--safe-top)) 16px calc(8px + var(--safe-bottom));
@@ -58,8 +59,8 @@
   }
 
   .progress-container {
-    grid-area: info;
-    align-self: end;
+    grid-area: progress;
+    align-self: center;
     padding: 0;
   }
 
