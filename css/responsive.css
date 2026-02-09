@@ -2,6 +2,132 @@
    B-SIDE - Responsive (Media Queries)
    ============================================ */
 
+/* Landscape su smartphone (altezza ridotta) */
+@media (max-height: 500px) and (orientation: landscape) {
+  .player {
+    display: grid;
+    grid-template-columns: 35% 1fr;
+    grid-template-rows: auto auto 1fr auto;
+    grid-template-areas:
+      "header header"
+      "artwork info"
+      "artwork controls"
+      "bottom bottom";
+    padding: calc(8px + var(--safe-top)) 16px calc(8px + var(--safe-bottom));
+    gap: 4px 16px;
+  }
+
+  .player-header {
+    grid-area: header;
+    margin-bottom: 0;
+  }
+
+  .artwork-container {
+    grid-area: artwork;
+    padding: 4px 0;
+    align-items: flex-start;
+  }
+
+  .artwork {
+    max-width: 120px;
+    max-height: 120px;
+  }
+
+  .artwork-title {
+    font-size: 24px;
+  }
+
+  .artwork-subtitle {
+    font-size: 8px;
+    margin-top: 2px;
+  }
+
+  .track-info {
+    grid-area: info;
+    text-align: left;
+    padding: 4px 0;
+  }
+
+  .track-title {
+    font-size: 15px;
+    margin-bottom: 2px;
+  }
+
+  .track-artist {
+    font-size: 12px;
+  }
+
+  .progress-container {
+    grid-area: info;
+    align-self: end;
+    padding: 0;
+  }
+
+  .time-display {
+    font-size: 10px;
+    margin-top: 4px;
+  }
+
+  .controls {
+    grid-area: controls;
+    padding: 4px 0;
+    gap: 12px;
+    justify-content: flex-start;
+  }
+
+  .ctrl-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .ctrl-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .ctrl-btn.skip-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 11px;
+  }
+
+  .ctrl-btn.nav-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .ctrl-btn.nav-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .play-btn {
+    width: 48px;
+    height: 48px;
+  }
+
+  .play-btn svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .bottom-bar {
+    grid-area: bottom;
+    padding-top: 4px;
+  }
+
+  .date-nav-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .secondary-btn {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+/* Desktop e tablet */
 @media (min-width: 500px) and (min-height: 600px) {
   body {
     padding: 24px;

@@ -511,3 +511,38 @@
   color: var(--text-secondary);
   line-height: 1.5;
 }
+
+/* Toast Notification */
+.toast {
+  position: fixed;
+  top: calc(20px + var(--safe-top));
+  left: 16px;
+  right: 16px;
+  max-width: 400px;
+  margin: 0 auto;
+  background: var(--player-bg);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border-radius: 12px;
+  border: 1px solid var(--player-border);
+  box-shadow: var(--shadow);
+  padding: 14px 18px;
+  font-size: 14px;
+  color: var(--text-primary);
+  text-align: center;
+  z-index: 200;
+  opacity: 0;
+  transform: translateY(-20px);
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.toast.error {
+  border-color: #ff3b30;
+}

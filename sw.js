@@ -2,7 +2,7 @@
 // B-SIDE Service Worker v1.0
 // ============================================
 
-const CACHE_NAME = 'bside-cache-v3';
+const CACHE_NAME = 'bside-cache-v4';
 const AUDIO_CACHE_NAME = 'bside-audio-cache-v1';
 
 // Asset statici da cachare all'installazione
@@ -32,6 +32,7 @@ const STATIC_ASSETS = [
   './js/mediasession.js',
   './js/install.js',
   './js/info.js',
+  './js/toast.js',
   './js/app.js',
   'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap'
 ];

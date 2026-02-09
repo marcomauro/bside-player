@@ -11,6 +11,7 @@ import { initSleep } from './sleep.js';
 import { initMediaSession, updateMediaSession } from './mediasession.js';
 import { initInstall, registerServiceWorker } from './install.js';
 import { initInfo } from './info.js';
+import { initToast } from './toast.js';
 import { cleanOldPositions } from './storage.js';
 
 /**
@@ -39,6 +40,7 @@ function init() {
   initMediaSession();
   initInstall();
   initInfo();
+  initToast();
 
   // Aggiorna stato iniziale
   updatePlayer();

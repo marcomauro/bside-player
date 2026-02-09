@@ -9,6 +9,7 @@ import { clearRecoveryTimers, scheduleRecovery, recoverySuccess, executeRecovery
 import { elements, updatePlayIcon, updateBufferHealth, getProgressDragging, updateNav } from './ui.js';
 import { updateFav } from './favorites.js';
 import { updateMediaSession, updatePositionState } from './mediasession.js';
+import { showToast } from './toast.js';
 
 /**
  * Inizializza il tracciamento della posizione
@@ -136,6 +137,7 @@ export function initAudioEvents() {
     if (err && err.code === 4 && !Engine.recovery.isActive && navigator.onLine) {
       Engine.intent.shouldBePlaying = false;
       clearRecoveryTimers();
+      showToast('Puntata non disponibile', 'error', 4000);
       return;
     }
 
