@@ -2,7 +2,7 @@
 // B-SIDE - App (Inizializzazione e Orchestrazione)
 // ============================================
 
-import { initUI, elements, initProgressBar, initVolumeControl, updateVolIcon, updateNav } from './ui.js';
+import { initUI, elements, initProgressBar, initVolumeControl, updateVolIcon, updateNav, initSegmentControls } from './ui.js';
 import { initNetworkMonitoring } from './network.js';
 import { initPositionTracking, initLifecycleManagement, initAudioEvents, updatePlayer, initPlayerControls } from './audio.js';
 import { initTheme } from './theme.js';
@@ -33,6 +33,7 @@ function init() {
   initAudioEvents();
   initPlayerControls();
   initProgressBar();
+  initSegmentControls();
   initVolumeControl();
   initTheme();
   initFavorites();

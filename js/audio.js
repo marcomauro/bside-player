@@ -6,7 +6,7 @@ import { Engine, isPlaying, setIsPlaying } from './engine.js';
 import { formatTime, formatDate, buildUrl } from './utils.js';
 import { savePositionToStorage, loadPositionFromStorage } from './storage.js';
 import { clearRecoveryTimers, scheduleRecovery, recoverySuccess, executeRecovery } from './network.js';
-import { elements, updatePlayIcon, updateBufferHealth, getProgressDragging, updateNav } from './ui.js';
+import { elements, updatePlayIcon, updateBufferHealth, getProgressDragging, updateNav, updateActiveSegment } from './ui.js';
 import { updateFav } from './favorites.js';
 import { updateMediaSession, updatePositionState } from './mediasession.js';
 import { showToast } from './toast.js';
@@ -99,6 +99,7 @@ export function initAudioEvents() {
     elements.progressFill.style.width = pct + '%';
     elements.currentTime.textContent = formatTime(audio.currentTime);
     elements.remainingTime.textContent = '-' + formatTime(audio.duration - audio.currentTime);
+    updateActiveSegment(audio.currentTime, audio.duration);
   });
 
   audio.addEventListener('stalled', function() {

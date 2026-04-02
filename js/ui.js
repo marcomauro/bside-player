@@ -49,7 +49,8 @@ export function initUI() {
     themeColorMeta: document.getElementById('themeColor'),
     installPrompt: document.getElementById('installPrompt'),
     installBtn: document.getElementById('installBtn'),
-    installClose: document.getElementById('installClose')
+    installClose: document.getElementById('installClose'),
+    segmentControls: document.getElementById('segmentControls')
   };
 
   // Collega audio all'Engine
@@ -249,4 +250,37 @@ export function updateNav() {
   const isToday = curr >= tod;
   elements.nextDay.disabled = isToday;
   elements.nextDayNav.disabled = isToday;
+}
+
+/**
+ * Inizializza i controlli segmento (4 parti della puntata)
+ */
+export function initSegmentControls() {
+  const buttons = elements.segmentControls.querySelectorAll('.segment-btn');
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', function() {
+      const segment = parseInt(this.dataset.segment);
+      const duration = Engine.audio.duration;
+      if (!duration) return;
+
+      const seekTo = (segment / 4) * duration;
+      Engine.audio.currentTime = seekTo;
+      Engine.position.current = seekTo;
+      updateActiveSegment(seekTo, duration);
+    });
+  });
+}
+
+/**
+ * Aggiorna il bottone segmento attivo in base al tempo corrente
+ */
+export function updateActiveSegment(currentTime, duration) {
+  if (!duration) return;
+  const buttons = elements.segmentControls.querySelectorAll('.segment-btn');
+  const segment = Math.min(3, Math.floor((currentTime / duration) * 4));
+
+  buttons.forEach((btn, i) => {
+    btn.classList.toggle('active', i === segment);
+  });
 }
