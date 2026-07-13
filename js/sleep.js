@@ -46,7 +46,7 @@ export function initSleep() {
  * Imposta il timer di spegnimento
  * @param {number} min - Minuti prima dello spegnimento (0 per disattivare)
  */
-export function setSleep(min) {
+function setSleep(min) {
   // Pulisci timer precedente
   if (sleepInterval) {
     clearInterval(sleepInterval);
@@ -125,7 +125,7 @@ function stopPlayback() {
 /**
  * Aggiorna il display del countdown (per compatibilità)
  */
-export function updateSleepDisplay() {
+function updateSleepDisplay() {
   if (!sleepEndTime) return;
 
   const rem = Math.max(0, sleepEndTime - Date.now());

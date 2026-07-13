@@ -18,8 +18,12 @@ export function savePositionToStorage(dateValue) {
     duration: Engine.audio.duration || 0
   };
 
-  localStorage.setItem(key, JSON.stringify(data));
-  Engine.position.lastSaved = Engine.position.current;
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+    Engine.position.lastSaved = Engine.position.current;
+  } catch (e) {
+    // Storage pieno o non disponibile (es. private mode)
+  }
 }
 
 /**
@@ -73,7 +77,12 @@ export function cleanOldPositions() {
  * @returns {Array} - Array di date preferite
  */
 export function getFavorites() {
-  return JSON.parse(localStorage.getItem(STORAGE_KEYS.FAVORITES) || '[]');
+  try {
+    const favorites = JSON.parse(localStorage.getItem(STORAGE_KEYS.FAVORITES) || '[]');
+    return Array.isArray(favorites) ? favorites : [];
+  } catch (e) {
+    return [];
+  }
 }
 
 /**
@@ -81,7 +90,11 @@ export function getFavorites() {
  * @param {Array} favorites - Array di date preferite
  */
 export function setFavorites(favorites) {
-  localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(favorites));
+  try {
+    localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(favorites));
+  } catch (e) {
+    // Storage pieno o non disponibile (es. private mode)
+  }
 }
 
 /**
@@ -97,5 +110,9 @@ export function getTheme() {
  * @param {string} theme - 'light' o 'dark'
  */
 export function setTheme(theme) {
-  localStorage.setItem(STORAGE_KEYS.THEME, theme);
+  try {
+    localStorage.setItem(STORAGE_KEYS.THEME, theme);
+  } catch (e) {
+    // Storage pieno o non disponibile (es. private mode)
+  }
 }

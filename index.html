@@ -13,6 +13,19 @@
   <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
   <link rel="apple-touch-icon" href="icon-192.png">
 
+  <!-- Anticipa DNS+TLS verso il server audio (senza crossorigin: l'elemento audio usa richieste no-cors) -->
+  <link rel="preconnect" href="https://media.capital.it">
+
+  <!-- Applica il tema salvato prima del primo paint per evitare il flash del tema chiaro -->
+  <script>
+    try {
+      if (localStorage.getItem('bside-theme') === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        document.getElementById('themeColor').content = '#000000';
+      }
+    } catch (e) {}
+  </script>
+
   <!-- CSS Modules -->
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/base.css">
@@ -143,7 +156,7 @@
   </div>
 
   <!-- Audio Element -->
-  <audio id="audio" preload="auto"></audio>
+  <audio id="audio" preload="metadata"></audio>
 
   <!-- JavaScript Module -->
   <script type="module" src="js/app.js"></script>
