@@ -31,16 +31,12 @@ export function initPositionTracking() {
  */
 export function initLifecycleManagement() {
   document.addEventListener('visibilitychange', function() {
-    Engine.lifecycle.isVisible = !document.hidden;
-
     if (document.hidden) {
       if (isPlaying) {
         Engine.position.current = Engine.audio.currentTime;
       }
       savePositionToStorage(elements.datePicker.value);
     } else {
-      Engine.lifecycle.lastActiveTime = Date.now();
-
       if (Engine.intent.shouldBePlaying && !isPlaying) {
         setTimeout(function() {
           if (Engine.intent.shouldBePlaying && !isPlaying) {
@@ -76,8 +72,6 @@ export function initAudioEvents() {
     setIsPlaying(true);
     updatePlayIcon(true);
     recoverySuccess();
-    Engine.intent.pausedByUser = false;
-    Engine.intent.pausedBySystem = false;
     updatePositionState();
   });
 
@@ -241,7 +235,6 @@ export function initPlayerControls() {
 function handlePlayPause() {
   if (isPlaying) {
     Engine.intent.shouldBePlaying = false;
-    Engine.intent.pausedByUser = true;
     Engine.recovery.isActive = false;
     Engine.position.current = Engine.audio.currentTime;
     clearRecoveryTimers();
@@ -249,8 +242,6 @@ function handlePlayPause() {
     savePositionToStorage(elements.datePicker.value);
   } else {
     Engine.intent.shouldBePlaying = true;
-    Engine.intent.pausedByUser = false;
-    Engine.intent.pausedBySystem = false;
     Engine.recovery.isActive = false;
     Engine.recovery.attempt = 0;
     clearRecoveryTimers();
@@ -304,7 +295,9 @@ function handlePlayPause() {
             if (targetTime > 0 && Engine.audio.duration) {
               Engine.audio.currentTime = targetTime;
             }
-            Engine.audio.play();
+            Engine.audio.play().catch(function() {
+              Engine.intent.shouldBePlaying = false;
+            });
           });
 
           Engine.audio.load();
@@ -318,7 +311,7 @@ function handlePlayPause() {
  * Cambia giorno
  * @param {number} delta - Numero di giorni da aggiungere/sottrarre
  */
-export function changeDay(delta) {
+function changeDay(delta) {
   const d = new Date(elements.datePicker.value);
   d.setDate(d.getDate() + delta);
   const str = d.toISOString().split('T')[0];

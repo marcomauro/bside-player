@@ -2,9 +2,9 @@
 // B-SIDE - Network (Monitoraggio Rete e Recovery)
 // ============================================
 
-import { Engine, isPlaying, setIsPlaying } from './engine.js';
+import { Engine, isPlaying } from './engine.js';
 import { savePositionToStorage } from './storage.js';
-import { updatePlayIcon } from './ui.js';
+import { elements } from './ui.js';
 
 /**
  * Inizializza il monitoraggio della rete
@@ -38,7 +38,7 @@ export function initNetworkMonitoring() {
 /**
  * Aggiorna le informazioni sulla rete
  */
-export function updateNetworkInfo() {
+function updateNetworkInfo() {
   const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
   Engine.network.isOnline = navigator.onLine;
 
@@ -46,7 +46,6 @@ export function updateNetworkInfo() {
     Engine.network.type = conn.effectiveType;
     Engine.network.downlink = conn.downlink;
     Engine.network.rtt = conn.rtt;
-    Engine.network.saveData = conn.saveData;
   }
 
   Engine.network.quality = calculateNetworkQuality();
@@ -56,7 +55,7 @@ export function updateNetworkInfo() {
  * Calcola la qualità della rete (0-100)
  * @returns {number}
  */
-export function calculateNetworkQuality() {
+function calculateNetworkQuality() {
   if (!navigator.onLine) return 0;
 
   const type = Engine.network.type;
@@ -86,7 +85,7 @@ export function calculateNetworkQuality() {
 /**
  * Handler per evento online
  */
-export function handleOnline() {
+function handleOnline() {
   Engine.network.isOnline = true;
   updateNetworkInfo();
 
@@ -105,14 +104,14 @@ export function handleOnline() {
 /**
  * Handler per evento offline
  */
-export function handleOffline(dateValue) {
+function handleOffline() {
   Engine.network.isOnline = false;
   Engine.network.quality = 0;
 
   if (isPlaying || Engine.intent.shouldBePlaying) {
     Engine.intent.shouldBePlaying = true;
     Engine.position.current = Engine.audio.currentTime || Engine.position.current;
-    savePositionToStorage(dateValue);
+    savePositionToStorage(elements.datePicker.value);
   }
 }
 
@@ -129,16 +128,13 @@ export function clearRecoveryTimers() {
     clearTimeout(Engine.recovery.watchdog);
     Engine.recovery.watchdog = null;
   }
-
-  Engine.recovery.scheduledAt = null;
-  Engine.recovery.expectedDelay = null;
 }
 
 /**
  * Calcola il delay per il prossimo tentativo di recovery
  * @returns {number} - Delay in ms
  */
-export function calculateRecoveryDelay() {
+function calculateRecoveryDelay() {
   const attempt = Engine.recovery.attempt;
   let baseDelay;
 
@@ -167,8 +163,6 @@ export function scheduleRecovery() {
   clearRecoveryTimers();
 
   const delay = calculateRecoveryDelay();
-  Engine.recovery.scheduledAt = Date.now();
-  Engine.recovery.expectedDelay = delay;
 
   Engine.recovery.timer = setTimeout(function() {
     if (Engine.intent.shouldBePlaying && !isPlaying) {
@@ -186,7 +180,6 @@ export function executeRecovery() {
   }
 
   Engine.recovery.isActive = true;
-  Engine.recovery.startTime = Date.now();
   Engine.recovery.attempt++;
 
   const strategies = ['seek', 'play', 'reload'];
@@ -221,7 +214,7 @@ export function executeRecovery() {
 /**
  * Avvia il watchdog timer
  */
-export function startWatchdog() {
+function startWatchdog() {
   if (Engine.recovery.watchdog) {
     clearTimeout(Engine.recovery.watchdog);
   }
@@ -240,5 +233,4 @@ export function recoverySuccess() {
   clearRecoveryTimers();
   Engine.recovery.isActive = false;
   Engine.recovery.attempt = 0;
-  Engine.recovery.lastRecoveryTime = Date.now();
 }

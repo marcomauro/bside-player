@@ -41,15 +41,3 @@ export function showToast(message, type = 'info', duration = 3000) {
     toastElement.classList.remove('show');
   }, duration);
 }
-
-/**
- * Nasconde il toast
- */
-export function hideToast() {
-  if (!toastElement) return;
-
-  if (toastTimeout) {
-    clearTimeout(toastTimeout);
-  }
-  toastElement.classList.remove('show');
-}

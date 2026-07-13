@@ -59,14 +59,13 @@ export function initMediaSession() {
       Engine.audio.currentTime = Engine.position.current;
     }
 
-    Engine.audio.play();
+    Engine.audio.play().catch(function() {});
   });
 
   // Pause
   navigator.mediaSession.setActionHandler('pause', function() {
     Engine.position.current = Engine.audio.currentTime;
     Engine.intent.shouldBePlaying = false;
-    Engine.intent.pausedByUser = true;
     Engine.audio.pause();
   });
 

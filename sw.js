@@ -2,8 +2,7 @@
 // B-SIDE Service Worker v1.0
 // ============================================
 
-const CACHE_NAME = 'bside-cache-v5';
-const AUDIO_CACHE_NAME = 'bside-audio-cache-v1';
+const CACHE_NAME = 'bside-cache-v6';
 
 // Asset statici da cachare all'installazione
 const STATIC_ASSETS = [
@@ -33,8 +32,7 @@ const STATIC_ASSETS = [
   './js/install.js',
   './js/info.js',
   './js/toast.js',
-  './js/app.js',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap'
+  './js/app.js'
 ];
 
 // ============================================
@@ -72,7 +70,7 @@ self.addEventListener('activate', (event) => {
         return Promise.all(
           cacheNames.map((cacheName) => {
             // Elimina cache vecchie
-            if (cacheName !== CACHE_NAME && cacheName !== AUDIO_CACHE_NAME) {
+            if (cacheName !== CACHE_NAME) {
               console.log('[SW] Deleting old cache:', cacheName);
               return caches.delete(cacheName);
             }
@@ -91,12 +89,15 @@ self.addEventListener('activate', (event) => {
 // FETCH - Strategia di caching
 // ============================================
 self.addEventListener('fetch', (event) => {
+  // Solo le GET sono cachabili
+  if (event.request.method !== 'GET') return;
+
   const url = new URL(event.request.url);
-  
+
   // === AUDIO STREAMING: Network Only ===
   // Non cachare mai l'audio - deve sempre passare dalla rete
-  if (url.hostname === 'media.capital.it' || 
-      event.request.url.includes('.mp3')) {
+  if (url.hostname === 'media.capital.it' ||
+      url.pathname.endsWith('.mp3')) {
     event.respondWith(
       fetch(event.request)
         .catch((err) => {
@@ -111,28 +112,9 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   
-  // === FONT GOOGLE: Cache First ===
-  if (url.hostname === 'fonts.googleapis.com' || 
-      url.hostname === 'fonts.gstatic.com') {
-    event.respondWith(
-      caches.match(event.request)
-        .then((cached) => {
-          if (cached) {
-            return cached;
-          }
-          return fetch(event.request)
-            .then((response) => {
-              // Clona e salva in cache
-              const responseClone = response.clone();
-              caches.open(CACHE_NAME)
-                .then((cache) => cache.put(event.request, responseClone));
-              return response;
-            });
-        })
-    );
-    return;
-  }
-  
+  // === CROSS-ORIGIN: passa dalla rete senza cachare ===
+  if (url.origin !== self.location.origin) return;
+
   // === ASSET STATICI: Stale While Revalidate ===
   // Serve dalla cache immediatamente, poi aggiorna in background
   event.respondWith(
@@ -153,7 +135,11 @@ self.addEventListener('fetch', (event) => {
           })
           .catch((err) => {
             console.log('[SW] Fetch failed, serving cached:', err);
-            return cached;
+            if (cached) return cached;
+            // Fallback offline per le navigazioni: serve la app-shell
+            if (event.request.mode === 'navigate') {
+              return caches.match('./index.html');
+            }
           });
         
         // Restituisci subito la cache se disponibile, altrimenti aspetta la rete

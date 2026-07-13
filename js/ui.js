@@ -75,27 +75,14 @@ export function updatePlayIcon(playing) {
 export function updateBufferHealth() {
   const audio = Engine.audio;
   const buffered = audio.buffered;
-  const currentTime = audio.currentTime;
   const duration = audio.duration;
-  let ahead = 0;
-
-  for (let i = 0; i < buffered.length; i++) {
-    if (buffered.start(i) <= currentTime && buffered.end(i) > currentTime) {
-      ahead = buffered.end(i) - currentTime;
-      break;
-    }
-  }
-
-  Engine.buffer.ahead = ahead;
-  Engine.buffer.isHealthy = ahead >= Engine.buffer.minHealthy;
 
   if (duration > 0) {
     let totalBuffered = 0;
     for (let j = 0; j < buffered.length; j++) {
       totalBuffered += buffered.end(j) - buffered.start(j);
     }
-    Engine.buffer.percent = (totalBuffered / duration) * 100;
-    elements.bufferBar.style.width = Engine.buffer.percent + '%';
+    elements.bufferBar.style.width = ((totalBuffered / duration) * 100) + '%';
   }
 }
 

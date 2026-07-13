@@ -9,7 +9,7 @@ import { elements } from './ui.js';
  * Applica il tema specificato
  * @param {string} t - 'light' o 'dark'
  */
-export function applyTheme(t) {
+function applyTheme(t) {
   if (t === 'dark') {
     document.documentElement.setAttribute('data-theme', 'dark');
     elements.themeIcon.innerHTML = '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
@@ -24,7 +24,7 @@ export function applyTheme(t) {
 /**
  * Alterna tra tema light e dark
  */
-export function toggleTheme() {
+function toggleTheme() {
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
   const newTheme = isDark ? 'light' : 'dark';
   applyTheme(newTheme);
